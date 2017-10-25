@@ -104,16 +104,83 @@ ipcMain.on('open-main-page', (event, arg) => {
   event.returnValue = page;
 });
 
-const bamjuConfig = {
-  projects: {
+ipcMain.on('refresh-tree-view', (event, project: ?string) => {
+  let tree:projects;
+  if (project != null) {
+    tree = loadProject(name);
+  } else {
+    tree = loadProjects();
+  }
 
+  event.sender.send('refresh-tree-view', tree);
+});
+
+type project = {
+  name: string,
+  path: string,
+  items: projectItems
+};
+type projects = Array<project>;
+
+type projectItem = {
+  name: string,
+  path: string
+};
+type projectItems = Array<projectItem>;
+
+const loadProjects = (): projects => {
+  const ret:projects = [];
+
+  console.log('loadProjects', bamjuConfig.projects);
+  Object.keys(bamjuConfig.projects).forEach((projectName: string) => {
+    ret.push(loadProject(projectName));
+  });
+
+  return ret;
+};
+
+const loadProject = (projectName: string): project => {
+  const projectPath:string = bamjuConfig.projects[projectName];
+  if (projectPath === undefined) {
+    throw new Error(`loadProject error${projectName}`);
+  }
+
+  const ret:project = {
+    name: projectName,
+    path: projectPath,
+    items: loadDirectory(projectPath)
+  };
+  return ret;
+};
+
+const loadDirectory = (projectPath: string): projectItems => {
+  const files = fs.readdirSync(projectPath);
+  const ret:projectItems = [];
+  files.forEach((filename: string) => {
+    ret.push({
+      name: filename,
+      path: path.join(projectPath, filename)
+    });
+  });
+
+  return ret;
+};
+
+type bamjuConfigType = {
+  projects: {
+    [string]: string
+  }
+};
+
+const bamjuConfig:bamjuConfigType = {
+  projects: {
     'bamju-specifications': '/Users/tett23/projects/bamju-specifications'
   }
 };
 
-const openPage = (project: string, name: string): string => {
-  const projectPath:string = bamjuConfig.projects[project];
-  const fn:string = normalizeName(name);
+const openPage = (projectName: string, itemName: string): string => {
+  const projectPath:string = bamjuConfig.projects[projectName];
+  const fn:string = normalizeName(itemName);
   const abs:string = path.join(projectPath, fn);
   const buf:Buffer = fs.readFileSync(abs);
   const ret:string = buf.toString('UTF-8');
@@ -121,4 +188,5 @@ const openPage = (project: string, name: string): string => {
   return ret;
 };
 
-const normalizeName = (name: string): string => `${name}.md`;
+// あとで拡張子どうこうする
+const normalizeName = (itemName: string): string => `${itemName}.md`;

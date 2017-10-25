@@ -59,6 +59,17 @@ ipcRenderer.on('open-page', (event, arg: string) => {
   store.dispatch(openPageByBodyString(arg));
 });
 
+ipcRenderer.on('refresh-tree-view', (event, arg: treeView) => {
+  console.log('refresh-tree-view', arg);
+
+  store.dispatch(openPageByBodyString('hogehoge'));
+});
+
 ipcRenderer.send('open-main-page', '', () => {
   console.log('hogehoge');
+});
+
+
+ipcRenderer.send('refresh-tree-view', null, () => {
+
 });
