@@ -14,7 +14,7 @@
     "es6": true
   },
   "rules": {
-    "indent": ["error", 4],
+    "indent": ["error", 2],
     "semi": ["error", "always"],
     "quotes": ["error", "single"],
     "arrow-parens": ["off"],

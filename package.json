@@ -6,6 +6,8 @@
   "scripts": {
     "start": "electron lib/main.js",
     "build": "babel src/ -d lib/",
+    "watch": "babel --watch src/ -d lib/",
+    "build-start": "yarn run build && yarn run start",
     "lint": "eslint src/"
   },
   "repository": "https://github.com/electron/electron-quick-start",
