@@ -27,7 +27,6 @@ app.propTypes = {
 
 const mapStateToProps = (state) => {
   console.log('App mapStateToProps', state);
-  console.log('');
 
   return {
     mainView: state.mainView,

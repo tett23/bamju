@@ -3,8 +3,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { mainViewState } from '../reducers/main_view';
 
-const tab = ({ buf }) => <div>{buf}</div>;
+const tab = ({ buf }) => {
+  console.log('refresh tab', buf);
+  return <div>{buf}</div>;
+};
 
 tab.defaultProps = {
   buf: ''
@@ -14,11 +18,11 @@ tab.propTypes = {
   buf: PropTypes.string
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: mainViewState) => {
   console.log('Tab mapStateToProps', state);
 
   return {
-    buf: state.mainView.tab
+    buf: state.mainView.mainView.tab
   };
 };
 

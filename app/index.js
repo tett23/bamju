@@ -11,6 +11,7 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import Root from './renderer/containers/Root';
 import appReducer from './renderer/reducers';
+import { openPageByBodyString } from './renderer/actions/tab';
 import './app.global.css';
 
 const initialState = getInitialStateRenderer();
@@ -52,8 +53,10 @@ if (module.hot) {
 const { ipcRenderer } = require('electron');
 // ipc.sendAsync('open-page');
 
-ipcRenderer.on('open-page', (event, arg) => {
+ipcRenderer.on('open-page', (event, arg: string) => {
   console.log('open-page', arg);
+
+  store.dispatch(openPageByBodyString(arg));
 });
 
 ipcRenderer.send('open-main-page', '', () => {
