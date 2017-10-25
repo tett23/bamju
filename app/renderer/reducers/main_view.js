@@ -1,13 +1,16 @@
 // @flow
 
 type actionType = {
-  +type: string,
+  +type: string
 };
 
 type mainViewState= {
 };
 
 const initialMainViewState = (): mainViewState => ({
+  mainView: {
+    tab: ''
+  }
 });
 export { initialMainViewState };
 

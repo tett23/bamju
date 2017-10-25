@@ -18,7 +18,7 @@ const mapStateToProps = (state) => {
   console.log('Tab mapStateToProps', state);
 
   return {
-    buf: state.mainView
+    buf: state.mainView.tab
   };
 };
 
