@@ -5,15 +5,22 @@ import { connect } from 'react-redux';
 // import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import Tab from '../components/Tab';
+import TreeView from '../components/TreeView';
 // import { openFragmentByTreeViewOnClick } from '../actions/tree_view';
 import { initialMainViewState } from '../reducers/main_view';
 import styles from './App.css';
 
-const app = ({ mainView }) => (
-  <div className={styles.app} data-tid="app">
-    <Tab buf={mainView.tab} />
-  </div>
-);
+const app = ({ mainView }) => {
+  console.log('init app');
+  console.log('create app VDOM', mainView);
+
+  return (
+    <div className={styles.app} data-tid="app">
+      <TreeView treeView={mainView.mainView.projects} />
+      <Tab buf={mainView.mainView.tab} />
+    </div>
+  );
+};
 
 app.defaultProps = {
   mainView: initialMainViewState()

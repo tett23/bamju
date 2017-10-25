@@ -98,21 +98,22 @@ app.on('ready', async () => {
   menuBuilder.buildMenu();
 });
 
-ipcMain.on('open-main-page', (event, arg) => {
+ipcMain.on('open-main-page', (event) => {
   const page = openPage('bamju-specifications', 'index');
   event.sender.send('open-page', page);
   event.returnValue = page;
 });
 
 ipcMain.on('refresh-tree-view', (event, project: ?string) => {
-  let tree:projects;
+  let tree:projects = [];
   if (project != null) {
-    tree = loadProject(name);
+    tree.push(loadProject(name));
   } else {
     tree = loadProjects();
   }
 
   event.sender.send('refresh-tree-view', tree);
+  event.returnValue = tree;
 });
 
 type project = {

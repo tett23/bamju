@@ -12,6 +12,7 @@ import { AppContainer } from 'react-hot-loader';
 import Root from './renderer/containers/Root';
 import appReducer from './renderer/reducers';
 import { openPageByBodyString } from './renderer/actions/tab';
+import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
 
 const initialState = getInitialStateRenderer();
@@ -62,7 +63,7 @@ ipcRenderer.on('open-page', (event, arg: string) => {
 ipcRenderer.on('refresh-tree-view', (event, arg: treeView) => {
   console.log('refresh-tree-view', arg);
 
-  store.dispatch(openPageByBodyString('hogehoge'));
+  store.dispatch(refreshTreeView(arg));
 });
 
 ipcRenderer.send('open-main-page', '', () => {
