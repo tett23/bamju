@@ -2,16 +2,13 @@
   "parser": "babel-eslint",
   "parserOptions": {
     "sourceType": "module",
-    "allowImportExportEverywhere": true
+    "allowImportExportEverywhere": true,
+    "ecmaFeatures": {
+       "experimentalObjectRestSpread": true,
+       "jsx": true
+    },
   },
   "extends": "airbnb",
-  "parserOptions": {
-    "ecmaFeatures": {
-        "experimentalObjectRestSpread": true,
-        "jsx": true
-    },
-    "sourceType": "module"
-  },
   "env": {
     "browser": true,
     "es6": true
