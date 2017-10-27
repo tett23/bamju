@@ -125,7 +125,8 @@ type projects = Array<project>;
 
 type projectItem = {
   name: string,
-  path: string
+  path: string,
+  items: projectItems
 };
 type projectItems = Array<projectItem>;
 
@@ -160,7 +161,8 @@ const loadDirectory = (projectPath: string): projectItems => {
   files.forEach((filename: string) => {
     ret.push({
       name: filename,
-      path: path.join(projectPath, filename)
+      path: path.join(projectPath, filename),
+      items: []
     });
   });
 
