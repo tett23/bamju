@@ -12,6 +12,9 @@ import {
 import appReducer from './renderer/reducers/index';
 import MenuBuilder from './menu';
 
+import { project, projects, projectItem, projectItems } from './common/project';
+import { getBamjuConfig } from './common/bamju_config';
+
 
 const path = require('path');
 const fs = require('fs');
@@ -104,10 +107,10 @@ ipcMain.on('open-main-page', (event) => {
   event.returnValue = page;
 });
 
-ipcMain.on('refresh-tree-view', (event, project: ?string) => {
+ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
   let tree:projects = [];
-  if (project != null) {
-    tree.push(loadProject(name));
+  if (projectName != null) {
+    tree.push(loadProject(projectName));
   } else {
     tree = loadProjects();
   }
@@ -115,26 +118,13 @@ ipcMain.on('refresh-tree-view', (event, project: ?string) => {
   event.sender.send('refresh-tree-view', tree);
   event.returnValue = tree;
 });
-
-type project = {
-  name: string,
-  path: string,
-  items: projectItems
-};
-type projects = Array<project>;
-
-type projectItem = {
-  name: string,
-  path: string,
-  items: projectItems
-};
-type projectItems = Array<projectItem>;
+console.log('main getBamjuConfig', getBamjuConfig);
 
 const loadProjects = (): projects => {
   const ret:projects = [];
 
-  console.log('loadProjects', bamjuConfig.projects);
-  Object.keys(bamjuConfig.projects).forEach((projectName: string) => {
+  console.log('loadProjects', getBamjuConfig().projects);
+  Object.keys(getBamjuConfig().projects).forEach((projectName: string) => {
     ret.push(loadProject(projectName));
   });
 
@@ -142,7 +132,7 @@ const loadProjects = (): projects => {
 };
 
 const loadProject = (projectName: string): project => {
-  const projectPath:string = bamjuConfig.projects[projectName];
+  const projectPath:string = getBamjuConfig().projects[projectName];
   if (projectPath === undefined) {
     throw new Error(`loadProject error${projectName}`);
   }
@@ -169,20 +159,8 @@ const loadDirectory = (projectPath: string): projectItems => {
   return ret;
 };
 
-type bamjuConfigType = {
-  projects: {
-    [string]: string
-  }
-};
-
-const bamjuConfig:bamjuConfigType = {
-  projects: {
-    'bamju-specifications': '/Users/tett23/projects/bamju-specifications'
-  }
-};
-
 const openPage = (projectName: string, itemName: string): string => {
-  const projectPath:string = bamjuConfig.projects[projectName];
+  const projectPath:string = getBamjuConfig().projects[projectName];
   const fn:string = normalizeName(itemName);
   const abs:string = path.join(projectPath, fn);
   const buf:Buffer = fs.readFileSync(abs);
