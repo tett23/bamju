@@ -50,6 +50,9 @@ if (module.hot) {
       </AppContainer>,
       document.getElementById('root')
     );
+
+    ipcRenderer.send('open-main-page');
+    ipcRenderer.send('refresh-tree-view');
   });
 }
 
@@ -68,11 +71,5 @@ ipcRenderer.on('refresh-tree-view', (event, arg: treeView) => {
   store.dispatch(refreshTreeView(arg));
 });
 
-ipcRenderer.send('open-main-page', '', () => {
-  console.log('hogehoge');
-});
-
-
-ipcRenderer.send('refresh-tree-view', null, () => {
-
-});
+ipcRenderer.send('open-main-page');
+ipcRenderer.send('refresh-tree-view');

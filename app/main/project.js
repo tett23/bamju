@@ -15,6 +15,13 @@ ipcMain.on('open-main-page', (event) => {
   event.returnValue = buf;
 });
 
+ipcMain.on('open-page', (event, args) => {
+  const buf = openFile(args.project, args.path);
+
+  event.sender.send('open-page', buf);
+  event.returnValue = buf;
+});
+
 ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
   let tree:projects = [];
   if (projectName != null) {
@@ -44,21 +51,23 @@ const loadProject = (projectName: string): project => {
     throw new Error(`loadProject error${projectName}`);
   }
 
+  const basePath:string = path.dirname(projectPath);
+
   const ret:project = {
     name: projectName,
-    path: projectPath,
-    items: loadDirectory(projectPath)
+    path: '/',
+    items: loadDirectory(projectPath, basePath)
   };
   return ret;
 };
 
-const loadDirectory = (projectPath: string): projectItems => {
+const loadDirectory = (projectPath: string, basePath: string): projectItems => {
   const files = fs.readdirSync(projectPath);
   const ret:projectItems = [];
   files.forEach((filename: string) => {
     ret.push({
       name: filename,
-      path: path.join(projectPath, filename),
+      path: path.join(projectPath, filename).replace(basePath, ''),
       items: []
     });
   });
@@ -75,7 +84,7 @@ const openFile = (projectName: string, itemName: string): buffer => {
 
   const ret:buffer = {
     name: itemName,
-    path: abs,
+    path: path.join(projectName, fn),
     body
   };
 
@@ -83,4 +92,10 @@ const openFile = (projectName: string, itemName: string): buffer => {
 };
 
 // あとで拡張子どうこうする
-const normalizeName = (itemName: string): string => `${itemName}.md`;
+const normalizeName = (itemName: string): string => {
+  if (itemName.match(/\.md$/)) {
+    return itemName;
+  }
+
+  return `${itemName}.md`;
+};

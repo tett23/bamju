@@ -1,10 +1,11 @@
 // @flow
 
+import { ipcRenderer } from 'electron';
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { mainViewState } from '../reducers/main_view';
 import { Treebeard } from 'react-treebeard';
+import { mainViewState } from '../reducers/main_view';
 
 const projectsTreeView = ({ projects }) => {
   console.log('build projectsTreeView projects', projects);
@@ -13,26 +14,41 @@ const projectsTreeView = ({ projects }) => {
   console.log('treeBeardData', data);
 
   return (
-    <Treebeard data={data} />
+    <Treebeard data={data} onToggle={onToggle} />
   );
 };
 
-// const onToggle = (node, toggled) => {
-//   if (this.state.cursor) { this.state.cursor.active = false; }
-//   node.active = true;
-//   if (node.children) { node.toggled = toggled; }
-//   this.setState({ cursor: node });
-// };
+const onToggle = (node: treeBeardData, toggled) => {
+  console.log('onToggle', node, toggled, this);
+  console.log('projectsTreeView onToggle', node.id);
+  const items:Array<string> = node.id.split('/', 3);
+  console.log('projectsTreeView onToggle items', items);
+  const project:string = items[1];
+  const path: string = items[2];
+
+  ipcRenderer.send('open-page', { project, path });
+
+  if (this.state.cursor) { this.state.cursor.active = false; }
+  node.active = true;
+  if (node.children) { node.toggled = toggled; }
+  this.setState({ cursor: node });
+};
 
 type treeBeardData = {
+  id: string,
   name: string,
-  toggled: boolean,
-  children: Array<treeBeardData>
+  children: Array<treeBeardData>,
+  toggled: boolean
+  // active: boolean,
+  // loading: boolean,
+  // decorators: Object,
+  // animations: Object
 };
 
 const buildProjectsTree = (projects): treeBeardData => {
   console.log('buildProjectsTree projects', projects);
   const ret:treeBeardData = {
+    id: '/',
     name: 'root',
     toggled: true,
     children: []
@@ -40,6 +56,7 @@ const buildProjectsTree = (projects): treeBeardData => {
 
   projects.forEach((project) => {
     const node:treeBeardData = {
+      id: project.path,
       name: project.name,
       toggled: true,
       children: []
@@ -57,6 +74,7 @@ const buildProjectsTree = (projects): treeBeardData => {
 
 const loadProjectItems = (file): treeBeardData => {
   const fileItem:treeBeardData = {
+    id: file.path,
     name: file.name,
     toggled: true,
     children: []
