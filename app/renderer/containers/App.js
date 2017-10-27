@@ -16,7 +16,9 @@ const app = ({ mainView }) => {
 
   return (
     <div className={styles.app} data-tid="app">
-      <ProjectsTreeView treeView={mainView.mainView.projects} />
+      <div className={styles.projectsTreeView} data-tid="projectsTreeView">
+        <ProjectsTreeView treeView={mainView.mainView.projects} />
+      </div>
       <Tab buf={mainView.mainView.tab} />
     </div>
   );

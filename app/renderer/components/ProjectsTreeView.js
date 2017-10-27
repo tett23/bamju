@@ -12,7 +12,9 @@ const projectsTreeView = ({ projects }) => {
 
   console.log('treeBeardData', data);
 
-  return <Treebeard data={data} />;
+  return (
+    <Treebeard data={data} />
+  );
 };
 
 // const onToggle = (node, toggled) => {
