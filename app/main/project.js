@@ -95,7 +95,11 @@ const openFile = (projectName: string, itemName: string): Project.buffer => {
 
   const buf:Buffer = fs.readFileSync(abs);
   const body:string = buf.toString('UTF-8');
-  const md:string = marked(body);
+  const md:string = marked(body, {
+    gfm: true,
+    tables: true,
+    breaks: true
+  });
 
   const ret:Project.buffer = {
     name: itemName,
