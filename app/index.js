@@ -65,10 +65,10 @@ ipcRenderer.on('open-page', (event, buf: buffer) => {
   store.dispatch(openPageByBuffer(buf));
 });
 
-ipcRenderer.on('refresh-tree-view', (event, arg: treeView) => {
-  console.log('refresh-tree-view', arg);
+ipcRenderer.on('refresh-tree-view', (event, tv: treeView) => {
+  console.log('refresh-tree-view', tv);
 
-  store.dispatch(refreshTreeView(arg));
+  store.dispatch(refreshTreeView(tv));
 });
 
 ipcRenderer.send('open-main-page');

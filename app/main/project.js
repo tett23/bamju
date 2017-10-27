@@ -1,7 +1,7 @@
 // @flow
 
 import { ipcMain } from 'electron';
-import { project, projects, projectItems, buffer } from '../common/project';
+import * as Project from '../common/project';
 import { getBamjuConfig } from '../common/bamju_config';
 
 const path = require('path');
@@ -9,14 +9,14 @@ const fs = require('fs');
 
 
 ipcMain.on('open-main-page', (event) => {
-  const buf = openFile('bamju-specifications', 'index');
+  const buf = openFile('bamju-specifications', 'index.md');
 
   event.sender.send('open-page', buf);
   event.returnValue = buf;
 });
 
 ipcMain.on('open-page', (event, args) => {
-  const buf = openFile(args.project, args.path);
+  const buf = openFile(args.projectName, args.itemName);
 
   event.sender.send('open-page', buf);
   event.returnValue = buf;
@@ -34,7 +34,7 @@ ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
   event.returnValue = tree;
 });
 
-const loadProjects = (): projects => {
+const loadProjects = (): Project.projects => {
   const ret:projects = [];
 
   console.log('loadProjects', getBamjuConfig().projects);
@@ -45,7 +45,7 @@ const loadProjects = (): projects => {
   return ret;
 };
 
-const loadProject = (projectName: string): project => {
+const loadProject = (projectName: string): Project.project => {
   const projectPath:string = getBamjuConfig().projects[projectName];
   if (projectPath === undefined) {
     throw new Error(`loadProject error${projectName}`);
@@ -53,38 +53,71 @@ const loadProject = (projectName: string): project => {
 
   const basePath:string = path.dirname(projectPath);
 
-  const ret:project = {
+  const ret:Project.project = {
     name: projectName,
     path: '/',
     items: loadDirectory(projectPath, basePath)
   };
+
   return ret;
 };
 
-const loadDirectory = (projectPath: string, basePath: string): projectItems => {
+const loadDirectory = (projectPath: string, basePath: string): Project.projectItems => {
   const files = fs.readdirSync(projectPath);
-  const ret:projectItems = [];
+  const ret:Project.projectItems = [];
   files.forEach((filename: string) => {
+    const p:stiring = path.join(projectPath, filename);
+    const itemType:Project.ItemType = Project.detectItemTypeByAbsPath(p);
+
+    let items:Project.projectItems = [];
+    if (itemType === Project.ItemTypeDirectory) {
+      items = loadDirectory(p, basePath);
+    }
+
     ret.push({
       name: filename,
-      path: path.join(projectPath, filename).replace(basePath, ''),
-      items: []
+      path: p.replace(basePath, ''),
+      itemType,
+      items
     });
   });
 
   return ret;
 };
 
-const openFile = (projectName: string, itemName: string): buffer => {
+const openFile = (projectName: string, itemName: string): Project.buffer => {
   const projectPath:string = getBamjuConfig().projects[projectName];
-  const fn:string = normalizeName(itemName);
-  const abs:string = path.join(projectPath, fn);
+  const abs:string = path.join(projectPath, itemName);
+  const stat:fs.Stat = fs.statSync(abs);
+  if (stat.isDirectory()) {
+    return openDirectory(projectName, itemName);
+  }
+
   const buf:Buffer = fs.readFileSync(abs);
   const body:string = buf.toString('UTF-8');
 
-  const ret:buffer = {
+  const ret:Project.buffer = {
     name: itemName,
-    path: path.join(projectName, fn),
+    path: path.join(projectName, itemName),
+    body
+  };
+
+  return ret;
+};
+
+const openDirectory = (projectName: string, itemName: string): Project.buffer => {
+  const projectPath:string = getBamjuConfig().projects[projectName];
+  const abs:string = path.join(projectPath, itemName);
+  const files = fs.readdirSync(abs);
+
+  let body:string = '';
+  files.forEach((file: string) => {
+    body += file;
+  });
+
+  const ret:Project.buffer = {
+    name: itemName,
+    path: path.join(projectName, itemName),
     body
   };
 

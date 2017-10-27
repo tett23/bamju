@@ -6,6 +6,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Treebeard } from 'react-treebeard';
 import { mainViewState } from '../reducers/main_view';
+import * as Project from '../../common/project';
+
+const path = require('path');
 
 const projectsTreeView = ({ projects }) => {
   console.log('build projectsTreeView projects', projects);
@@ -21,12 +24,7 @@ const projectsTreeView = ({ projects }) => {
 const onToggle = (node: treeBeardData, toggled) => {
   console.log('onToggle', node, toggled, this);
   console.log('projectsTreeView onToggle', node.id);
-  const items:Array<string> = node.id.split('/', 3);
-  console.log('projectsTreeView onToggle items', items);
-  const project:string = items[1];
-  const path: string = items[2];
-
-  ipcRenderer.send('open-page', { project, path });
+  openFile(node.id);
 
   if (this.state.cursor) { this.state.cursor.active = false; }
   node.active = true;
@@ -45,7 +43,7 @@ type treeBeardData = {
   // animations: Object
 };
 
-const buildProjectsTree = (projects): treeBeardData => {
+const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
   console.log('buildProjectsTree projects', projects);
   const ret:treeBeardData = {
     id: '/',
@@ -54,7 +52,7 @@ const buildProjectsTree = (projects): treeBeardData => {
     children: []
   };
 
-  projects.forEach((project) => {
+  projects.forEach((project: Project.Project) => {
     const node:treeBeardData = {
       id: project.path,
       name: project.name,
@@ -62,9 +60,13 @@ const buildProjectsTree = (projects): treeBeardData => {
       children: []
     };
 
-    project.items.forEach((file) => {
-      node.children.push(loadProjectItems(file));
+    console.log('forEach 1');
+    project.items.forEach((file: Project.projectItem) => {
+      const children:treeBeardData = loadProjectItems(file);
+      console.log('buildProjectsTree children', children);
+      node.children.push(children);
     });
+    console.log('buildProjectsTree node', node);
 
     ret.children.push(node);
   });
@@ -72,7 +74,8 @@ const buildProjectsTree = (projects): treeBeardData => {
   return ret;
 };
 
-const loadProjectItems = (file): treeBeardData => {
+const loadProjectItems = (file: Project.projectItem): treeBeardData => {
+  console.log('loadProjectItems file', file);
   const fileItem:treeBeardData = {
     id: file.path,
     name: file.name,
@@ -80,11 +83,28 @@ const loadProjectItems = (file): treeBeardData => {
     children: []
   };
 
+  console.log('forEach 2');
   file.items.forEach((item) => {
-    fileItem.children(loadProjectItems(item));
+    fileItem.children.push(loadProjectItems(item));
   });
+  console.log('loadProjectItems fileItem', fileItem);
 
   return fileItem;
+};
+
+const openFile = (id: string) => {
+  const items:Array<string> = id.split('/');
+  console.log('projectsTreeView onToggle items', items);
+  const projectName:string = items[1];
+  const itemName: string = path.join('/', ...items.slice(2, items.length));
+  console.log('projectsTreeView openFile', projectName, itemName);
+
+  const itemType:Project.ItemType = Project.detectItemType(projectName, itemName);
+  if (itemType === Project.ItemTypeUndefined) {
+    return;
+  }
+
+  ipcRenderer.send('open-page', { projectName, itemName });
 };
 
 projectsTreeView.defaultProps = {
