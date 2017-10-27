@@ -6,7 +6,7 @@ import { getBamjuConfig } from '../common/bamju_config';
 
 const path = require('path');
 const fs = require('fs');
-
+const marked = require('marked');
 
 ipcMain.on('open-main-page', (event) => {
   const buf = openFile('bamju-specifications', 'index.md');
@@ -95,11 +95,12 @@ const openFile = (projectName: string, itemName: string): Project.buffer => {
 
   const buf:Buffer = fs.readFileSync(abs);
   const body:string = buf.toString('UTF-8');
+  const md:string = marked(body);
 
   const ret:Project.buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
-    body
+    body: md
   };
 
   return ret;

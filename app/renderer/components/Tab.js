@@ -19,10 +19,14 @@ const tab = ({ name, path, body }) => {
     breadcrumbItems.push(<Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>);
   });
 
+  const html = {
+    __html: body
+  };
+
   return (
     <div>
       <Breadcrumb>{breadcrumbItems}</Breadcrumb>
-      <div name={name}>{body}</div>
+      <div name={name} dangerouslySetInnerHTML={html} />
     </div>
   );
 };

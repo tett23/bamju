@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { mainViewState } from '../reducers/main_view';
 import Tab from './Tab';
 import { buffer } from '../../common/project';
+import styles from './Browser.css';
 
 const browser = ({ tabs }) => {
   console.log('refresh browser', tabs);
@@ -14,7 +15,9 @@ const browser = ({ tabs }) => {
   const t:?buffer = tabs[0];
 
   return (
-    <Tab name={t.name} path={t.path} body={t.body} />
+    <div className={styles.browser}>
+      <Tab name={t.name} path={t.path} body={t.body} />
+    </div>
   );
 };
 

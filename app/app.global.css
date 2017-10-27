@@ -3,7 +3,7 @@
 body {
   position: relative;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   font-family: Arial, Helvetica, Helvetica Neue, serif;
   overflow-y: hidden;
   margin: 0;
@@ -11,24 +11,17 @@ body {
 }
 
 #root {
-  width: 100vh;
+  width: 100%;
   height: 100vw;
 }
 
 h2 {
-  margin: 0;
-  font-size: 2.25rem;
-  font-weight: bold;
-  letter-spacing: -0.025em;
-  color: #fff;
 }
 
 p {
-  font-size: 24px;
 }
 
 li {
-  list-style: none;
 }
 
 a {
