@@ -4,8 +4,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 // import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import Tab from '../components/Tab';
 import ProjectsTreeView from '../components/ProjectsTreeView';
+import Browser from '../components/Browser';
 // import { openFragmentByTreeViewOnClick } from '../actions/tree_view';
 import { initialMainViewState } from '../reducers/main_view';
 import styles from './App.css';
@@ -19,7 +19,7 @@ const app = ({ mainView }) => {
       <div className={styles.projectsTreeView} data-tid="projectsTreeView">
         <ProjectsTreeView treeView={mainView.mainView.projects} />
       </div>
-      <Tab buf={mainView.mainView.tab} />
+      <Browser tabs={[mainView.mainView.browser.tabs]} />
     </div>
   );
 };

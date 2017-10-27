@@ -9,15 +9,33 @@ type actionType = {
 
 type mainViewState= {
   mainView: {
-    tab: string,
-    projects: Array<Object> // main.js直したときに型定義とりこむ
+    projects: Array<Object>, // main.js直したときに型定義とりこむ
+    browser: browser
   }
+};
+
+type browser = {
+  tabs: Array<tab>
+};
+
+type tab = {
+  name: string,
+  path: string,
+  buf: string
 };
 
 const initialMainViewState = (): mainViewState => ({
   mainView: {
-    tab: '',
-    projects: []
+    projects: [],
+    browser: {
+      tabs: [
+        {
+          name: '',
+          path: '',
+          buf: ''
+        }
+      ]
+    }
   }
 });
 export { initialMainViewState };
@@ -36,7 +54,15 @@ const mainView = (state: ?mainViewState, action: ?actionType): mainViewState => 
   case OPEN_PAGE:
   {
     const newMainView = Object.assign({}, state.mainView, {
-      tab: action.page.body
+      browser: {
+        tabs: [
+          {
+            name: '',
+            path: '',
+            buf: action.page.body
+          }
+        ]
+      }
     });
 
     return Object.assign({}, state, {

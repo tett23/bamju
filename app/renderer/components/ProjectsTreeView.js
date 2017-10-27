@@ -39,16 +39,13 @@ const buildProjectsTree = (projects): treeBeardData => {
   };
 
   projects.forEach((project) => {
-    console.log('forEach 1 project', project);
     const node:treeBeardData = {
       name: project.name,
       toggled: true,
       children: []
     };
 
-    console.log('forEach 1');
     project.items.forEach((file) => {
-      console.log('forEach 2');
       node.children.push(loadProjectItems(file));
     });
 

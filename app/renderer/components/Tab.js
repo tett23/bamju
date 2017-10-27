@@ -20,9 +20,15 @@ tab.propTypes = {
 
 const mapStateToProps = (state: mainViewState) => {
   console.log('Tab mapStateToProps', state);
+  const tab:?Object = state.mainView.mainView.browser.tabs[0];
+
+  let buf:string = '';
+  if (tab !== undefined) {
+    buf = tab.buf;
+  }
 
   return {
-    buf: state.mainView.mainView.tab
+    buf
   };
 };
 
