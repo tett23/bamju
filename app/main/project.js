@@ -1,7 +1,7 @@
 // @flow
 
 import { ipcMain } from 'electron';
-import { project, projects, projectItem, projectItems } from '../common/project';
+import { project, projects, projectItems, buffer } from '../common/project';
 import { getBamjuConfig } from '../common/bamju_config';
 
 const path = require('path');
@@ -9,9 +9,10 @@ const fs = require('fs');
 
 
 ipcMain.on('open-main-page', (event) => {
-  const page = openPage('bamju-specifications', 'index');
-  event.sender.send('open-page', page);
-  event.returnValue = page;
+  const buf = openFile('bamju-specifications', 'index');
+
+  event.sender.send('open-page', buf);
+  event.returnValue = buf;
 });
 
 ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
@@ -65,12 +66,18 @@ const loadDirectory = (projectPath: string): projectItems => {
   return ret;
 };
 
-const openPage = (projectName: string, itemName: string): string => {
+const openFile = (projectName: string, itemName: string): buffer => {
   const projectPath:string = getBamjuConfig().projects[projectName];
   const fn:string = normalizeName(itemName);
   const abs:string = path.join(projectPath, fn);
   const buf:Buffer = fs.readFileSync(abs);
-  const ret:string = buf.toString('UTF-8');
+  const body:string = buf.toString('UTF-8');
+
+  const ret:buffer = {
+    name: itemName,
+    path: abs,
+    body
+  };
 
   return ret;
 };

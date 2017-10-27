@@ -14,7 +14,6 @@ import MenuBuilder from './menu';
 
 
 const path = require('path');
-const fs = require('fs');
 
 const store = createStore(
   appReducer,
