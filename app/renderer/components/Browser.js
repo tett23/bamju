@@ -5,15 +5,16 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { mainViewState } from '../reducers/main_view';
 import Tab from './Tab';
+import { buffer } from '../../common/project';
 
 const browser = ({ tabs }) => {
   console.log('refresh browser', tabs);
   console.log('refresh browser buf=', tabs[0].buf);
 
-  const buf:string = tabs[0].buf;
+  const t:?buffer = tabs[0];
 
   return (
-    <Tab buf={buf} />
+    <Tab name={t.name} path={t.path} body={t.body} />
   );
 };
 
@@ -35,8 +36,7 @@ const mapStateToProps = (state: mainViewState) => {
   console.log('Browser mapStateToProps', state);
 
   const tabs = [];
-
-  state.mainView.mainView.browser.tabs.forEach((tab) => {
+  state.mainView.mainView.browser.tabs.forEach((tab: buffer) => {
     tabs.push(tab);
   });
 

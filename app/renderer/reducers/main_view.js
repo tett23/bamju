@@ -2,6 +2,7 @@
 
 import { OPEN_PAGE } from '../actions/tab';
 import { REFRESH_TREE_VIEW } from '../actions/tree_view';
+import { buffer } from '../../common/project';
 
 type actionType = {
   +type: string
@@ -15,13 +16,7 @@ type mainViewState= {
 };
 
 type browser = {
-  tabs: Array<tab>
-};
-
-type tab = {
-  name: string,
-  path: string,
-  buf: string
+  tabs: Array<buffer>
 };
 
 const initialMainViewState = (): mainViewState => ({
@@ -32,7 +27,7 @@ const initialMainViewState = (): mainViewState => ({
         {
           name: '',
           path: '',
-          buf: ''
+          body: ''
         }
       ]
     }
@@ -55,13 +50,7 @@ const mainView = (state: ?mainViewState, action: ?actionType): mainViewState => 
   {
     const newMainView = Object.assign({}, state.mainView, {
       browser: {
-        tabs: [
-          {
-            name: '',
-            path: '',
-            buf: action.page.body
-          }
-        ]
+        tabs: [action.buffer]
       }
     });
 

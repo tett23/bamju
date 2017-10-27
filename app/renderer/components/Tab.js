@@ -1,35 +1,49 @@
 // @flow
 
 import React from 'react';
+import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { mainViewState } from '../reducers/main_view';
+import { buffer } from '../../common/project';
 
-const tab = ({ buf }) => {
-  console.log('refresh tab', buf);
-  return <div>{buf}</div>;
+const tab = ({ name, path, body }) => {
+  console.log('refresh tab', body);
+
+  const breadcrumbItems = [];
+  path.split('/').forEach((item: string) => {
+    if (item === '') {
+      return;
+    }
+
+    breadcrumbItems.push(<Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>);
+  });
+
+  return (
+    <div>
+      <Breadcrumb>{breadcrumbItems}</Breadcrumb>
+      <div name={name}>{body}</div>
+    </div>
+  );
 };
 
 tab.defaultProps = {
-  buf: ''
+  name: '',
+  path: '',
+  body: ''
 };
 
 tab.propTypes = {
-  buf: PropTypes.string
+  name: PropTypes.string,
+  path: PropTypes.string,
+  body: PropTypes.string
 };
 
 const mapStateToProps = (state: mainViewState) => {
   console.log('Tab mapStateToProps', state);
-  const t:?Object = state.mainView.mainView.browser.tabs[0];
+  const t:?buffer = state.mainView.mainView.browser.tabs[0];
 
-  let buf:string = '';
-  if (t !== undefined) {
-    buf = t.buf;
-  }
-
-  return {
-    buf
-  };
+  return t;
 };
 
 

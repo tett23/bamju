@@ -11,12 +11,13 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import Root from './renderer/containers/Root';
 import appReducer from './renderer/reducers';
-import { openPageByBodyString } from './renderer/actions/tab';
+import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
 import { buffer } from './common/project';
 
 const initialState = getInitialStateRenderer();
+console.log('initialState', initialState);
 
 const store = createStore(
   appReducer,
@@ -55,10 +56,10 @@ if (module.hot) {
 const { ipcRenderer } = require('electron');
 // ipc.sendAsync('open-page');
 
-ipcRenderer.on('open-page', (event, arg: buffer) => {
-  console.log('open-page', arg);
+ipcRenderer.on('open-page', (event, buf: buffer) => {
+  console.log('open-page', buf);
 
-  store.dispatch(openPageByBodyString(arg.body));
+  store.dispatch(openPageByBuffer(buf));
 });
 
 ipcRenderer.on('refresh-tree-view', (event, arg: treeView) => {
