@@ -12,12 +12,12 @@ export type Project = {
 };
 export type Projects = Array<Project>;
 
-export const ItemTypeProject = 'project';
+export const ItemTypeProject:string = 'project';
 export const ItemTypeDirectory = 'directory';
 export const ItemTypeMarkdown = 'markdown';
 export const ItemTypeText = 'text';
 export const ItemTypeUndefined = 'undefined';
-export type ItemType = ItemTypeProject | ItemTypeDirectory | ItemTypeMarkdown | ItemTypeText | ItemTypeUndefined;
+export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefined';
 
 export type ProjectItem = {
   name: string,
@@ -35,7 +35,7 @@ export type Buffer = {
 };
 
 export function detectItemTypeByAbsPath(p: string): ItemType {
-  const stat:fs.Stat = fs.statSync(p);
+  const stat:fs.Stats = fs.statSync(p);
 
   if (stat.isDirectory()) {
     return ItemTypeDirectory;
@@ -54,7 +54,7 @@ export function detectItemTypeByAbsPath(p: string): ItemType {
 
 export function detectItemType(projectName: string, itemName: string): ItemType {
   const projectPath:?string = getBamjuConfig().projects[projectName];
-  if (projectPath === undefined) {
+  if (projectPath === null || projectPath === undefined) {
     return ItemTypeUndefined;
   }
 
