@@ -54,14 +54,14 @@ const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
 
   projects.forEach((project: Project.Project) => {
     const node:treeBeardData = {
-      id: project.path,
+      id: path.join('/', project.name, project.path),
       name: project.name,
       toggled: true,
       children: []
     };
 
     console.log('forEach 1');
-    project.items.forEach((file: Project.projectItem) => {
+    project.items.forEach((file: Project.ProjectItem) => {
       const children:treeBeardData = loadProjectItems(file);
       console.log('buildProjectsTree children', children);
       node.children.push(children);
@@ -74,7 +74,7 @@ const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
   return ret;
 };
 
-const loadProjectItems = (file: Project.projectItem): treeBeardData => {
+const loadProjectItems = (file: Project.ProjectItem): treeBeardData => {
   console.log('loadProjectItems file', file);
   const fileItem:treeBeardData = {
     id: file.path,

@@ -5,12 +5,12 @@ import { getBamjuConfig } from '../common/bamju_config';
 const fs = require('fs');
 const path = require('path');
 
-export type project = {
+export type Project = {
   name: string,
   path: string,
-  items: projectItems
+  items: ProjectItems
 };
-export type projects = Array<project>;
+export type Projects = Array<Project>;
 
 export const ItemTypeProject = 'project';
 export const ItemTypeDirectory = 'directory';
@@ -19,15 +19,15 @@ export const ItemTypeText = 'text';
 export const ItemTypeUndefined = 'undefined';
 export type ItemType = ItemTypeProject | ItemTypeDirectory | ItemTypeMarkdown | ItemTypeText | ItemTypeUndefined;
 
-export type projectItem = {
+export type ProjectItem = {
   name: string,
   path: string,
   itemType: ItemType,
-  items: projectItems
+  items: ProjectItems
 };
-export type projectItems = Array<projectItem>;
+export type ProjectItems = Array<ProjectItem>;
 
-export type buffer = {
+export type Buffer = {
   name: string,
   path: string,
   itemType: ItemType,

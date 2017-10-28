@@ -2,7 +2,7 @@
 
 import { OPEN_PAGE } from '../actions/tab';
 import { REFRESH_TREE_VIEW } from '../actions/tree_view';
-import { buffer } from '../../common/project';
+import { Projects, Buffer } from '../../common/project';
 
 type actionType = {
   +type: string
@@ -10,13 +10,13 @@ type actionType = {
 
 type mainViewState= {
   mainView: {
-    projects: Array<Object>, // main.js直したときに型定義とりこむ
+    projects: Projects,
     browser: browser
   }
 };
 
 type browser = {
-  tabs: Array<buffer>
+  tabs: Array<Buffer>
 };
 
 const initialMainViewState = (): mainViewState => ({
@@ -46,8 +46,7 @@ const mainView = (state: ?mainViewState, action: ?actionType): mainViewState => 
   }
 
   switch (action.type) {
-  case OPEN_PAGE:
-  {
+  case OPEN_PAGE: {
     const newMainView = Object.assign({}, state.mainView, {
       browser: {
         tabs: [action.buffer]

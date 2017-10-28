@@ -23,7 +23,7 @@ ipcMain.on('open-page', (event, args) => {
 });
 
 ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
-  let tree:projects = [];
+  let tree:Project.Projects = [];
   if (projectName != null) {
     tree.push(loadProject(projectName));
   } else {
@@ -34,18 +34,19 @@ ipcMain.on('refresh-tree-view', (event, projectName: ?string) => {
   event.returnValue = tree;
 });
 
-const loadProjects = (): Project.projects => {
-  const ret:projects = [];
+const loadProjects = (): Project.Projects => {
+  const ret:Project.Projects = [];
 
   console.log('loadProjects', getBamjuConfig().projects);
   Object.keys(getBamjuConfig().projects).forEach((projectName: string) => {
     ret.push(loadProject(projectName));
   });
+  console.log('loadProjects ret', ret);
 
   return ret;
 };
 
-const loadProject = (projectName: string): Project.project => {
+const loadProject = (projectName: string): Project.Project => {
   const projectPath:string = getBamjuConfig().projects[projectName];
   if (projectPath === undefined) {
     throw new Error(`loadProject error${projectName}`);
@@ -53,7 +54,7 @@ const loadProject = (projectName: string): Project.project => {
 
   const basePath:string = path.dirname(projectPath);
 
-  const ret:Project.project = {
+  const ret:Project.Project = {
     name: projectName,
     path: '/',
     items: loadDirectory(projectPath, basePath)
@@ -62,14 +63,14 @@ const loadProject = (projectName: string): Project.project => {
   return ret;
 };
 
-const loadDirectory = (projectPath: string, basePath: string): Project.projectItems => {
+const loadDirectory = (projectPath: string, basePath: string): Project.ProjectItems => {
   const files = fs.readdirSync(projectPath);
-  const ret:Project.projectItems = [];
+  const ret:Project.ProjectItems = [];
   files.forEach((filename: string) => {
-    const p:stiring = path.join(projectPath, filename);
+    const p:string = path.join(projectPath, filename);
     const itemType:Project.ItemType = Project.detectItemTypeByAbsPath(p);
 
-    let items:Project.projectItems = [];
+    let items:Project.ProjectItems = [];
     if (itemType === Project.ItemTypeDirectory) {
       items = loadDirectory(p, basePath);
     }
@@ -101,9 +102,12 @@ const openFile = (projectName: string, itemName: string): Project.buffer => {
     breaks: true
   });
 
+  const itemType:Project.ItemType = Project.detectItemType(projectName, itemName);
+
   const ret:Project.buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
+    itemType,
     body: md
   };
 
@@ -123,6 +127,7 @@ const openDirectory = (projectName: string, itemName: string): Project.buffer =>
   const ret:Project.buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
+    itemType: Project.ItemTypeDirectory,
     body
   };
 

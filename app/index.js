@@ -14,7 +14,7 @@ import appReducer from './renderer/reducers';
 import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
-import { buffer } from './common/project';
+import { Buffer } from './common/project';
 
 const initialState = getInitialStateRenderer();
 console.log('initialState', initialState);
@@ -59,7 +59,7 @@ if (module.hot) {
 const { ipcRenderer } = require('electron');
 // ipc.sendAsync('open-page');
 
-ipcRenderer.on('open-page', (event, buf: buffer) => {
+ipcRenderer.on('open-page', (event, buf: Buffer) => {
   console.log('open-page', buf);
 
   store.dispatch(openPageByBuffer(buf));
