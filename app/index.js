@@ -14,7 +14,7 @@ import appReducer from './renderer/reducers';
 import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
-import { Buffer } from './common/project';
+import type { Buffer, Projects } from './common/project';
 
 const initialState = getInitialStateRenderer();
 console.log('initialState', initialState);
@@ -65,7 +65,7 @@ ipcRenderer.on('open-page', (event, buf: Buffer) => {
   store.dispatch(openPageByBuffer(buf));
 });
 
-ipcRenderer.on('refresh-tree-view', (event, tv: treeView) => {
+ipcRenderer.on('refresh-tree-view', (event, tv: Projects) => {
   console.log('refresh-tree-view', tv);
 
   store.dispatch(refreshTreeView(tv));
