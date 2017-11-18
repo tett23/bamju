@@ -66,7 +66,6 @@ async function updateConfigFile(): Promise<void> {
 }
 
 async function loadConfigFile(): Promise<BamjuConfig> {
-  console.log('loadConfigFile');
   try {
     await promisify(fs.stat)(configPath);
   } catch (e) {
@@ -74,12 +73,10 @@ async function loadConfigFile(): Promise<BamjuConfig> {
     return defaultConfig;
   }
 
-  console.log('loadConfigFile stat');
   const buf:Buffer = await promisify(fs.readFile)(configPath);
   const conf:string = buf.toString('UTF-8');
 
   const json = JSON.parse(conf);
-  console.log('loadConfigFile json', json);
 
   return Object.assign(defaultConfig, json);
 }
