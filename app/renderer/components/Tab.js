@@ -1,13 +1,17 @@
 // @flow
 
-import React from 'react';
+import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import type { mainViewState } from '../reducers/main_view';
 import type { Buffer } from '../../common/project';
+import styles from './Browser.css';
 
-const tab = ({ name, path, body }) => {
+const { PropTypes } = React;
+
+const tab = ({
+  name, path, absolutePath, body
+}) => {
   console.log('refresh tab', body);
 
   const breadcrumbItems = [];
@@ -24,7 +28,7 @@ const tab = ({ name, path, body }) => {
   };
 
   return (
-    <div>
+    <div className={styles.tab} data-absolute-path={absolutePath}>
       <Breadcrumb>{breadcrumbItems}</Breadcrumb>
       <div name={name} dangerouslySetInnerHTML={html} />
     </div>
@@ -34,12 +38,14 @@ const tab = ({ name, path, body }) => {
 tab.defaultProps = {
   name: '',
   path: '',
+  absolutePath: '',
   body: ''
 };
 
 tab.propTypes = {
   name: PropTypes.string,
   path: PropTypes.string,
+  absolutePath: PropTypes.string,
   body: PropTypes.string
 };
 

@@ -5,4 +5,5 @@
 }
 .tab {
   overflow-y: scroll;
+  padding: 20px;
 }

@@ -2,21 +2,28 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
 import type { mainViewState } from '../reducers/main_view';
 import Tab from './Tab';
 import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
 
+const { PropTypes } = React;
+
 const browser = ({ tabs }) => {
   console.log('refresh browser', tabs);
   console.log('refresh browser buf=', tabs[0].buf);
 
-  const t:?Buffer = tabs[0];
+  const t:Buffer = tabs[0];
 
   return (
     <div className={styles.browser}>
-      <Tab name={t.name} path={t.path} body={t.body} />
+      <Tab
+        className={styles.tab}
+        name={t.name}
+        path={t.path}
+        absolutePath={t.absolutePath}
+        body={t.body}
+      />
     </div>
   );
 };
@@ -28,7 +35,8 @@ browser.defaultProps = {
 browser.propTypes = {
   tabs: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
-    path: PropTypes.path,
+    path: PropTypes.string,
+    absolutePath: PropTypes.string,
     buf: PropTypes.string
   }))
 };
