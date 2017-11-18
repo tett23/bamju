@@ -33,6 +33,7 @@ export const initialMainViewState = (): mainViewState => ({
         {
           name: '',
           path: '',
+          absolutePath: '',
           itemType: 'undefined',
           body: ''
         }
@@ -41,7 +42,7 @@ export const initialMainViewState = (): mainViewState => ({
   }
 });
 
-const mainView = (state: mainViewState=initialMainViewState(), action: actionType = actionTypeDefault): mainViewState => {
+const mainView = (state: mainViewState = initialMainViewState(), action: actionType = actionTypeDefault): mainViewState => {
   console.log(`reducer mainView ${action.type}`, action, state);
 
   switch (action.type) {

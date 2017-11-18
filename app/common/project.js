@@ -8,6 +8,7 @@ const path = require('path');
 export type Project = {
   name: string,
   path: string,
+  absolutePath: string,
   items: ProjectItems
 };
 export type Projects = Array<Project>;
@@ -22,6 +23,7 @@ export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefine
 export type ProjectItem = {
   name: string,
   path: string,
+  absolutePath: string,
   itemType: ItemType,
   items: ProjectItems
 };
@@ -30,6 +32,7 @@ export type ProjectItems = Array<ProjectItem>;
 export type Buffer = {
   name: string,
   path: string,
+  absolutePath: string,
   itemType: ItemType,
   body: string
 };

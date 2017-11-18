@@ -60,6 +60,7 @@ const loadProject = async (projectName: string): Promise<Project.Project> => {
   const ret:Project.Project = {
     name: projectName,
     path: '/',
+    absolutePath: projectPath,
     items: await loadDirectory(projectPath, basePath)
   };
   console.log('loadProject ret', ret);
@@ -68,8 +69,7 @@ const loadProject = async (projectName: string): Promise<Project.Project> => {
 };
 
 const loadDirectory = async (projectPath: string, basePath: string): Promise<Project.ProjectItems> => {
-  const readdir = util.promisify(fs.readdir);
-  const files:Array<string> = await readdir(projectPath);
+  const files:Array<string> = await util.promisify(fs.readdir)(projectPath);
   const ret:Project.ProjectItems = [];
   await Promise.all(files.map(async (filename: string) => {
     const p:string = path.join(projectPath, filename);
@@ -83,6 +83,7 @@ const loadDirectory = async (projectPath: string, basePath: string): Promise<Pro
     ret.push({
       name: filename,
       path: p.replace(basePath, ''),
+      absolutePath: p,
       itemType,
       items
     });
@@ -105,6 +106,7 @@ const openFile = async (projectName: string, itemName: string): Promise<Project.
   const ret:Project.Buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
+    absolutePath: abs,
     itemType,
     body: html
   };
@@ -125,6 +127,7 @@ const openDirectory = async (projectName: string, itemName: string): Promise<Pro
   const ret:Project.Buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
+    absolutePath: abs,
     itemType: Project.ItemTypeDirectory,
     body
   };
