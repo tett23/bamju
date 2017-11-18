@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 // import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ProjectsTreeView from '../components/ProjectsTreeView';
+// import ProjectsTreeView2 from '../components/ProjectsTreeView2';
 import Browser from '../components/Browser';
 // import { openFragmentByTreeViewOnClick } from '../actions/tree_view';
 import { initialMainViewState } from '../reducers/main_view';
@@ -16,10 +17,11 @@ const app = ({ mainView }) => {
 
   return (
     <div className={styles.app} data-tid="app">
+      {/* <ProjectsTreeView2 treeView={mainView.projects} /> */}
       <div className={styles.projectsTreeView} data-tid="projectsTreeView">
-        <ProjectsTreeView treeView={mainView.mainView.projects} />
+        <ProjectsTreeView treeView={mainView.projects} />
       </div>
-      <Browser tabs={[mainView.mainView.browser.tabs]} />
+      <Browser tabs={[mainView.browser.tabs]} />
     </div>
   );
 };

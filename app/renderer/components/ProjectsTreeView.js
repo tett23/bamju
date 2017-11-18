@@ -5,16 +5,13 @@ import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Treebeard } from 'react-treebeard';
-import { mainViewState } from '../reducers/main_view';
+import type { mainViewState } from '../reducers/main_view';
 import * as Project from '../../common/project';
 
 const path = require('path');
 
 const projectsTreeView = ({ projects }) => {
-  console.log('build projectsTreeView projects', projects);
   const data:treeBeardData = buildProjectsTree(projects);
-
-  console.log('treeBeardData', data);
 
   return (
     <Treebeard data={data} onToggle={onToggle} />
@@ -22,8 +19,6 @@ const projectsTreeView = ({ projects }) => {
 };
 
 const onToggle = (node: treeBeardData, toggled) => {
-  console.log('onToggle', node, toggled, this);
-  console.log('projectsTreeView onToggle', node.id);
   openFile(node.id);
 
   if (this.state.cursor) { this.state.cursor.active = false; }
@@ -44,7 +39,6 @@ type treeBeardData = {
 };
 
 const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
-  console.log('buildProjectsTree projects', projects);
   const ret:treeBeardData = {
     id: '/',
     name: 'root',
@@ -60,13 +54,10 @@ const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
       children: []
     };
 
-    console.log('forEach 1');
     project.items.forEach((file: Project.ProjectItem) => {
       const children:treeBeardData = loadProjectItems(file);
-      console.log('buildProjectsTree children', children);
       node.children.push(children);
     });
-    console.log('buildProjectsTree node', node);
 
     ret.children.push(node);
   });
@@ -75,7 +66,6 @@ const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
 };
 
 const loadProjectItems = (file: Project.ProjectItem): treeBeardData => {
-  console.log('loadProjectItems file', file);
   const fileItem:treeBeardData = {
     id: file.path,
     name: file.name,
@@ -83,21 +73,17 @@ const loadProjectItems = (file: Project.ProjectItem): treeBeardData => {
     children: []
   };
 
-  console.log('forEach 2');
   file.items.forEach((item) => {
     fileItem.children.push(loadProjectItems(item));
   });
-  console.log('loadProjectItems fileItem', fileItem);
 
   return fileItem;
 };
 
 const openFile = (id: string) => {
   const items:Array<string> = id.split('/');
-  console.log('projectsTreeView onToggle items', items);
   const projectName:string = items[1];
   const itemName: string = path.join('/', ...items.slice(2, items.length));
-  console.log('projectsTreeView openFile', projectName, itemName);
 
   const itemType:Project.ItemType = Project.detectItemType(projectName, itemName);
   if (itemType === Project.ItemTypeUndefined) {
@@ -112,34 +98,27 @@ projectsTreeView.defaultProps = {
 };
 
 projectsTreeView.propTypes = {
-  projects: PropTypes.arrayOf(
-    PropTypes.shape({
+  projects: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    path: PropTypes.string,
+    items: PropTypes.arrayOf(PropTypes.shape({
       name: PropTypes.string,
-      path: PropTypes.string,
-      items: PropTypes.arrayOf(
-        PropTypes.shape({
-          name: PropTypes.string,
-          path: PropTypes.string
-        })
-      )
-    })
-  )
+      path: PropTypes.string
+    }))
+  }))
 };
 
-const mapStateToProps = (state: mainViewState) => {
-  console.log('projectsTreeView mapStateToProps', state);
+const mapStateToProps = (state: {mainView: mainViewState}) => {
+  console.log('ProjectsTreeView mapStateToProps', state);
 
   return {
-    projects: state.mainView.mainView.projects
+    projects:
+    state.mainView.projects
   };
 };
 
 
-const mapDispatchToProps = (dispatch) => {
-  console.log('projectsTreeView mapDispatchToProps', dispatch);
-
-  return {};
-};
+const mapDispatchToProps = (dispatch) => ({});
 
 
 const ProjectsTreeView = connect(mapStateToProps, mapDispatchToProps)(projectsTreeView);

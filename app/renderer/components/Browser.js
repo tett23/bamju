@@ -3,16 +3,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { mainViewState } from '../reducers/main_view';
+import type { mainViewState } from '../reducers/main_view';
 import Tab from './Tab';
-import { buffer } from '../../common/project';
+import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
 
 const browser = ({ tabs }) => {
   console.log('refresh browser', tabs);
   console.log('refresh browser buf=', tabs[0].buf);
 
-  const t:?buffer = tabs[0];
+  const t:?Buffer = tabs[0];
 
   return (
     <div className={styles.browser}>
@@ -26,20 +26,18 @@ browser.defaultProps = {
 };
 
 browser.propTypes = {
-  tabs: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      path: PropTypes.path,
-      buf: PropTypes.string
-    })
-  )
+  tabs: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    path: PropTypes.path,
+    buf: PropTypes.string
+  }))
 };
 
-const mapStateToProps = (state: mainViewState) => {
+const mapStateToProps = (state: {mainView: mainViewState}) => {
   console.log('Browser mapStateToProps', state);
 
   const tabs = [];
-  state.mainView.mainView.browser.tabs.forEach((tab: buffer) => {
+  state.mainView.browser.tabs.forEach((tab: Buffer) => {
     tabs.push(tab);
   });
 

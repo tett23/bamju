@@ -18,31 +18,27 @@ type browser = {
   tabs: Array<Buffer>
 };
 
-type mainViewState = {
-  mainView: {
-    projects: Projects,
-    browser: browser
-  }
+export type mainViewState = {
+  projects: Projects,
+  browser: browser
 };
 
 export const initialMainViewState = (): mainViewState => ({
-  mainView: {
-    projects: [],
-    browser: {
-      tabs: [
-        {
-          name: '',
-          path: '',
-          absolutePath: '',
-          itemType: 'undefined',
-          body: ''
-        }
-      ]
-    }
+  projects: [],
+  browser: {
+    tabs: [
+      {
+        name: '',
+        path: '',
+        absolutePath: '',
+        itemType: 'undefined',
+        body: ''
+      }
+    ]
   }
 });
 
-const mainView = (state: mainViewState = initialMainViewState(), action: actionType = actionTypeDefault): mainViewState => {
+const mainView = (state = initialMainViewState(), action: actionType = actionTypeDefault): mainViewState => {
   console.log(`reducer mainView ${action.type}`, action, state);
 
   switch (action.type) {
@@ -51,23 +47,15 @@ const mainView = (state: mainViewState = initialMainViewState(), action: actionT
       return initialMainViewState();
     }
 
-    const newMainView = Object.assign({}, state.mainView, {
+    return (Object.assign({}, state, {
       browser: {
         tabs: [action.buffer]
       }
-    });
-
-    return (Object.assign({}, state, {
-      mainView: newMainView
     }): mainViewState);
   }
   case REFRESH_TREE_VIEW: {
-    const newMainView = Object.assign({}, state.mainView, {
-      projects: action.projects
-    });
-
     return (Object.assign({}, state, {
-      mainView: newMainView
+      projects: action.projects
     }): mainViewState);
   }
   default:

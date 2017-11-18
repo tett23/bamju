@@ -4,8 +4,8 @@ import React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { mainViewState } from '../reducers/main_view';
-import { buffer } from '../../common/project';
+import type { mainViewState } from '../reducers/main_view';
+import type { Buffer } from '../../common/project';
 
 const tab = ({ name, path, body }) => {
   console.log('refresh tab', body);
@@ -43,11 +43,11 @@ tab.propTypes = {
   body: PropTypes.string
 };
 
-const mapStateToProps = (state: mainViewState) => {
+const mapStateToProps = (state: {mainView: mainViewState}) => {
   console.log('Tab mapStateToProps', state);
-  const t:?buffer = state.mainView.mainView.browser.tabs[0];
+  const t:?Buffer = state.mainView.browser.tabs[0];
 
-  return t;
+  return t || tab.defaultProps;
 };
 
 
