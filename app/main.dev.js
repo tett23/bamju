@@ -1,6 +1,7 @@
 /* eslint global-require: 1, flowtype-errors/show-errors: 0 */
 // @flow
 
+import path from 'path';
 import { app, BrowserWindow } from 'electron';
 import { createStore, applyMiddleware } from 'redux';
 import {
@@ -12,8 +13,6 @@ import appReducer from './renderer/reducers/index';
 import MenuBuilder from './menu';
 import Config from './common/bamju_config';
 
-
-const path = require('path');
 
 const store = createStore(
   appReducer,
