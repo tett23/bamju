@@ -1,115 +1,142 @@
 // @flow
 
+import path from 'path';
 import { ipcRenderer } from 'electron';
-import React from 'react';
+import * as React from 'react';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Treebeard } from 'react-treebeard';
+import FontAwesome from 'react-fontawesome';
 import type { mainViewState } from '../reducers/main_view';
 import * as Project from '../../common/project';
+import styles from './ProjectsTreeView.css';
 
-const path = require('path');
+const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
+  console.log('build projectsTreeView projects', projects);
 
-const projectsTreeView = ({ projects }) => {
-  const data:treeBeardData = buildProjectsTree(projects);
+  const items:Array<React.Node> = [];
+  projects.forEach((item: Project.Project) => {
+    items.push((
+      <li
+        className={styles.project}
+        key={item.absolutePath}
+        role="menuitem"
+        onClick={e => onClick(e, item)}
+        onKeyUp={e => onClick(e, item)}
+      >
+        <div>
+          {icon('project')}
+          <span className={itemType('project')}>
+            {item.name}
+          </span>
+          {buildItems(item.items)}
+        </div>
+      </li>
+    ));
+  });
 
-  return (
-    <Treebeard data={data} onToggle={onToggle} />
-  );
+  return <ul className={styles.treeView}>{items}</ul>;
 };
 
-const onToggle = (node: treeBeardData, toggled) => {
-  openFile(node.id);
+const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
+  if (items.length === 0) {
+    return [];
+  }
 
-  if (this.state.cursor) { this.state.cursor.active = false; }
-  node.active = true;
-  if (node.children) { node.toggled = toggled; }
-  this.setState({ cursor: node });
-};
+  const ret:Array<React.Node> = [];
 
-type treeBeardData = {
-  id: string,
-  name: string,
-  children: Array<treeBeardData>,
-  toggled: boolean
-  // active: boolean,
-  // loading: boolean,
-  // decorators: Object,
-  // animations: Object
-};
+  items.forEach((item: Project.ProjectItem) => {
+    const spanClass = `${itemType(item.itemType)}`;
 
-const buildProjectsTree = (projects: Project.Projects): treeBeardData => {
-  const ret:treeBeardData = {
-    id: '/',
-    name: 'root',
-    toggled: true,
-    children: []
-  };
-
-  projects.forEach((project: Project.Project) => {
-    const node:treeBeardData = {
-      id: path.join('/', project.name, project.path),
-      name: project.name,
-      toggled: true,
-      children: []
-    };
-
-    project.items.forEach((file: Project.ProjectItem) => {
-      const children:treeBeardData = loadProjectItems(file);
-      node.children.push(children);
-    });
-
-    ret.children.push(node);
+    ret.push((
+      <ul className={styles.projectItem} key={item.absolutePath}>
+        <li
+          role="menuitem"
+          onClick={e => onClick(e, item)}
+          onKeyUp={e => onClick(e, item)}
+        >
+          <div>
+            {icon(item.itemType)}
+            <span className={spanClass}>
+              {item.name}
+            </span>
+            {buildItems(item.items)}
+          </div>
+        </li>
+      </ul>
+    ));
   });
 
   return ret;
 };
 
-const loadProjectItems = (file: Project.ProjectItem): treeBeardData => {
-  const fileItem:treeBeardData = {
-    id: file.path,
-    name: file.name,
-    toggled: true,
-    children: []
-  };
+function onClick(e, item: Project.Project | Project.ProjectItem) {
+  e.preventDefault();
 
-  file.items.forEach((item) => {
-    fileItem.children.push(loadProjectItems(item));
-  });
+  switch (item.itemType) {
+  case 'project':
+    return toggleDirectory(item);
+  case 'directory':
+    return toggleDirectory(item);
+  case 'markdown':
+    return openFile(item);
+  case 'text':
+    return openFile(item);
+  default:
+  }
+}
 
-  return fileItem;
-};
+function toggleDirectory(item: Project.Project | Project.ProjectItem) {
+}
 
-const openFile = (id: string) => {
-  const items:Array<string> = id.split('/');
-  const projectName:string = items[1];
-  const itemName: string = path.join('/', ...items.slice(2, items.length));
-
-  const itemType:Project.ItemType = Project.detectItemType(projectName, itemName);
-  if (itemType === Project.ItemTypeUndefined) {
+function openFile(item: Project.Project | Project.ProjectItem) {
+  if (item.itemType === 'undefined') {
     return;
   }
 
+  const items:Array<string> = item.path.split('/');
+  const projectName:string = items[1];
+  const itemName: string = path.join('/', ...items.slice(2, items.length));
+
   ipcRenderer.send('open-page', { projectName, itemName });
-};
+}
+
+function icon(t: Project.ItemType) {
+  switch (t) {
+  case 'project':
+    return <FontAwesome name="database" />;
+  case 'directory':
+    return <FontAwesome name="folder" />;
+  case 'markdown':
+    return <FontAwesome name="file-text" />;
+  case 'text':
+    return <FontAwesome name="file-text" />;
+  default:
+    return <FontAwesome name="question-circle" />;
+  }
+}
+
+function itemType(t: Project.ItemType) {
+  switch (t) {
+  case 'project':
+    return styles.itemTypeAvailable;
+  case 'directory':
+    return styles.itemTypeAvailable;
+  case 'markdown':
+    return styles.itemTypeAvailable;
+  case 'text':
+    return styles.itemTypeAvailable;
+  default:
+    return styles.itemTypeUnavailable;
+  }
+}
 
 projectsTreeView.defaultProps = {
   projects: []
 };
 
-projectsTreeView.propTypes = {
-  projects: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string,
-    path: PropTypes.string,
-    items: PropTypes.arrayOf(PropTypes.shape({
-      name: PropTypes.string,
-      path: PropTypes.string
-    }))
-  }))
-};
+projectsTreeView.prop = { projects: Project.Projects };
 
-const mapStateToProps = (state: {mainView: mainViewState}) => {
-  console.log('ProjectsTreeView mapStateToProps', state);
+const mapStateToProps = (state: {mainView: mainViewState}): {projects: Project.Projects} => {
+  console.log('projectsTreeView mapStateToProps', state);
 
   return {
     projects: state.mainView.projects
@@ -117,7 +144,11 @@ const mapStateToProps = (state: {mainView: mainViewState}) => {
 };
 
 
-const mapDispatchToProps = (dispatch) => ({});
+const mapDispatchToProps = (dispatch) => {
+  console.log('projectsTreeView mapDispatchToProps', dispatch);
+
+  return {};
+};
 
 
 const ProjectsTreeView = connect(mapStateToProps, mapDispatchToProps)(projectsTreeView);
