@@ -1,13 +1,13 @@
 // @flow
 
-// import { ipcRenderer } from 'electron';
+import path from 'path';
+import { ipcRenderer } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { mainViewState } from '../reducers/main_view';
 import * as Project from '../../common/project';
 import styles from './ProjectsTreeView.css';
-// import path from 'path';
 
 const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   console.log('build projectsTreeView projects', projects);
@@ -15,7 +15,13 @@ const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   const items:Array<React.Node> = [];
   projects.forEach((item: Project.Project) => {
     items.push((
-      <li className={styles.project} key={item.absolutePath}>
+      <li
+        className={styles.project}
+        key={item.absolutePath}
+        role="menuitem"
+        onClick={e => onClick(e, item)}
+        onKeyUp={e => onClick(e, item)}
+      >
         <div>
           {icon('project')}
           <span className={itemType('project')}>
@@ -42,7 +48,11 @@ const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
 
     ret.push((
       <ul className={styles.projectItem} key={item.absolutePath}>
-        <li>
+        <li
+          role="menuitem"
+          onClick={e => onClick(e, item)}
+          onKeyUp={e => onClick(e, item)}
+        >
           <div>
             {icon(item.itemType)}
             <span className={spanClass}>
@@ -57,6 +67,38 @@ const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
 
   return ret;
 };
+
+function onClick(e, item: Project.Project | Project.ProjectItem) {
+  e.preventDefault();
+
+  switch (item.itemType) {
+  case 'project':
+    return toggleDirectory(item);
+  case 'directory':
+    return toggleDirectory(item);
+  case 'markdown':
+    return openFile(item);
+  case 'text':
+    return openFile(item);
+  default:
+  }
+}
+
+function toggleDirectory(item: Project.Project | Project.ProjectItem) {
+
+}
+
+function openFile(item: Project.Project | Project.ProjectItem) {
+  if (item.itemType === 'undefined') {
+    return;
+  }
+
+  const items:Array<string> = item.path.split('/');
+  const projectName:string = items[1];
+  const itemName: string = path.join('/', ...items.slice(2, items.length));
+
+  ipcRenderer.send('open-page', { projectName, itemName });
+}
 
 function icon(t: Project.ItemType) {
   switch (t) {

@@ -59,6 +59,7 @@ const loadProject = async (projectName: string): Promise<Project.Project> => {
     name: projectName,
     path: '/',
     absolutePath: projectPath,
+    itemType: 'project',
     items: await loadDirectory(projectPath, basePath)
   };
 

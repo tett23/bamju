@@ -9,6 +9,7 @@ export type Project = {
   name: string,
   path: string,
   absolutePath: string,
+  itemType: ItemType,
   items: ProjectItems
 };
 export type Projects = Array<Project>;
