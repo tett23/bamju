@@ -1,0 +1,41 @@
+.treeView {
+  font-size: 14px;
+  color: #9da5b4;
+  background-color: rgb(33, 37, 43);
+  list-style-type: none;
+  list-style-position: outside;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  margin: 0;
+  padding-left: 5px;
+  height: 100%;
+  resize: horizontal;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.treeView li {
+  list-style: none;
+  line-height: 2em;
+  cursor: pointer;
+}
+
+.treeView li span{
+  padding-left: 10px
+}
+
+.project {
+  padding-left: 5px;
+}
+.projectItem {
+  padding-left: 10px;
+}
+
+.itemTypeAvailable {
+  color: #9da5b4;
+}
+
+.itemTypeUnavailable {
+  color: rgba(157, 165, 180, 0.6);
+  cursor: default;
+}

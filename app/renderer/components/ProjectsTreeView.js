@@ -112,8 +112,7 @@ const mapStateToProps = (state: {mainView: mainViewState}) => {
   console.log('ProjectsTreeView mapStateToProps', state);
 
   return {
-    projects:
-    state.mainView.projects
+    projects: state.mainView.projects
   };
 };
 
