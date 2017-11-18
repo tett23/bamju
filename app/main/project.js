@@ -3,7 +3,7 @@
 import { ipcMain } from 'electron';
 import util from 'util';
 import * as Project from '../common/project';
-import { getBamjuConfig } from '../common/bamju_config';
+import Config from '../common/bamju_config';
 import Markdown from '../main/parser/markdown';
 
 const path = require('path');
@@ -39,8 +39,8 @@ ipcMain.on('refresh-tree-view', async (e, projectName: ?string) => {
 const loadProjects = async (): Promise<Project.Projects> => {
   const ret:Project.Projects = [];
 
-  console.log('loadProjects', getBamjuConfig().projects);
-  const projectNames:Array<string> = Object.keys(getBamjuConfig().projects);
+  console.log('loadProjects', Config.projects);
+  const projectNames:Array<string> = Object.keys(Config.projects);
   await Promise.all(projectNames.map(async (projectName: string) => {
     ret.push(await loadProject(projectName));
   }));
@@ -50,7 +50,7 @@ const loadProjects = async (): Promise<Project.Projects> => {
 };
 
 const loadProject = async (projectName: string): Promise<Project.Project> => {
-  const projectPath:string = getBamjuConfig().projects[projectName];
+  const projectPath:string = Config.projects[projectName];
   if (projectPath === undefined) {
     throw new Error(`loadProject error${projectName}`);
   }
@@ -93,7 +93,7 @@ const loadDirectory = async (projectPath: string, basePath: string): Promise<Pro
 };
 
 const openFile = async (projectName: string, itemName: string): Promise<Project.Buffer> => {
-  const projectPath:string = getBamjuConfig().projects[projectName];
+  const projectPath:string = Config.projects[projectName];
   const abs:string = path.join(projectPath, itemName);
   const stat:fs.Stats = await util.promisify(fs.stat)(abs);
   if (stat.isDirectory()) {
@@ -115,7 +115,7 @@ const openFile = async (projectName: string, itemName: string): Promise<Project.
 };
 
 const openDirectory = async (projectName: string, itemName: string): Promise<Project.Buffer> => {
-  const projectPath:string = getBamjuConfig().projects[projectName];
+  const projectPath:string = Config.projects[projectName];
   const abs:string = path.join(projectPath, itemName);
   const files:Array<string> = await util.promisify(fs.readdir)(abs);
 

@@ -1,6 +1,6 @@
 // @flow
 
-import { getBamjuConfig } from '../common/bamju_config';
+import Config from '../common/bamju_config';
 
 const fs = require('fs');
 const path = require('path');
@@ -56,7 +56,7 @@ export function detectItemTypeByAbsPath(p: string): ItemType {
 }
 
 export function detectItemType(projectName: string, itemName: string): ItemType {
-  const projectPath:?string = getBamjuConfig().projects[projectName];
+  const projectPath:?string = Config.projects[projectName];
   if (projectPath === null || projectPath === undefined) {
     return ItemTypeUndefined;
   }

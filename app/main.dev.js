@@ -1,16 +1,16 @@
 /* eslint global-require: 1, flowtype-errors/show-errors: 0 */
 // @flow
 
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { createStore, applyMiddleware } from 'redux';
 import {
   forwardToRenderer,
   triggerAlias,
-  replayActionMain,
-  createAliasedAction
+  replayActionMain
 } from 'electron-redux';
 import appReducer from './renderer/reducers/index';
 import MenuBuilder from './menu';
+import Config from './common/bamju_config';
 
 
 const path = require('path');
@@ -73,8 +73,10 @@ app.on('ready', async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728
+    x: Config.windows[0].x,
+    y: Config.windows[0].y,
+    width: Config.windows[0].width,
+    height: Config.windows[0].height
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
