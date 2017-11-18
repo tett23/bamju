@@ -39,12 +39,10 @@ ipcMain.on('refresh-tree-view', async (e, projectName: ?string) => {
 const loadProjects = async (): Promise<Project.Projects> => {
   const ret:Project.Projects = [];
 
-  console.log('loadProjects', Config.projects);
   const projectNames:Array<string> = Object.keys(Config.projects);
   await Promise.all(projectNames.map(async (projectName: string) => {
     ret.push(await loadProject(projectName));
   }));
-  console.log('loadProjects ret', ret);
 
   return ret;
 };
@@ -63,7 +61,6 @@ const loadProject = async (projectName: string): Promise<Project.Project> => {
     absolutePath: projectPath,
     items: await loadDirectory(projectPath, basePath)
   };
-  console.log('loadProject ret', ret);
 
   return ret;
 };

@@ -71,6 +71,9 @@ app.on('ready', async () => {
     await installExtensions();
   }
 
+  await Config.init();
+
+  console.log('ready', Config);
   mainWindow = new BrowserWindow({
     show: false,
     x: Config.windows[0].x,
@@ -94,6 +97,27 @@ app.on('ready', async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  mainWindow.on('resize', () => {
+    updateRectangle();
+  });
+
+  mainWindow.on('move', () => {
+    updateRectangle();
+  });
+
+  const updateRectangle = () => {
+    const rectangle = mainWindow.getBounds();
+
+    Config.update({
+      windows: [{
+        x: rectangle.x,
+        y: rectangle.y,
+        width: rectangle.width,
+        height: rectangle.height
+      }]
+    });
+  };
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();

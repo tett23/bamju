@@ -1,5 +1,11 @@
 // @flow
 
+import fs from 'fs';
+import path from 'path';
+import { promisify } from 'util';
+import mkdirp from 'mkdirp';
+import expandHomeDir from 'expand-home-dir';
+
 export type BamjuConfig = {
   projects: {
     [string]: string
@@ -25,9 +31,67 @@ const defaultConfig:BamjuConfig = {
       width: 1024,
       height: 728
     }
-  ]
+  ],
+  init: async (): Promise<void> => {
+    const conf = await loadConfigFile();
+    merge(conf);
+  },
+  update: async (values: {}): Promise<void> => {
+    merge(values);
+
+    await updateConfigFile();
+  }
 };
 
+function merge(values: {}) {
+  Object.keys(values).forEach((k: string) => {
+    Config[k] = values[k];
+  });
+}
+
+let p:string = '~/.config/bamju/config.json';
+if (process.platform === 'windows') {
+  p = '~\\AppData\\Local\\bamju\\config.json';
+}
+const configPath:string = expandHomeDir(p);
+
+async function updateConfigFile(): Promise<void> {
+  try {
+    await promisify(fs.stat)(path.dirname(configPath));
+  } catch (e) {
+    await mkdirp(path.dirname(configPath), 0o755);
+  }
+
+  await promisify(fs.writeFile)(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
+}
+
+async function loadConfigFile(): Promise<BamjuConfig> {
+  console.log('loadConfigFile');
+  try {
+    await promisify(fs.stat)(configPath);
+  } catch (e) {
+    console.log('loadConfigFile error: ', e);
+    return defaultConfig;
+  }
+
+  console.log('loadConfigFile stat');
+  const buf:Buffer = await promisify(fs.readFile)(configPath);
+  const conf:string = buf.toString('UTF-8');
+
+  const json = JSON.parse(conf);
+  console.log('loadConfigFile json', json);
+
+  return Object.assign(defaultConfig, json);
+}
+
 const Config:BamjuConfig = Object.assign({}, defaultConfig);
+
+loadConfigFile().then((conf) => {
+  merge(conf);
+
+  return Config;
+}).catch((e) => {
+  console.log('Config.loadConfigFile: ', e);
+});
 
 export default Config;
