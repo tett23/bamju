@@ -4,10 +4,10 @@ import { ipcMain } from 'electron';
 import util from 'util';
 import * as Project from '../common/project';
 import { getBamjuConfig } from '../common/bamju_config';
+import Markdown from '../main/parser/markdown';
 
 const path = require('path');
 const fs = require('fs');
-const marked = require('marked');
 
 ipcMain.on('open-main-page', async (e) => {
   const buf:Project.Buffer = await openFile('bamju-specifications', 'index.md');
@@ -99,21 +99,14 @@ const openFile = async (projectName: string, itemName: string): Promise<Project.
     return openDirectory(projectName, itemName);
   }
 
-  const buf:Buffer = fs.readFileSync(abs);
-  const body:string = buf.toString('UTF-8');
-  const md:string = marked(body, {
-    gfm: true,
-    tables: true,
-    breaks: true
-  });
-
+  const html:string = await Markdown.parse(abs);
   const itemType:Project.ItemType = Project.detectItemType(projectName, itemName);
 
   const ret:Project.Buffer = {
     name: itemName,
     path: path.join(projectName, itemName),
     itemType,
-    body: md
+    body: html
   };
 
   return ret;
