@@ -1,13 +1,15 @@
 // @flow
 
 import path from 'path';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { mainViewState } from '../reducers/main_view';
 import * as Project from '../../common/project';
 import styles from './ProjectsTreeView.css';
+
+const { Menu, MenuItem } = remote.require('electron');
 
 const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   console.log('build projectsTreeView projects', projects);
@@ -21,6 +23,7 @@ const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
         role="menuitem"
         onClick={e => onClick(e, item)}
         onKeyUp={e => onClick(e, item)}
+        onContextMenu={e => contextmenu(e, item.absolutePath)}
       >
         <div>
           {icon('project')}
@@ -52,6 +55,7 @@ const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
           role="menuitem"
           onClick={e => onClick(e, item)}
           onKeyUp={e => onClick(e, item)}
+          onContextMenu={e => contextmenu(e, item.absolutePath)}
         >
           <div>
             {icon(item.itemType)}
@@ -97,6 +101,21 @@ function openFile(item: Project.Project | Project.ProjectItem) {
   const itemName: string = path.join('/', ...items.slice(2, items.length));
 
   ipcRenderer.send('open-page', { projectName, itemName });
+}
+
+function contextmenu(e, absolutePath: string) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const menu = new Menu();
+  menu.append(new MenuItem({
+    label: 'open',
+    click: () => {
+      ipcRenderer.send('open-by-editor', absolutePath);
+    }
+  }));
+
+  menu.popup(remote.getCurrentWindow());
 }
 
 function icon(t: Project.ItemType) {
