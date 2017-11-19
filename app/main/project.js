@@ -2,6 +2,7 @@
 
 import { ipcMain } from 'electron';
 import util from 'util';
+import opn from 'opn';
 import * as Project from '../common/project';
 import Config from '../common/bamju_config';
 import Markdown from '../main/parser/markdown';
@@ -34,6 +35,10 @@ ipcMain.on('refresh-tree-view', async (e, projectName: ?string) => {
 
   e.sender.send('refresh-tree-view', tree);
   e.returnValue = tree;
+});
+
+ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
+  opn(absolutePath);
 });
 
 const loadProjects = async (): Promise<Project.Projects> => {

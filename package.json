@@ -175,6 +175,7 @@
     "marked": "^0.3.6",
     "material-ui": "^0.19.1",
     "mkdirp": "^0.5.1",
+    "opn": "^5.1.0",
     "react": "^15.6.1",
     "react-bootstrap": "^0.31.5",
     "react-dom": "^15.6.1",
