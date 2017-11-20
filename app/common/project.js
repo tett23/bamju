@@ -272,6 +272,14 @@ export class ProjectItem {
       return this;
     }
 
+    if (this.name === `${name}.md`) {
+      return this;
+    }
+
+    if (this.name === `${name}.txt`) {
+      return this;
+    }
+
     let ret:?ProjectItem;
     this.items.forEach((item: ProjectItem) => {
       const i:?ProjectItem = item.detect(name);

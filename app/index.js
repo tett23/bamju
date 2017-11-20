@@ -78,3 +78,14 @@ ipcRenderer.on('refresh-tree-view', (event, tv) => {
 
 ipcRenderer.send('open-main-page');
 ipcRenderer.send('refresh-tree-view');
+
+
+window.wikiLinkOnClickAvailable = (repo, name) => {
+  console.log('wikiLinkOnClickAvailable', repo, name);
+
+  ipcRenderer.send('open-page', { projectName: repo, itemName: name });
+};
+
+window.wikiLinkOnClickUnAvailable = (repo, name) => {
+  console.log('wikiLinkOnClickUnAvailable', repo, name);
+};

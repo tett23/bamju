@@ -14,7 +14,7 @@ const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   console.log('build projectsTreeView projects', projects);
 
   // const items:Array<React.Node> = [];
-  const items:Array<any> = projects.map((item: Project.Project) => (
+  const items:Array<*> = projects.map((item: Project.Project) => (
     <li key={item.absolutePath}>
       {buildItems(item.items)}
     </li>
@@ -41,12 +41,12 @@ const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   return <ul className={styles.treeView}>{items}</ul>;
 };
 
-const buildItems = (items: Project.ProjectItems): Array<any> => {
+const buildItems = (items: Project.ProjectItems): Array<*> => {
   if (items.length === 0) {
     return [];
   }
 
-  const ret:Array<any> = items.map((item: Project.ProjectItem) => {
+  const ret:Array<*> = items.map((item: Project.ProjectItem) => {
     const spanClass = `${itemType(item.itemType)}`;
 
     return ((

@@ -20,9 +20,9 @@ class Markdown {
     });
 
     console.log(html);
-    html = html.replace(/\[\[(.+:)(.+?)\]\]\{(.+?)\}/, Markdown.wikiLinkReplacer);
-    html = html.replace(/\[\[(.+?)\]\]\{(.+?)\}/, (name: string, text: string): string => Markdown.wikiLinkReplacer(repo, name, text));
-    html = html.replace(/\[\[(.+?)\]\]/, (name: string): string => Markdown.wikiLinkReplacer(repo, name, name));
+    html = html.replace(/\[\[(.+:)(.+?)\]\]\{(.+?)\}/, (_, r: string, name: string, text: string): string => Markdown.wikiLinkReplacer(r, name, text));
+    html = html.replace(/\[\[(.+?)\]\]\{(.+?)\}/, (_, name: string, text: string): string => Markdown.wikiLinkReplacer(repo, name, text));
+    html = html.replace(/\[\[(.+?)\]\]/, (_, name: string): string => Markdown.wikiLinkReplacer(repo, name, name));
     console.log(html);
 
     return html;
@@ -34,7 +34,9 @@ class Markdown {
     const availableClass:string = isExist ? 'available' : 'unavailable';
     const absolutePath:string = Markdown.absolutePath(repo, name);
 
-    return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}">${text}</span>`;
+    const onClickString:string = `${isExist ? 'wikiLinkOnClickAvailable' : 'wikiLinkOnClickUnAvailable'}('${repo}', '${name}')`;
+
+    return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
   }
 
   static isExistPage(repo: string, name: string): boolean {
