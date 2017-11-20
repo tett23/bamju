@@ -1,3 +1,4 @@
+/* eslint react/no-danger: 0 */
 // @flow
 
 import { ipcRenderer, remote } from 'electron';
@@ -12,12 +13,13 @@ const { Menu, MenuItem } = remote.require('electron');
 const { PropTypes } = React;
 
 const tab = ({
-  name, path, absolutePath, body
+  name, projectName, path, absolutePath, body
 }) => {
   console.log('refresh tab', body);
 
+  const split:Array<string> = (projectName + path).split('/');
   const breadcrumbItems = [];
-  path.split('/').forEach((item: string) => {
+  split.forEach((item: string) => {
     if (item === '') {
       return;
     }
@@ -53,6 +55,7 @@ function contextmenu(e, absolutePath: string) {
 
 tab.defaultProps = {
   name: '',
+  projectName: '',
   path: '',
   absolutePath: '',
   body: ''
@@ -60,6 +63,7 @@ tab.defaultProps = {
 
 tab.propTypes = {
   name: PropTypes.string,
+  projectName: PropTypes.string,
   path: PropTypes.string,
   absolutePath: PropTypes.string,
   body: PropTypes.string

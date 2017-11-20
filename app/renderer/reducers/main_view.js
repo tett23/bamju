@@ -29,6 +29,7 @@ export const initialMainViewState = (): mainViewState => ({
     tabs: [
       {
         name: '',
+        projectName: '',
         path: '',
         absolutePath: '',
         itemType: 'undefined',

@@ -17,6 +17,7 @@ export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefine
 export type Buffer = {
   name: string,
   path: string,
+  projectName: string,
   absolutePath: string,
   itemType: ItemType,
   body: string
@@ -98,6 +99,7 @@ export class Manager {
 
     return {
       name: 'not found',
+      projectName: '',
       path: '',
       absolutePath: '',
       itemType: 'undefined',
@@ -293,6 +295,7 @@ export class ProjectItem {
 
     const ret:Buffer = {
       name: this.name,
+      projectName: this.projectName,
       path: this.path,
       absolutePath: this.absolutePath,
       itemType: this.itemType,
