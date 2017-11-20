@@ -5,93 +5,173 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { mainViewState } from '../reducers/main_view';
-import * as Project from '../../common/project';
+import type { Projects, Project, ProjectItems, ProjectItem, ItemType } from '../../common/project';
 import styles from './ProjectsTreeView.css';
+import { refreshTreeView } from '../actions/tree_view';
 
 const { Menu, MenuItem } = remote.require('electron');
 
-const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
-  console.log('build projectsTreeView projects', projects);
-
-  // const items:Array<React.Node> = [];
-  const items:Array<*> = projects.map((item: Project.Project) => (
-    <li key={item.absolutePath}>
-      {buildItems(item.items)}
-    </li>
-  ));
-    // (
-    //   <li
-    //     className={styles.project}
-    //     key={item.absolutePath}
-    //     role="menuitem"
-    //     onClick={e => onClick(e, item.items[0])}
-    //     onKeyUp={e => onClick(e, item.items[0])}
-    //     onContextMenu={e => contextmenu(e, item.absolutePath)}
-    //   >
-    //     <div>
-    //       {icon('project')}
-    //       <span className={itemType('project')}>
-    //         {item.name}
-    //       </span>
-    //       {buildItems(item.items)}
-    //     </div>
-    //   </li>
-    // )
-
-  return <ul className={styles.treeView}>{items}</ul>;
+type Props = {
+  projects: Projects,
+  refreshTreeView: (Projects) => void
 };
 
-const buildItems = (items: Project.ProjectItems): Array<*> => {
-  if (items.length === 0) {
-    return [];
+class projectsTreeView extends React.Component<Props> {
+  constructor(props) {
+    console.log('projectTreeView constructor', props);
+    super(props);
   }
 
-  const ret:Array<*> = items.map((item: Project.ProjectItem) => {
-    const spanClass = `${itemType(item.itemType)}`;
+  onClickItem(e, item: ProjectItem) {
+    console.log(this);
 
-    return ((
-      <ul className={styles.projectItem} key={item.absolutePath}>
-        <li
-          role="menuitem"
-          onClick={e => onClick(e, item)}
-          onKeyUp={e => onClick(e, item)}
-          onContextMenu={e => contextmenu(e, item.absolutePath)}
-        >
-          <div>
-            {icon(item.itemType)}
-            <span className={spanClass}>
-              {item.name}
-            </span>
-            {buildItems(item.items)}
-          </div>
-        </li>
-      </ul>
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('projectsTreeView.onClick', item);
+
+    switch (item.itemType) {
+    case 'project':
+      return openFile(item);
+    case 'directory':
+      return openFile(item);
+    case 'markdown':
+      return openFile(item);
+    case 'text':
+      return openFile(item);
+    default:
+    }
+  }
+
+  async toggleTreeView(e, item: ProjectItem) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log('projectsTreeView.toggleTreeView item', item);
+    console.log('projectsTreeView.toggleTreeView props', this.props);
+    if (item.isLoaded) {
+      const projects = await closeTreeView(this.props.projects, item);
+      this.props.refreshTreeView(projects);
+    } else {
+      const projects = await openTreeView(this.props.projects, item);
+      this.props.refreshTreeView(projects);
+    }
+  }
+
+  buildItems(items: ProjectItems): Array<*> {
+    if (items.length === 0) {
+      return [];
+    }
+
+    const ret:Array<*> = items.map((item: ProjectItem) => {
+      const spanClass = `${itemType(item.itemType)}`;
+
+      return ((
+        <ul className={styles.projectItem} key={item.absolutePath}>
+          <li
+            role="menuitem"
+            onClick={e => this.onClickItem(e, item)}
+            onKeyUp={e => this.onClickItem(e, item)}
+            onContextMenu={e => contextmenu(e, item.absolutePath)}
+          >
+            <div>
+              {this.icon(item)}
+              <span className={spanClass}>
+                {item.name}
+              </span>
+              {this.buildItems(item.items)}
+            </div>
+          </li>
+        </ul>
+      ));
+    });
+
+    return ret;
+  }
+
+  icon(item: ProjectItem) {
+    switch (item.itemType) {
+    case 'project':
+      return <FontAwesome name="database" />;
+    case 'directory':
+      if (item.isLoaded) {
+        return <FontAwesome name="folder-open" onClick={e => this.toggleTreeView(e, item)} />;
+      }
+      return <FontAwesome name="folder" onClick={e => this.toggleTreeView(e, item)} />;
+
+    case 'markdown':
+      return <FontAwesome name="file-text" />;
+    case 'text':
+      return <FontAwesome name="file-text" />;
+    default:
+      return <FontAwesome name="question-circle" />;
+    }
+  }
+
+  render() {
+    console.log('projectsTreeView.render this', this);
+    const { projects } = this.props;
+
+    const items:Array<*> = projects.map((item: Project) => (
+      <li key={item.absolutePath}>
+        {this.buildItems(item.items)}
+      </li>
     ));
-  });
+
+    return <ul className={styles.treeView}>{items}</ul>;
+  }
+}
+
+async function closeTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
+  const searchPath:string = projectItem.absolutePath;
+
+  const find = async (items: ProjectItems): Promise<ProjectItems> => Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+    const r = item;
+    if (item.absolutePath === searchPath) {
+      r.items = [];
+      r.isLoaded = false;
+    } else {
+      r.items = await find(item.items);
+    }
+
+    return r;
+  }));
+
+  const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
+    const r:Project = p;
+    r.items = await find(p.items);
+
+    return r;
+  }));
 
   return ret;
-};
-
-function onClick(e, item: Project.ProjectItem) {
-  e.preventDefault();
-
-  switch (item.itemType) {
-  case 'project':
-    return toggleDirectory(item);
-  case 'directory':
-    return toggleDirectory(item);
-  case 'markdown':
-    return openFile(item);
-  case 'text':
-    return openFile(item);
-  default:
-  }
 }
 
-function toggleDirectory(item: Project.ProjectItem) {
+async function openTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
+  const searchPath:string = projectItem.absolutePath;
+
+  const find = async (items: ProjectItems): Promise<ProjectItems> => Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+    const r = item;
+    if (item.absolutePath === searchPath) {
+      await r.load();
+    } else {
+      r.items = await find(item.items);
+    }
+
+    return r;
+  }));
+
+  const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
+    const r:Project = p;
+    r.items = await find(p.items);
+
+    return r;
+  }));
+
+  return ret;
 }
 
-function openFile(item: Project.ProjectItem) {
+
+function openFile(item: ProjectItem) {
   if (item.itemType === 'undefined') {
     return;
   }
@@ -114,22 +194,7 @@ function contextmenu(e, absolutePath: string) {
   menu.popup(remote.getCurrentWindow());
 }
 
-function icon(t: Project.ItemType) {
-  switch (t) {
-  case 'project':
-    return <FontAwesome name="database" />;
-  case 'directory':
-    return <FontAwesome name="folder" />;
-  case 'markdown':
-    return <FontAwesome name="file-text" />;
-  case 'text':
-    return <FontAwesome name="file-text" />;
-  default:
-    return <FontAwesome name="question-circle" />;
-  }
-}
-
-function itemType(t: Project.ItemType) {
+function itemType(t: ItemType) {
   switch (t) {
   case 'project':
     return styles.itemTypeAvailable;
@@ -148,9 +213,7 @@ projectsTreeView.defaultProps = {
   projects: []
 };
 
-projectsTreeView.prop = { projects: Project.Projects };
-
-const mapStateToProps = (state: {mainView: mainViewState}): {projects: Project.Projects} => {
+const mapStateToProps = (state: {mainView: mainViewState}): {projects: Projects} => {
   console.log('projectsTreeView mapStateToProps', state);
 
   return {
@@ -162,7 +225,11 @@ const mapStateToProps = (state: {mainView: mainViewState}): {projects: Project.P
 const mapDispatchToProps = (dispatch) => {
   console.log('projectsTreeView mapDispatchToProps', dispatch);
 
-  return {};
+  return {
+    refreshTreeView: (projects: Projects) => {
+      dispatch(refreshTreeView(projects));
+    }
+  };
 };
 
 
