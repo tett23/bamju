@@ -9,7 +9,9 @@ import type { Projects, Project, ProjectItems, ProjectItem, ItemType } from '../
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
 
-const { Menu, MenuItem } = remote.require('electron');
+const {
+  Menu, MenuItem, browserWindow, dialog
+} = remote.require('electron');
 
 type Props = {
   projects: Projects,
@@ -121,8 +123,30 @@ class projectsTreeView extends React.Component<Props> {
       </li>
     ));
 
-    return <ul className={styles.treeView}>{items}</ul>;
+    return (
+      <div>
+        <div>
+          <FontAwesome name="plus" onClick={addProject} />
+        </div>
+        <ul className={styles.treeView}>{items}</ul>
+      </div>
+    );
   }
+}
+
+function addProject(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const w = remote.getCurrentWindow();
+
+  dialog.showOpenDialog(w, {
+    properties: ['openDirectory']
+  }, (directories: Array<string>) => {
+    directories.forEach((directory: string) => {
+      ipcRenderer.send('add-project', { path: directory });
+    });
+  });
 }
 
 async function closeTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {

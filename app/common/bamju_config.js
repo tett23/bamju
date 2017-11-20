@@ -21,8 +21,6 @@ export type BamjuConfig = {
 const defaultConfig:BamjuConfig = {
   projects: {
     'bamju-specifications': '/Users/tett23/projects/bamju-specifications',
-    喃語の読みかた: '/Users/tett23/Dropbox/projects/喃語の読みかた',
-    angelic: '/Users/tett23/Dropbox/projects/angelic'
   },
   windows: [
     {
@@ -34,6 +32,7 @@ const defaultConfig:BamjuConfig = {
   ],
   init: async (): Promise<void> => {
     const conf = await loadConfigFile();
+    console.log('Config.init conf', conf);
     merge(conf);
   },
   update: async (values: {}): Promise<void> => {
@@ -82,13 +81,6 @@ async function loadConfigFile(): Promise<BamjuConfig> {
 }
 
 const Config:BamjuConfig = Object.assign({}, defaultConfig);
-
-loadConfigFile().then((conf) => {
-  merge(conf);
-
-  return Config;
-}).catch((e) => {
-  console.log('Config.loadConfigFile: ', e);
-});
+Config.init();
 
 export default Config;

@@ -16,6 +16,7 @@ import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
 import * as Project from './common/project';
+import Config from './common/bamju_config';
 
 const initialState = getInitialStateRenderer();
 console.log('initialState', initialState);
@@ -70,8 +71,8 @@ ipcRenderer.on('refresh-tree-view', (event, tv) => {
   // なんで送られたきた値を使わないで直接Managerに触れるみたいな治安の悪い状態になっているかというと、
   // ipcがネイティブの実装のため、classのインスタンスを送ると単なるObjectになって、型の検証に失敗するため
   (async () => {
+    await Config.init();
     const projects:Project.Projects = await Project.Manager.loadProjects();
-    console.log(projects);
     store.dispatch(refreshTreeView(projects));
   })();
 });

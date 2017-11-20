@@ -69,6 +69,16 @@ export class Manager {
     return ret;
   }
 
+  static async addProject(absolutePath: string) {
+    const name:string = path.basename(absolutePath);
+    const newProjects:{[string]: string} = Object.assign({}, Config.projects);
+    newProjects[name] = absolutePath;
+
+    await Config.update({ projects: newProjects });
+
+    await this.loadProjects();
+  }
+
   static async getBuffer(projectName: string, itemName: string): Promise<Buffer> {
     const p:?Project = this.find(projectName);
     if (p === undefined || p === null) {
@@ -188,7 +198,7 @@ export class Project {
 }
 export type Projects = Array<Project>;
 
-let _projects:Projects = [];
+let _projects: Projects = [];
 
 export class ProjectItem {
   name: string;
