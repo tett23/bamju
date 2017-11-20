@@ -79,6 +79,16 @@ export class Manager {
     await this.loadProjects();
   }
 
+  static async removeProject(absolutePath: string) {
+    const name:string = path.basename(absolutePath);
+    const newProjects:{[string]: string} = Object.assign({}, Config.projects);
+    delete newProjects[name];
+
+    await Config.update({ projects: newProjects });
+
+    await this.loadProjects();
+  }
+
   static async getBuffer(projectName: string, itemName: string): Promise<Buffer> {
     const p:?Project = this.find(projectName);
     if (p === undefined || p === null) {

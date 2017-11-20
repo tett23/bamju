@@ -45,6 +45,14 @@ ipcMain.on('add-project', async (e, { path }) => {
   e.returnValue = ret;
 });
 
+ipcMain.on('remove-project', async (e, { path }) => {
+  Project.Manager.removeProject(path);
+  const ret:Project.Projects = Project.Manager.projects();
+
+  e.sender.send('refresh-tree-view', ret);
+  e.returnValue = ret;
+});
+
 ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
   opn(absolutePath);
 });

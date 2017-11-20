@@ -32,7 +32,6 @@ const defaultConfig:BamjuConfig = {
   ],
   init: async (): Promise<void> => {
     const conf = await loadConfigFile();
-    console.log('Config.init conf', conf);
     merge(conf);
   },
   update: async (values: {}): Promise<void> => {

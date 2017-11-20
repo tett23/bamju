@@ -77,7 +77,7 @@ class projectsTreeView extends React.Component<Props> {
             role="menuitem"
             onClick={e => this.onClickItem(e, item)}
             onKeyUp={e => this.onClickItem(e, item)}
-            onContextMenu={e => contextmenu(e, item.absolutePath)}
+            onContextMenu={e => contextmenu(e, item)}
           >
             <div>
               {this.icon(item)}
@@ -207,7 +207,7 @@ function openFile(item: ProjectItem) {
   ipcRenderer.send('open-page', { projectName: item.projectName, itemName: item.path });
 }
 
-function contextmenu(e, absolutePath: string) {
+function contextmenu(e, item: ProjectItem) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -215,9 +215,17 @@ function contextmenu(e, absolutePath: string) {
   menu.append(new MenuItem({
     label: 'open',
     click: () => {
-      ipcRenderer.send('open-by-editor', absolutePath);
+      ipcRenderer.send('open-by-editor', item.absolutePath);
     }
   }));
+  if (item.path === '/') {
+    menu.append(new MenuItem({
+      label: 'remove',
+      click: () => {
+        ipcRenderer.send('remove-project', { path: item.absolutePath });
+      }
+    }));
+  }
 
   menu.popup(remote.getCurrentWindow());
 }
