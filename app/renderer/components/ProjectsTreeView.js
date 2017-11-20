@@ -10,7 +10,7 @@ import styles from './ProjectsTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
 
 const {
-  Menu, MenuItem, browserWindow, dialog
+  Menu, MenuItem, dialog
 } = remote.require('electron');
 
 type Props = {
