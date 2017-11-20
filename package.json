@@ -1,7 +1,7 @@
 {
   "name": "bamju",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "wiki",
   "scripts": {
     "build": "concurrently \"npm run build-main\" \"npm run build-renderer\"",
     "build-dll": "cross-env NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack/bin/webpack --config webpack.config.renderer.dev.dll.js --colors",
@@ -30,8 +30,8 @@
   },
   "browserslist": "electron 1.6",
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "bamju",
+    "appId": "org.donuthole.bamju",
     "files": [
       "dist/",
       "node_modules/",
