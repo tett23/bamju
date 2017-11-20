@@ -1,5 +1,5 @@
 // @flow
 
 interface Parser {
-  static parse(string): string
+  static parse(string, string): string
 }

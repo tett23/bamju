@@ -12,6 +12,7 @@ import {
 import appReducer from './renderer/reducers/index';
 import MenuBuilder from './menu';
 import Config from './common/bamju_config';
+import { Manager } from './common/project';
 
 
 const store = createStore(
@@ -71,6 +72,8 @@ app.on('ready', async () => {
   }
 
   await Config.init();
+  await Manager.init();
+  require('./main/project');
 
   console.log('ready', Config);
   mainWindow = new BrowserWindow({
@@ -121,5 +124,3 @@ app.on('ready', async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 });
-
-require('./main/project');

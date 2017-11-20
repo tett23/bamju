@@ -1,6 +1,5 @@
 // @flow
 
-import path from 'path';
 import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
@@ -14,42 +13,43 @@ const { Menu, MenuItem } = remote.require('electron');
 const projectsTreeView = ({ projects }: {projects: Project.Projects}) => {
   console.log('build projectsTreeView projects', projects);
 
-  const items:Array<React.Node> = [];
-  projects.forEach((item: Project.Project) => {
-    items.push((
-      <li
-        className={styles.project}
-        key={item.absolutePath}
-        role="menuitem"
-        onClick={e => onClick(e, item)}
-        onKeyUp={e => onClick(e, item)}
-        onContextMenu={e => contextmenu(e, item.absolutePath)}
-      >
-        <div>
-          {icon('project')}
-          <span className={itemType('project')}>
-            {item.name}
-          </span>
-          {buildItems(item.items)}
-        </div>
-      </li>
-    ));
-  });
+  // const items:Array<React.Node> = [];
+  const items:Array<any> = projects.map((item: Project.Project) => (
+    <li key={item.absolutePath}>
+      {buildItems(item.items)}
+    </li>
+  ));
+    // (
+    //   <li
+    //     className={styles.project}
+    //     key={item.absolutePath}
+    //     role="menuitem"
+    //     onClick={e => onClick(e, item.items[0])}
+    //     onKeyUp={e => onClick(e, item.items[0])}
+    //     onContextMenu={e => contextmenu(e, item.absolutePath)}
+    //   >
+    //     <div>
+    //       {icon('project')}
+    //       <span className={itemType('project')}>
+    //         {item.name}
+    //       </span>
+    //       {buildItems(item.items)}
+    //     </div>
+    //   </li>
+    // )
 
   return <ul className={styles.treeView}>{items}</ul>;
 };
 
-const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
+const buildItems = (items: Project.ProjectItems): Array<any> => {
   if (items.length === 0) {
     return [];
   }
 
-  const ret:Array<React.Node> = [];
-
-  items.forEach((item: Project.ProjectItem) => {
+  const ret:Array<any> = items.map((item: Project.ProjectItem) => {
     const spanClass = `${itemType(item.itemType)}`;
 
-    ret.push((
+    return ((
       <ul className={styles.projectItem} key={item.absolutePath}>
         <li
           role="menuitem"
@@ -72,7 +72,7 @@ const buildItems = (items: Project.ProjectItems): Array<React.Node> => {
   return ret;
 };
 
-function onClick(e, item: Project.Project | Project.ProjectItem) {
+function onClick(e, item: Project.ProjectItem) {
   e.preventDefault();
 
   switch (item.itemType) {
@@ -88,19 +88,15 @@ function onClick(e, item: Project.Project | Project.ProjectItem) {
   }
 }
 
-function toggleDirectory(item: Project.Project | Project.ProjectItem) {
+function toggleDirectory(item: Project.ProjectItem) {
 }
 
-function openFile(item: Project.Project | Project.ProjectItem) {
+function openFile(item: Project.ProjectItem) {
   if (item.itemType === 'undefined') {
     return;
   }
 
-  const items:Array<string> = item.path.split('/');
-  const projectName:string = items[1];
-  const itemName: string = path.join('/', ...items.slice(2, items.length));
-
-  ipcRenderer.send('open-page', { projectName, itemName });
+  ipcRenderer.send('open-page', { projectName: item.projectName, itemName: item.path });
 }
 
 function contextmenu(e, absolutePath: string) {

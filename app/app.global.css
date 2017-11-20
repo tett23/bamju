@@ -34,3 +34,15 @@ a:hover {
   text-decoration: none;
   cursor: pointer;
 }
+
+.wikiLink {
+
+}
+
+.wikiLink.available {
+  color: #00f;
+}
+
+.wikiLink.unavailable{
+  color: #f00;
+}
