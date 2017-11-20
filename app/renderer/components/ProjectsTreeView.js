@@ -17,6 +17,10 @@ type Props = {
 };
 
 class projectsTreeView extends React.Component<Props> {
+  static defaultProps = {
+    projects: []
+  };
+
   constructor(props) {
     console.log('projectTreeView constructor', props);
     super(props);
@@ -208,10 +212,6 @@ function itemType(t: ItemType) {
     return styles.itemTypeUnavailable;
   }
 }
-
-projectsTreeView.defaultProps = {
-  projects: []
-};
 
 const mapStateToProps = (state: {mainView: mainViewState}): {projects: Projects} => {
   console.log('projectsTreeView mapStateToProps', state);
