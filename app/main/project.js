@@ -52,7 +52,3 @@ ipcMain.on('remove-project', async (e, { path }) => {
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;
 });
-
-ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
-  opn(absolutePath);
-});

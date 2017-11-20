@@ -41,6 +41,7 @@ const tab = ({
 
 function contextmenu(e, absolutePath: string) {
   e.preventDefault();
+  e.stopPropagation();
 
   const menu = new Menu();
   menu.append(new MenuItem({
