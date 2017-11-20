@@ -1,8 +1,12 @@
 // @flow
 
+import fs from 'fs';
 import { ipcMain } from 'electron';
 import opn from 'opn';
+import Config from '../common/bamju_config';
 import * as Project from '../common/project';
+
+let watchFile:string = '';
 
 ipcMain.on('open-main-page', async (e) => {
   try {
@@ -16,14 +20,12 @@ ipcMain.on('open-main-page', async (e) => {
 });
 
 ipcMain.on('open-page', async (e, { projectName, itemName }) => {
-  try {
-    const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, itemName);
+  fs.unwatchFile(watchFile);
 
-    e.sender.send('open-page', buf);
-    e.returnValue = buf;
-  } catch (err) {
-    console.log('ipcMain open-page', projectName, itemName, err);
-  }
+  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
+
+  e.sender.send('open-page', buf);
+  e.returnValue = buf;
 });
 
 ipcMain.on('refresh-tree-view', async (e) => {
@@ -52,3 +54,29 @@ ipcMain.on('remove-project', async (e, { path }) => {
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;
 });
+
+async function openPage(e, { projectName, itemName }: {projectName: string, itemName: string}): Promise<?Project.Buffer> {
+  console.log('openFile', projectName, itemName);
+  try {
+    const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, itemName);
+
+    if (Config.followChange) {
+      watchFile = buf.absolutePath;
+      fs.unwatchFile(watchFile);
+      fs.watchFile(watchFile, {}, () => {
+        openPage(e, { projectName, itemName }).then((b: ?Project.Buffer) => {
+          e.sender.send('open-page', b);
+          return b;
+        }).catch((err) => {
+          console.log('watch', err);
+        });
+      });
+    }
+
+    return buf;
+  } catch (err) {
+    console.log('ipcMain open-page', projectName, itemName, err);
+  }
+
+  return undefined;
+}

@@ -19,11 +19,9 @@ class Markdown {
       breaks: true
     });
 
-    console.log(html);
     html = html.replace(/\[\[(.+:)(.+?)\]\]\{(.+?)\}/, (_, r: string, name: string, text: string): string => Markdown.wikiLinkReplacer(r, name, text));
     html = html.replace(/\[\[(.+?)\]\]\{(.+?)\}/, (_, name: string, text: string): string => Markdown.wikiLinkReplacer(repo, name, text));
     html = html.replace(/\[\[(.+?)\]\]/, (_, name: string): string => Markdown.wikiLinkReplacer(repo, name, name));
-    console.log(html);
 
     return html;
   }

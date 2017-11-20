@@ -15,7 +15,8 @@ export type BamjuConfig = {
     y: number,
     width: number,
     height: number
-  }]
+  }],
+  followChange: boolean
 };
 
 const defaultConfig:BamjuConfig = {
@@ -30,6 +31,7 @@ const defaultConfig:BamjuConfig = {
       height: 728
     }
   ],
+  followChange: true,
   init: async (): Promise<void> => {
     const conf = await loadConfigFile();
     merge(conf);

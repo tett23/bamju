@@ -59,8 +59,11 @@ if (module.hot) {
 
 // ipc.sendAsync('open-page');
 
-ipcRenderer.on('open-page', (event, buf: Project.Buffer) => {
+ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
   console.log('open-page', buf);
+  if (buf === undefined || buf === null) {
+    return;
+  }
 
   store.dispatch(openPageByBuffer(buf));
 });
