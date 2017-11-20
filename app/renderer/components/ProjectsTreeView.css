@@ -1,7 +1,14 @@
 .treeView {
+  display: flex;
+  flex-direction: column;
   font-size: 14px;
   color: #9da5b4;
   background-color: rgb(33, 37, 43);
+}
+
+.treeViewItems {
+  flex: 1 1 auto;
+  position: relative;
   list-style-type: none;
   list-style-position: outside;
   overflow-y: scroll;
@@ -14,13 +21,13 @@
   white-space: nowrap;
 }
 
-.treeView li {
+.treeViewItems li {
   list-style: none;
   line-height: 2em;
   cursor: pointer;
 }
 
-.treeView li span{
+.treeViewItems li span{
   padding-left: 10px
 }
 
@@ -38,4 +45,15 @@
 .itemTypeUnavailable {
   color: rgba(157, 165, 180, 0.6);
   cursor: default;
+}
+
+.menu {
+  flex: 0 0 auto;
+  border-top: solid #000 1px;
+  padding: 5px;
+  height: 2em;
+}
+
+.menuItem {
+  cursor: pointer;
 }

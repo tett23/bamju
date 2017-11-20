@@ -124,11 +124,13 @@ class projectsTreeView extends React.Component<Props> {
     ));
 
     return (
-      <div>
-        <div>
-          <FontAwesome name="plus" onClick={addProject} />
+      <div className={styles.treeView}>
+        <ul className={styles.treeViewItems}>{items}</ul>
+        <div className={styles.menu}>
+          <span className={styles.menuItem}>
+            <FontAwesome name="plus" onClick={addProject} />
+          </span>
         </div>
-        <ul className={styles.treeView}>{items}</ul>
       </div>
     );
   }
