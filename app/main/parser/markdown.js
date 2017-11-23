@@ -86,9 +86,29 @@ class Markdown {
     };
 
     const p5 = async (html: string): Promise<string> => {
-      let ret:string = html.replace(/\[\[(.+?):(.+?)\]\]\{(.+?)\}/, (_, r: string, name: string, text: string): string => Markdown.wikiLinkReplacer(r, name, text));
-      ret = ret.replace(/\[\[(.+?)\]\]\{(.+?)\}/, (_, name: string, text: string): string => Markdown.wikiLinkReplacer(repo, name, text));
-      ret = ret.replace(/\[\[(.+?)\]\]/, (_, name: string): string => Markdown.wikiLinkReplacer(repo, name, name));
+      let ret:string = html;
+
+      let re:RegExp = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]\{(.+?)\}/;
+      while (re.test(ret)) {
+        ret = ret.replace(re, (_, r: string, name: string, text: string): string => {
+          return Markdown.wikiLinkReplacer(r, name, text);
+        });
+      }
+
+      re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
+      while (re.test(ret)) {
+        console.log('p5', ret.match(re));
+        ret = ret.replace(re, (_, name: string, text: string): string => {
+          return Markdown.wikiLinkReplacer(repo, name, text);
+        });
+      }
+
+      re = /\[\[(?!inline\|)(.+?)\]\]/;
+      while (re.test(ret)) {
+        ret = ret.replace(re, (_, name: string): string => {
+          return Markdown.wikiLinkReplacer(repo, name, name);
+        });
+      }
 
       return ret;
     };
@@ -115,7 +135,7 @@ class Markdown {
   }
 
   static async parseInline(repo: string, name: string, fragment: ?string): Promise<string> {
-    // 再帰すると壊れる
+    // FIXME: 再帰すると壊れる
     const item:?ProjectItem = Manager.getProjectItem(repo, name);
 
     if (item === undefined || item === null) {
