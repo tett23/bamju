@@ -19,9 +19,14 @@ class Markdown {
     options.renderer = opt.renderer || renderer;
     renderer.inlineLink = renderInlineLink;
     const lexer = new marked.Lexer(options);
-    lexer.rules.inlineLink1 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]/;
-    lexer.rules.inlineLink2 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]/;
-    lexer.rules.inlineLink3 = /^\s*\[\[inline\|(.+?):(.+?)\]\]/; lexer.rules.inlineLink4 = /^\s*\[\[inline\|(.+?)\]\]/;
+    lexer.rules.inlineLink1 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]\{(.+?)\}/;
+    lexer.rules.inlineLink2 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]/;
+    lexer.rules.inlineLink3 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]\{(.+?)\}/;
+    lexer.rules.inlineLink4 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]/;
+    lexer.rules.inlineLink5 = /^\s*\[\[inline\|(.+?):(.+?)\]\]\{(.+?)\}/;
+    lexer.rules.inlineLink6 = /^\s*\[\[inline\|(.+?):(.+?)\]\]/;
+    lexer.rules.inlineLink7 = /^\s*\[\[inline\|(.+?)\]\]\{(.+?)\}/;
+    lexer.rules.inlineLink8 = /^\s*\[\[inline\|(.+?)\]\]/;
     lexer.token = markedLexerToken;
     const parser = new marked.Parser(options);
     parser.tok = markedParserTok;
@@ -34,7 +39,7 @@ class Markdown {
       if (tok.type === 'inlineLink') {
         console.log('map inlineLink tok', tok);
         const r = tok.repo || repo;
-        const html = await Markdown.parseInline(r, tok.name, tok.fragment, currentHeadingLevel);
+        const html = await Markdown.parseInline(r, tok.name, tok.fragment, tok.text, currentHeadingLevel);
 
         tok.html = html;
       }
@@ -103,7 +108,7 @@ class Markdown {
     return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
   }
 
-  static async parseInline(repo: string, name: string, fragment: ?string, headingLevel: number = 1): Promise<string> {
+  static async parseInline(repo: string, name: string, fragment: ?string, text: string, headingLevel: number = 1): Promise<string> {
     // FIXME: 再帰すると壊れる
     const item:?ProjectItem = Manager.getProjectItem(repo, name);
 
@@ -112,10 +117,8 @@ class Markdown {
     }
 
     let md:string = await item.content();
-    console.log('parseInline md', md);
-    console.log('parseInline match', md.match(/^#\s*(.+)$/m));
-    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{$1}`);
-    console.log('parseInline md', md);
+    // h1のおきかえ
+    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{${text}}`);
 
     const ret:string = await Markdown.parse(repo, md, { headingLevel });
 
