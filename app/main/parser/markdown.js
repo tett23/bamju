@@ -12,7 +12,8 @@ class Markdown {
       gfm: true,
       tables: true,
       breaks: true,
-      renderer: undefined
+      renderer: undefined,
+      headingLevel: 1
     }, opt);
     const renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
@@ -24,12 +25,16 @@ class Markdown {
     lexer.token = markedLexerToken;
     const parser = new marked.Parser(options);
     parser.tok = markedParserTok;
-    // const tokens = lexer.lex(md);
-    const tokens = await Promise.all(lexer.lex(md).map(async (tok) => {
+    let currentHeadingLevel = 1;
+    const tokens:Array<Object> = await Promise.all(lexer.lex(md).map(async (tok) => {
+      if (tok.type === 'heading') {
+        currentHeadingLevel = tok.depth + 1;
+        tok.depth = options.headingLevel;
+      }
       if (tok.type === 'inlineLink') {
         console.log('map inlineLink tok', tok);
         const r = tok.repo || repo;
-        const html = await Markdown.parseInline(r, tok.name, tok.fragment);
+        const html = await Markdown.parseInline(r, tok.name, tok.fragment, currentHeadingLevel);
 
         tok.html = html;
       }
@@ -112,7 +117,7 @@ class Markdown {
     md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{$1}`);
     console.log('parseInline md', md);
 
-    const ret:string = await Markdown.parse(repo, md);
+    const ret:string = await Markdown.parse(repo, md, { headingLevel });
 
     return ret;
   }
