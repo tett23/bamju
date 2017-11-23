@@ -40,12 +40,16 @@ a:hover {
   cursor: pointer;
 }
 
+.wikiLink:hover {
+  text-decoration: underline;
+}
+
 .wikiLink.available {
-  color: #00f;
+  color: #0366d6;
 }
 
 .wikiLink.unavailable{
-  color: #f00;
+  color: #ba0000;
 }
 
 .markdown-body {
