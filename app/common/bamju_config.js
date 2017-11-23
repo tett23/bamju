@@ -50,8 +50,11 @@ const defaultConfig:BamjuConfig = {
     ]
   }],
   followChange: true,
-  init: (): Promise<void> => loadConfigFile().then((conf) =>
-    merge(conf)).catch(() => {}),
+  init: (): Promise<void> => {
+    return loadConfigFile().then((conf) => {
+      return merge(conf);
+    }).catch(() => {});
+  },
   update: (values: {}): Promise<void> => {
     merge(values);
 
