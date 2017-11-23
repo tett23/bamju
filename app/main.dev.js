@@ -1,4 +1,4 @@
-/* eslint global-require: 1, flowtype-errors/show-errors: 0 */
+/* eslint global-require: 0, flowtype-errors/show-errors: 0 */
 // @flow
 
 import path from 'path';
@@ -14,6 +14,7 @@ import MenuBuilder from './menu';
 import Config from './common/bamju_config';
 import { Manager } from './common/project';
 
+require('./main/project');
 
 const store = createStore(
   appReducer,
@@ -48,7 +49,7 @@ const installExtensions = async () => {
   ];
 
   return Promise
-    .all(extensions.map(name => installer.default(installer[name], forceDownload)))
+    .all(extensions.map(name => { return installer.default(installer[name], forceDownload); }))
     .catch(console.log);
 };
 
@@ -73,7 +74,6 @@ app.on('ready', async () => {
 
   await Config.init();
   await Manager.init();
-  require('./main/project');
 
   console.log('ready', Config);
   mainWindow = new BrowserWindow({

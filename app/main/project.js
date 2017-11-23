@@ -9,6 +9,8 @@ import * as Project from '../common/project';
 let watchFile:string = '';
 
 ipcMain.on('open-main-page', async (e) => {
+  await Project.Manager.loadProjects();
+
   let { projectName, path } = Config.windows[0].tabs[0].buffer;
 
   try {

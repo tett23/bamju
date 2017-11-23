@@ -97,7 +97,6 @@ class Markdown {
 
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
-        console.log('p5', ret.match(re));
         ret = ret.replace(re, (_, name: string, text: string): string => {
           return Markdown.wikiLinkReplacer(repo, name, text);
         });
