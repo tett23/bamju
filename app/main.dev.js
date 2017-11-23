@@ -78,10 +78,10 @@ app.on('ready', async () => {
   console.log('ready', Config);
   mainWindow = new BrowserWindow({
     show: false,
-    x: Config.windows[0].x,
-    y: Config.windows[0].y,
-    width: Config.windows[0].width,
-    height: Config.windows[0].height
+    x: Config.windows[0].rectangle.x,
+    y: Config.windows[0].rectangle.y,
+    width: Config.windows[0].rectangle.width,
+    height: Config.windows[0].rectangle.height
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
@@ -111,13 +111,17 @@ app.on('ready', async () => {
   const updateRectangle = () => {
     const rectangle = mainWindow.getBounds();
 
+    const r = {
+      x: rectangle.x,
+      y: rectangle.y,
+      width: rectangle.width,
+      height: rectangle.height
+    };
+    const win = Object.assign({}, Config.windows[0]);
+    win.rectangle = r;
+
     Config.update({
-      windows: [{
-        x: rectangle.x,
-        y: rectangle.y,
-        width: rectangle.width,
-        height: rectangle.height
-      }]
+      windows: [win]
     });
   };
 

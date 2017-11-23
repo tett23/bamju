@@ -9,8 +9,14 @@ import * as Project from '../common/project';
 let watchFile:string = '';
 
 ipcMain.on('open-main-page', async (e) => {
+  let { projectName, path } = Config.windows[0].tabs[0].buffer;
+
   try {
-    const buf:Project.Buffer = await Project.Manager.getBuffer('bamju-specifications', 'index.md');
+    if (!projectName || !path) {
+      projectName = 'bamju-specifications';
+      path = 'index.md';
+    }
+    const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, path);
 
     e.sender.send('open-page', buf);
     e.returnValue = buf;
@@ -56,9 +62,15 @@ ipcMain.on('remove-project', async (e, { path }) => {
 });
 
 async function openPage(e, { projectName, itemName }: {projectName: string, itemName: string}): Promise<?Project.Buffer> {
-  console.log('openFile', projectName, itemName);
   try {
     const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, itemName);
+
+    if (buf.itemType !== 'undefined') {
+      const win = Object.assign({}, Config.windows[0]);
+      win.tabs[0].buffer.projectName = buf.projectName;
+      win.tabs[0].buffer.path = buf.path;
+      Config.update({ windows: [win] });
+    }
 
     if (Config.followChange) {
       watchFile = buf.absolutePath;

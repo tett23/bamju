@@ -11,35 +11,51 @@ export type BamjuConfig = {
     [string]: string
   },
   windows: [{
-    x: number,
-    y: number,
-    width: number,
-    height: number
+    rectangle: {
+      x: number,
+      y: number,
+      width: number,
+      height: number
+    },
+    tabs: [{
+      buffer: {
+        projectName: ?string,
+        path: ?string
+      }
+    }]
   }],
   followChange: boolean
+  // init: () => Promise<void>,
+  // update: ({}) => Promise<void>
 };
 
 const defaultConfig:BamjuConfig = {
   projects: {
     'bamju-specifications': '/Users/tett23/projects/bamju-specifications',
   },
-  windows: [
-    {
+  windows: [{
+    rectangle: {
       x: 100,
       y: 100,
       width: 1024,
       height: 728
-    }
-  ],
+    },
+    tabs: [
+      {
+        buffer: {
+          projectName: undefined,
+          path: undefined
+        }
+      }
+    ]
+  }],
   followChange: true,
-  init: async (): Promise<void> => {
-    const conf = await loadConfigFile();
-    merge(conf);
-  },
-  update: async (values: {}): Promise<void> => {
+  init: (): Promise<void> => loadConfigFile().then((conf) =>
+    merge(conf)).catch(() => {}),
+  update: (values: {}): Promise<void> => {
     merge(values);
 
-    await updateConfigFile();
+    return updateConfigFile();
   }
 };
 
