@@ -6,19 +6,42 @@ import { Manager, Project, ProjectItem } from '../../common/project';
 
 const { markedParserTok, markedLexerToken } = require('./marked_overrides');
 
+type Token = Object;
+type MarkdownOption = {
+  gfm?: boolean,
+  tables?: boolean,
+  breaks?: boolean,
+  pedantic?: boolean,
+  sanitize?: boolean,
+  sanitizer?: (string)=>string,
+  mangle?: boolean,
+  smartLists?: boolean,
+  silent?: boolean,
+  highlight?: (string, string, (Error, number)=>void) => string,
+  langPrefix?: string,
+  smartypants?: boolean,
+  headerPrefix?: string,
+  renderer?: marked.Renderer,
+  xhtml?: boolean,
+
+  headingLevel?: number
+};
+
+const defaultOption:MarkdownOption = {
+  gfm: true,
+  tables: true,
+  breaks: true,
+  renderer: undefined,
+  headingLevel: 1
+};
+
 class Markdown {
-  static async parse(repo: string, md: string, opt: {[string]: any} = {}): Promise<string> {
-    const options = Object.assign({
-      gfm: true,
-      tables: true,
-      breaks: true,
-      renderer: undefined,
-      headingLevel: 1
-    }, opt);
-    const renderer = new marked.Renderer(options);
+  static async parse(repo: string, md: string, opt: MarkdownOption = {}): Promise<string> {
+    const options = Object.assign(defaultOption, opt);
+    const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
     renderer.inlineLink = renderInlineLink;
-    const lexer = new marked.Lexer(options);
+    const lexer:marked.Lexer = new marked.Lexer(options);
     lexer.rules.inlineLink1 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]\{(.+?)\}/;
     lexer.rules.inlineLink2 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]/;
     lexer.rules.inlineLink3 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]\{(.+?)\}/;
@@ -28,23 +51,24 @@ class Markdown {
     lexer.rules.inlineLink7 = /^\s*\[\[inline\|(.+?)\]\]\{(.+?)\}/;
     lexer.rules.inlineLink8 = /^\s*\[\[inline\|(.+?)\]\]/;
     lexer.token = markedLexerToken;
-    const parser = new marked.Parser(options);
+    const parser:marked.Parser = new marked.Parser(options);
     parser.tok = markedParserTok;
     let currentHeadingLevel = 1;
-    const tokens:Array<Object> = await Promise.all(lexer.lex(md).map(async (tok) => {
-      if (tok.type === 'heading') {
+    const tokens:Array<Token> = await Promise.all(lexer.lex(md).map(async (tok: Token): Token => {
+      const ret = tok;
+      if (ret.type === 'heading') {
         currentHeadingLevel = tok.depth + 1;
-        tok.depth = options.headingLevel;
+        ret.depth = options.headingLevel;
       }
-      if (tok.type === 'inlineLink') {
+      if (ret.type === 'inlineLink') {
         console.log('map inlineLink tok', tok);
-        const r = tok.repo || repo;
-        const html = await Markdown.parseInline(r, tok.name, tok.fragment, tok.text, currentHeadingLevel);
+        ret.repo = ret.repo || repo;
+        const html = await Markdown.parseInline(ret, currentHeadingLevel);
 
-        tok.html = html;
+        ret.html = html;
       }
 
-      return tok;
+      return ret;
     }));
     tokens.links = {};
 
@@ -83,20 +107,6 @@ class Markdown {
     return ret;
   }
 
-  static async replaceInlineLink(repo: string, tokens: Array<any>): Promise<any> {
-    return tokens.map((tok) => {
-      if (tok.type === 'paragraph') {
-        return {
-          type: 'inlineLink',
-          text: tok.text
-        };
-      }
-
-      return tok;
-    });
-  }
-
-
   static wikiLinkReplacer(repo: string, name: string, text: string): string {
     const isExist:boolean = Markdown.isExistPage(repo, name);
 
@@ -108,7 +118,10 @@ class Markdown {
     return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
   }
 
-  static async parseInline(repo: string, name: string, fragment: ?string, text: string, headingLevel: number = 1): Promise<string> {
+  static async parseInline(token: {repo: string, name: string, fragment: ?string, text: string}, headingLevel: number = 1): Promise<string> {
+    const {
+      repo, name, fragment, text
+    } = token;
     // FIXME: 再帰すると壊れる
     const item:?ProjectItem = Manager.getProjectItem(repo, name);
 
@@ -149,11 +162,6 @@ class Markdown {
   }
 }
 
-// async function renderInlineLink(repo: string, name: string, fragment: ?string): Promise<string> {
-//   const ret:string = await Markdown.parseInline(repo, name, fragment);
-//
-//   return ret;
-// }
 function renderInlineLink(html: string): string {
   return `<div>${html}</div>`;
 }
