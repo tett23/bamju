@@ -137,11 +137,17 @@ class Markdown {
     // FIXME: 再帰すると壊れる
     const item:?ProjectItem = Manager.getProjectItem(repo, name);
 
-    if (item === undefined || item === null) {
+    if (!item) {
       return `[[${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
     }
 
-    const ret:string = await Markdown.parse(repo, await item.content());
+    let md:string = await item.content();
+    console.log('parseInline md', md);
+    console.log('parseInline match', md.match(/^#\s*(.+)$/m));
+    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{$1}`);
+    console.log('parseInline md', md);
+
+    const ret:string = await Markdown.parse(repo, md);
 
     return ret;
   }
