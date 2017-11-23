@@ -89,14 +89,19 @@ export class Manager {
     await this.loadProjects();
   }
 
-  static async getBuffer(projectName: string, itemName: string): Promise<Buffer> {
+  static getProjectItem(projectName: string, itemName: string): ?ProjectItem {
     const p:?Project = this.find(projectName);
     if (p === undefined || p === null) {
-      const ret:Buffer = await Manager.notFoundBuffer(projectName, itemName);
-      return ret;
+      return undefined;
     }
 
-    const item:?ProjectItem = p.detect(itemName);
+    const ret:?ProjectItem = p.detect(itemName);
+
+    return ret;
+  }
+
+  static async getBuffer(projectName: string, itemName: string): Promise<Buffer> {
+    const item:?ProjectItem = Manager.getProjectItem(projectName, itemName);
     if (item === undefined || item === null) {
       const ret:Buffer = await Manager.notFoundBuffer(projectName, itemName);
       return ret;
@@ -313,6 +318,17 @@ export class ProjectItem {
     return ret;
   }
 
+  async content(): Promise<string> {
+    let ret:string;
+    if (this.itemType === ItemTypeDirectory) {
+      ret = await readDirectory(this.absolutePath);
+    } else {
+      ret = await readFile(this.absolutePath);
+    }
+
+    return ret;
+  }
+
   async toBuffer(): Promise<Buffer> {
     let html:string = '';
     if (this.itemType === 'directory') {
@@ -355,23 +371,44 @@ export class ProjectItem {
 export type ProjectItems = Array<ProjectItem>;
 
 async function openDirectory(projectName: string, p: string): Promise<string> {
-  const files:Array<string> = await promisify(fs.readdir)(p);
-  const items:Array<string> = files.map((filename: string) => `- [[${filename}]]`);
-
-  const html:string = `# ${p}
-
-  ${items.join('\n')}
-  `;
-
-  const ret:string = await Markdown.parse(projectName, html);
+  const md:string = await readDirectory(p);
+  const ret:string = await Markdown.parse(projectName, md);
 
   return ret;
 }
 
 async function openFile(projectName: string, p: string): Promise<string> {
-  const ret:string = await Markdown.parseByAbsolutePath(projectName, p);
+  const md:string = await readFile(p);
+  const ret:string = await Markdown.parse(projectName, md);
 
   return ret;
+}
+
+
+async function readFile(absolutePath: string): Promise<string> {
+  try {
+    const text:string = (await promisify(fs.readFile)(absolutePath)).toString('UTF-8');
+    return text;
+  } catch (e) {
+    console.log('Project.readFile err', e);
+    return '';
+  }
+}
+
+async function readDirectory(absolutePath: string): Promise<string> {
+  try {
+    const files:Array<string> = await promisify(fs.readdir)(absolutePath);
+    const items:Array<string> = files.map((filename: string) => `- [[${filename}]]`);
+
+    const ret:string = `# ${absolutePath}
+
+  ${items.join('\n')}
+  `;
+
+    return ret;
+  } catch (e) {
+    return '';
+  }
 }
 
 export function detectItemTypeByAbsPath(p: string): ItemType {
