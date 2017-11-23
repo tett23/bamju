@@ -32,9 +32,9 @@ const tab = ({
   };
 
   return (
-    <div className={styles.tab} data-absolute-path={absolutePath} onContextMenu={e => contextmenu(e, absolutePath)}>
+    <div className={styles.tab} data-absolute-path={absolutePath} onContextMenu={e => { return contextmenu(e, absolutePath); }}>
       <Breadcrumb>{breadcrumbItems}</Breadcrumb>
-      <div name={name} dangerouslySetInnerHTML={html} />
+      <div className="markdown-body" name={name} dangerouslySetInnerHTML={html} />
     </div>
   );
 };
