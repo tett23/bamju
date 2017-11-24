@@ -321,7 +321,7 @@ export class ProjectItem {
   async content(): Promise<string> {
     let ret:string;
     if (this.itemType === ItemTypeDirectory) {
-      ret = await readDirectory(this.absolutePath);
+      ret = await readDirectory(this.projectName, this.path, this.absolutePath);
     } else {
       ret = await readFile(this.absolutePath);
     }
@@ -356,7 +356,7 @@ export class ProjectItem {
       await promisify(fs.stat)(indexPath);
       ret = await openFile(this.projectName, indexPath);
     } catch (e) {
-      ret = await openDirectory(this.projectName, this.absolutePath);
+      ret = await openDirectory(this.projectName, this.path, this.absolutePath);
     }
 
     return ret;
@@ -370,8 +370,8 @@ export class ProjectItem {
 }
 export type ProjectItems = Array<ProjectItem>;
 
-async function openDirectory(projectName: string, p: string): Promise<string> {
-  const md:string = await readDirectory(p);
+async function openDirectory(projectName: string, basePath: string, p: string): Promise<string> {
+  const md:string = await readDirectory(projectName, basePath, p);
   const ret:string = await Markdown.parse(projectName, md);
 
   return ret;
@@ -395,10 +395,15 @@ async function readFile(absolutePath: string): Promise<string> {
   }
 }
 
-async function readDirectory(absolutePath: string): Promise<string> {
+async function readDirectory(projectName: string, basePath: string, absolutePath: string): Promise<string> {
   try {
     const files:Array<string> = await promisify(fs.readdir)(absolutePath);
-    const items:Array<string> = files.map((filename: string) => { return `- [[${filename}]]`; });
+    const items:Array<string> = files.map((filename: string) => {
+      const p:string = path.join(basePath, filename);
+      const text:string = path.basename(filename, path.extname(filename));
+
+      return `- [[${projectName}:${p}]]{${text}}`;
+    });
 
     const ret:string = `
 # ${absolutePath}
