@@ -17,14 +17,32 @@ const tab = ({
 }) => {
   console.log('refresh tab', body);
 
-  const split:Array<string> = (projectName + path).split('/');
   const breadcrumbItems = [];
-  split.forEach((item: string) => {
+  breadcrumbItems.push((
+    <Breadcrumb.Item
+      key="/"
+      onClick={e => { return breadcrumbItemsOnClick(e, projectName, '/'); }}
+    >
+      {projectName}
+    </Breadcrumb.Item>
+  ));
+
+  let breadcrumbPath:string = '';
+  path.split('/').forEach((item: string) => {
     if (item === '') {
       return;
     }
+    breadcrumbPath += `/${item}`;
 
-    breadcrumbItems.push(<Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>);
+    const p = breadcrumbPath;
+    breadcrumbItems.push((
+      <Breadcrumb.Item
+        key={item}
+        onClick={e => { return breadcrumbItemsOnClick(e, projectName, p); }}
+      >
+        {item}
+      </Breadcrumb.Item>
+    ));
   });
 
   const html = {
@@ -38,6 +56,13 @@ const tab = ({
     </div>
   );
 };
+
+function breadcrumbItemsOnClick(e, repo: string, path: string) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  ipcRenderer.send('open-page', { projectName: repo, itemName: path });
+}
 
 function contextmenu(e, absolutePath: string) {
   e.preventDefault();
