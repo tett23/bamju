@@ -60,7 +60,7 @@ export class Manager {
     if (Manager.find(projectName) === undefined) {
       _projects.push(ret);
     } else {
-      const idx:number = _projects.findIndex((item: Project): boolean => item.name === projectName);
+      const idx:number = _projects.findIndex((item: Project): boolean => { return item.name === projectName; });
 
       _projects[idx] = ret;
     }
@@ -113,7 +113,7 @@ export class Manager {
   }
 
   static find(projectName: string): ?Project {
-    return _projects.find((p: Project): boolean => p.name === projectName);
+    return _projects.find((p: Project): boolean => { return p.name === projectName; });
   }
 
   static async notFoundBuffer(projectName: string, itemName: string): Promise<Buffer> {
@@ -398,11 +398,12 @@ async function readFile(absolutePath: string): Promise<string> {
 async function readDirectory(absolutePath: string): Promise<string> {
   try {
     const files:Array<string> = await promisify(fs.readdir)(absolutePath);
-    const items:Array<string> = files.map((filename: string) => `- [[${filename}]]`);
+    const items:Array<string> = files.map((filename: string) => { return `- [[${filename}]]`; });
 
-    const ret:string = `# ${absolutePath}
+    const ret:string = `
+# ${absolutePath}
 
-  ${items.join('\n')}
+${items.join('\n')}
   `;
 
     return ret;
