@@ -406,7 +406,7 @@ async function readDirectory(projectName: string, basePath: string, absolutePath
     });
 
     const ret:string = `
-# ${absolutePath}
+# ${projectName}:${basePath}
 
 ${items.join('\n')}
   `;
