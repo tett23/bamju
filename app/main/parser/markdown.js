@@ -32,12 +32,12 @@ const defaultOption:MarkdownOption = {
   tables: true,
   breaks: true,
   renderer: undefined,
-  headingLevel: 1
+  headingLevel: 0
 };
 
 class Markdown {
   static async parse(repo: string, md: string, opt: MarkdownOption = {}): Promise<string> {
-    const options = Object.assign(defaultOption, opt);
+    const options = Object.assign({}, defaultOption, opt);
     const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
     renderer.inlineLink = renderInlineLink;
@@ -53,15 +53,14 @@ class Markdown {
     lexer.token = markedLexerToken;
     const parser:marked.Parser = new marked.Parser(options);
     parser.tok = markedParserTok;
-    let currentHeadingLevel = 1;
+    let currentHeadingLevel:number = 0;
     const tokens:Array<Token> = await Promise.all(lexer.lex(md).map(async (tok: Token): Token => {
       const ret = tok;
       if (ret.type === 'heading') {
-        currentHeadingLevel = tok.depth + 1;
-        ret.depth = options.headingLevel;
+        ret.depth += options.headingLevel;
+        currentHeadingLevel = ret.depth;
       }
       if (ret.type === 'inlineLink') {
-        console.log('map inlineLink tok', tok);
         ret.repo = ret.repo || repo;
         const html = await Markdown.parseInline(ret, currentHeadingLevel);
 
