@@ -74,7 +74,10 @@ class Markdown {
       const ret = tok;
       if (ret.type === 'heading') {
         ret.depth += options.headingLevel;
-        currentHeadingLevel = ret.depth;
+        currentHeadingLevel = ret.depth - 1;
+        if (currentHeadingLevel === 0) {
+          currentHeadingLevel = 1;
+        }
       }
       if (ret.type === 'inlineLink') {
         ret.repo = ret.repo || projectItem.projectName;
