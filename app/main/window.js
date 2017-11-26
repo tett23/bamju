@@ -5,7 +5,7 @@ import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
 
 const {
-  Config, Window: WindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
+  Config, Window: WindowConfig, findWindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
 } = require('../common/bamju_config');
 
 export class WindowManager {
@@ -95,10 +95,14 @@ export class Window {
   }
 }
 
-ipcMain.on('open-new-window', async (e, { projectName, itemName }: {projectName: string, itemName: string}) => {
+ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}) => {
   console.log('open-new-window', projectName, itemName);
 
-  const conf = Object.assign({}, Config.windows[0]);
+  let conf:?WindowConfig = findWindowConfig(windowID);
+  if (conf === null || conf === undefined) {
+    conf = Object.assign({}, Config.windows[0]);
+  }
+
   conf.id = createWindowID();
   conf.rectangle.x += 50;
   conf.rectangle.y += 50;

@@ -229,7 +229,7 @@ function contextmenu(e, item: ProjectItem) {
   menu.append(new MenuItem({
     label: 'open new window',
     click: () => {
-      ipcRenderer.send('open-new-window', { projectName: item.projectName, itemName: item.path });
+      ipcRenderer.send('open-new-window', { windowID: window.windowID, projectName: item.projectName, itemName: item.path });
     }
   }));
   if (item.path === '/') {
