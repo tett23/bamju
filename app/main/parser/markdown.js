@@ -153,7 +153,8 @@ class Markdown {
 
     const item:?ProjectItem = Manager.getProjectItem(repo, name);
     if (!item) {
-      return `[[${repo}:${name}]]${fragment ? `#${fragment}` : ''}`;
+      const t:string = `\\[\\[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}\\]\\]`;
+      return `[[${repo}:${name}]]{${t}}`;
     }
 
     let altText:string = !text ? `${item.projectName}:${item.path}` : text;
