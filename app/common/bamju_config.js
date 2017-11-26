@@ -19,18 +19,18 @@ export type BamjuConfig = {
 };
 
 export type Window = {
-    rectangle: {
-      x: number,
-      y: number,
-      width: number,
-      height: number
-    },
-    tabs: [{
-      buffer: {
-        projectName: ?string,
-        path: ?string
-      }
-    }]
+  rectangle: {
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  },
+  tabs: [{
+    buffer: {
+      projectName: ?string,
+      path: ?string
+    }
+  }]
 };
 export type Windows = Array<Window>;
 
