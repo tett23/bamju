@@ -10,7 +10,15 @@ export type BamjuConfig = {
   projects: {
     [string]: string
   },
-  windows: [{
+  windows: Windows,
+  followChange: boolean,
+  init: () => Promise<void>,
+  update: ({}) => Promise<void>
+  // init: () => Function,
+  // update: ({}) => Function
+};
+
+export type Window = {
     rectangle: {
       x: number,
       y: number,
@@ -23,11 +31,8 @@ export type BamjuConfig = {
         path: ?string
       }
     }]
-  }],
-  followChange: boolean
-  // init: () => Promise<void>,
-  // update: ({}) => Promise<void>
 };
+export type Windows = Array<Window>;
 
 const defaultConfig:BamjuConfig = {
   projects: {
@@ -50,12 +55,22 @@ const defaultConfig:BamjuConfig = {
     ]
   }],
   followChange: true,
-  init: (): Promise<void> => {
+  // init: (): Promise<void> => {
+  //   return loadConfigFile().then((conf) => {
+  //     return merge(conf);
+  //   }).catch(() => {});
+  // },
+  // update: (values: {}): Promise<void> => {
+  //   merge(values);
+  //
+  //   return updateConfigFile();
+  // }
+  init(): Promise<void> {
     return loadConfigFile().then((conf) => {
       return merge(conf);
     }).catch(() => {});
   },
-  update: (values: {}): Promise<void> => {
+  update(values: {}) {
     merge(values);
 
     return updateConfigFile();
@@ -100,7 +115,7 @@ async function loadConfigFile(): Promise<BamjuConfig> {
   return Object.assign(defaultConfig, json);
 }
 
-const Config:BamjuConfig = Object.assign({}, defaultConfig);
+export const Config:BamjuConfig = Object.assign({}, defaultConfig);
 Config.init();
 
 export default Config;

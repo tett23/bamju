@@ -1,4 +1,5 @@
 // @flow
+/* eslint disable-line: 0, global-require:0 */
 
 import React from 'react';
 import { createStore, applyMiddleware } from 'redux';
@@ -15,8 +16,9 @@ import appReducer from './renderer/reducers';
 import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView } from './renderer/actions/tree_view';
 import './app.global.css';
-import * as Project from './common/project';
-import Config from './common/bamju_config';
+// import * as Project from './common/project';
+
+const Project = require('./common/project');
 
 const initialState = getInitialStateRenderer();
 console.log('initialState', initialState);
@@ -32,32 +34,41 @@ replayActionRenderer(store);
 
 store.dispatch({ type: 'INITIALIZE_APP' });
 
-render(
-  <AppContainer>
-    <Root store={store} />
-  </AppContainer>,
-  document.getElementById('root')
-);
-
-if (module.hot) {
-  module.hot.accept('./renderer/containers/Root', () => {
-    const NextRoot = require('./renderer/containers/Root'); // eslint-disable-line global-require
-
-    store.dispatch({ type: 'INITIALIZE_APP' });
-
-    render(
-      <AppContainer>
-        <NextRoot store={store} />
-      </AppContainer>,
-      document.getElementById('root')
-    );
-
-    ipcRenderer.send('open-main-page');
-    ipcRenderer.send('refresh-tree-view');
-  });
+const root = document.getElementById('root');
+if (root !== null && root !== undefined) {
+  render(
+    <AppContainer>
+      <Root store={store} />
+    </AppContainer>,
+    root
+  );
 }
 
-// ipc.sendAsync('open-page');
+if (module.hot.accept !== null && module.hot.accept !== undefined) {
+  if (root !== null && root !== undefined) {
+    module.hot.accept('./renderer/containers/Root', () => {
+      const NextRoot = require('./renderer/containers/Root');
+
+      store.dispatch({ type: 'INITIALIZE_APP' });
+
+      render(
+        <AppContainer>
+          <NextRoot store={store} />
+        </AppContainer>,
+        root
+      );
+    });
+  }
+}
+
+ipcRenderer.on('initialize', (event, { projectName, itemName }) => {
+  (async () => {
+    await Project.Manager.init();
+
+    ipcRenderer.sendSync('refresh-tree-view');
+    ipcRenderer.send('open-page', { projectName, itemName });
+  })();
+});
 
 ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
   console.log('open-page', buf);
@@ -74,15 +85,11 @@ ipcRenderer.on('refresh-tree-view', (event, tv) => {
   // なんで送られたきた値を使わないで直接Managerに触れるみたいな治安の悪い状態になっているかというと、
   // ipcがネイティブの実装のため、classのインスタンスを送ると単なるObjectになって、型の検証に失敗するため
   (async () => {
-    await Config.init();
-    const projects:Project.Projects = await Project.Manager.loadProjects();
+    await Project.Manager.loadProjects();
+    const projects:Project.Projects = Project.Manager.projects();
     store.dispatch(refreshTreeView(projects));
   })();
 });
-
-ipcRenderer.send('open-main-page');
-ipcRenderer.send('refresh-tree-view');
-
 
 window.wikiLinkOnClickAvailable = (repo, name) => {
   console.log('wikiLinkOnClickAvailable', repo, name);

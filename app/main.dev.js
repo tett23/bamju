@@ -10,10 +10,11 @@ import {
   replayActionMain
 } from 'electron-redux';
 import appReducer from './renderer/reducers/index';
-import Config from './common/bamju_config';
 import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 
+const { Config, Window } = require('./common/bamju_config');
+const Project = require('./common/project');
 require('./main/window');
 require('./main/project');
 
@@ -70,11 +71,13 @@ app.on('ready', async () => {
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
     await installExtensions();
   }
+  console.log('event app ready');
 
   await Config.init();
+  await Project.Manager.init();
   await Manager.init();
 
-  console.log('ready', Config);
-
-  WindowManager.create();
+  Config.windows.forEach((win: Window) => {
+    WindowManager.create(win);
+  });
 });

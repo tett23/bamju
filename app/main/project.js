@@ -2,25 +2,15 @@
 
 import { ipcMain } from 'electron';
 import opn from 'opn';
-import Config from '../common/bamju_config';
-import * as Project from '../common/project';
+// import * as Project from '../common/project';
 
-ipcMain.on('open-main-page', async (e) => {
-  await Project.Manager.loadProjects();
-
-  let { projectName, path: itemName } = Config.windows[0].tabs[0].buffer;
-  if (!projectName || !itemName) {
-    projectName = 'bamju-specifications';
-    itemName = 'index.md';
-  }
-
-  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
-
-  e.sender.send('open-page', buf);
-  e.returnValue = buf;
-});
+const Project = require('../common/project');
+const { Config } = require('../common/bamju_config');
 
 ipcMain.on('open-page', async (e, { projectName, itemName }) => {
+  // await Project.Manager.init();
+  console.log('open-page _projects', Project.Manager.projects());
+
   const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
 
   e.sender.send('open-page', buf);

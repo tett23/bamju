@@ -4,8 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
-import Config from './bamju_config';
 import Markdown from '../main/parser/markdown';
+
+const { Config } = require('./bamju_config');
 
 export const ItemTypeProject:string = 'project';
 export const ItemTypeDirectory = 'directory';
@@ -31,7 +32,8 @@ export type ParseResults = Array<ParseResult>;
 
 export class Manager {
   static async init() {
-    _projects = await Manager.loadProjects();
+    console.log('Project.Manager.init _projects', _projects);
+    await Manager.loadProjects();
   }
 
   static projects(): Projects {
@@ -39,19 +41,16 @@ export class Manager {
   }
 
   static async loadProjects(): Promise<Projects> {
-    _projects = [];
+    _projects.splice(0);
 
     const projectNames:Array<string> = Object.keys(Config.projects);
-    const ret:Projects = [];
-    await Promise.all(projectNames.map(async (projectName: string) => {
-      const p:Project = await Manager.loadProject(projectName);
-      ret.push(p);
+    await Promise.all(projectNames.map(async (projectName: string): Promise<Project> => {
+      const ret:Project = await Manager.loadProject(projectName);
+
+      return ret;
     }));
 
-    console.log('Manager.loadProjects', ret);
-    _projects = ret;
-
-    return ret;
+    return _projects;
   }
 
   static async loadProject(projectName: string): Promise<Project> {
@@ -244,7 +243,8 @@ export class Project {
 }
 export type Projects = Array<Project>;
 
-let _projects: Projects = [];
+const _projects: Projects = [];
+console.log('require projects _projects', _projects);
 
 export class ProjectItem {
   name: string;

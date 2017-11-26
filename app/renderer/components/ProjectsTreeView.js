@@ -75,9 +75,9 @@ class projectsTreeView extends React.Component<Props> {
         <ul className={styles.projectItem} key={item.absolutePath}>
           <li
             role="menuitem"
-            onClick={e => this.onClickItem(e, item)}
-            onKeyUp={e => this.onClickItem(e, item)}
-            onContextMenu={e => contextmenu(e, item)}
+            onClick={e => { return this.onClickItem(e, item); }}
+            onKeyUp={e => { return this.onClickItem(e, item); }}
+            onContextMenu={e => { return contextmenu(e, item); }}
           >
             <div>
               {this.icon(item)}
@@ -100,9 +100,9 @@ class projectsTreeView extends React.Component<Props> {
       return <FontAwesome name="database" />;
     case 'directory':
       if (item.isLoaded) {
-        return <FontAwesome name="folder-open" onClick={e => this.toggleTreeView(e, item)} />;
+        return <FontAwesome name="folder-open" onClick={e => { return this.toggleTreeView(e, item); }} />;
       }
-      return <FontAwesome name="folder" onClick={e => this.toggleTreeView(e, item)} />;
+      return <FontAwesome name="folder" onClick={e => { return this.toggleTreeView(e, item); }} />;
 
     case 'markdown':
       return <FontAwesome name="file-text" />;
@@ -117,11 +117,13 @@ class projectsTreeView extends React.Component<Props> {
     console.log('projectsTreeView.render this', this);
     const { projects } = this.props;
 
-    const items:Array<*> = projects.map((item: Project) => (
-      <li key={item.absolutePath}>
-        {this.buildItems(item.items)}
-      </li>
-    ));
+    const items:Array<*> = projects.map((item: Project) => {
+      return (
+        <li key={item.absolutePath}>
+          {this.buildItems(item.items)}
+        </li>
+      );
+    });
 
     return (
       <div className={styles.treeView}>
@@ -154,17 +156,19 @@ function addProject(e) {
 async function closeTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
   const searchPath:string = projectItem.absolutePath;
 
-  const find = async (items: ProjectItems): Promise<ProjectItems> => Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
-    const r = item;
-    if (item.absolutePath === searchPath) {
-      r.items = [];
-      r.isLoaded = false;
-    } else {
-      r.items = await find(item.items);
-    }
+  const find = async (items: ProjectItems): Promise<ProjectItems> => {
+    return Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+      const r = item;
+      if (item.absolutePath === searchPath) {
+        r.items = [];
+        r.isLoaded = false;
+      } else {
+        r.items = await find(item.items);
+      }
 
-    return r;
-  }));
+      return r;
+    }));
+  };
 
   const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
     const r:Project = p;
@@ -179,16 +183,18 @@ async function closeTreeView(projects: Projects, projectItem: ProjectItem): Prom
 async function openTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
   const searchPath:string = projectItem.absolutePath;
 
-  const find = async (items: ProjectItems): Promise<ProjectItems> => Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
-    const r = item;
-    if (item.absolutePath === searchPath) {
-      await r.load();
-    } else {
-      r.items = await find(item.items);
-    }
+  const find = async (items: ProjectItems): Promise<ProjectItems> => {
+    return Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+      const r = item;
+      if (item.absolutePath === searchPath) {
+        await r.load();
+      } else {
+        r.items = await find(item.items);
+      }
 
-    return r;
-  }));
+      return r;
+    }));
+  };
 
   const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
     const r:Project = p;
@@ -218,6 +224,12 @@ function contextmenu(e, item: ProjectItem) {
     label: 'open',
     click: () => {
       ipcRenderer.send('open-by-editor', item.absolutePath);
+    }
+  }));
+  menu.append(new MenuItem({
+    label: 'open new window',
+    click: () => {
+      ipcRenderer.send('open-new-window', { projectName: item.projectName, itemName: item.path });
     }
   }));
   if (item.path === '/') {
