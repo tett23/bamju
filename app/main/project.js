@@ -8,25 +8,19 @@ import * as Project from '../common/project';
 ipcMain.on('open-main-page', async (e) => {
   await Project.Manager.loadProjects();
 
-  let { projectName, path } = Config.windows[0].tabs[0].buffer;
-
-  try {
-    if (!projectName || !path) {
-      projectName = 'bamju-specifications';
-      path = 'index.md';
-    }
-    const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, path);
-
-    e.sender.send('open-page', buf);
-    e.returnValue = buf;
-  } catch (err) {
-    console.log('ipcMain open-main-page', 'bamju-specifications', 'index.md', err);
+  let { projectName, path: itemName } = Config.windows[0].tabs[0].buffer;
+  if (!projectName || !itemName) {
+    projectName = 'bamju-specifications';
+    itemName = 'index.md';
   }
+
+  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
+
+  e.sender.send('open-page', buf);
+  e.returnValue = buf;
 });
 
 ipcMain.on('open-page', async (e, { projectName, itemName }) => {
-  Project.Manager.unwatch();
-
   const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
 
   e.sender.send('open-page', buf);
@@ -61,6 +55,8 @@ ipcMain.on('remove-project', async (e, { path }) => {
 });
 
 async function openPage(e, { projectName, itemName }: {projectName: string, itemName: string}): Promise<?Project.Buffer> {
+  Project.Manager.unwatch();
+
   try {
     const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, itemName);
 
