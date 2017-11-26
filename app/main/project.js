@@ -8,9 +8,6 @@ const Project = require('../common/project');
 const { Config } = require('../common/bamju_config');
 
 ipcMain.on('open-page', async (e, { projectName, itemName }) => {
-  // await Project.Manager.init();
-  console.log('open-page _projects', Project.Manager.projects());
-
   const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
 
   e.sender.send('open-page', buf);
