@@ -58,27 +58,41 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
   Project.Manager.unwatch();
 
   try {
-    const buf:Project.Buffer = await Project.Manager.getBuffer(projectName, itemName);
+    const parseResult:Project.ParseResult = await Project.Manager.getBuffer(projectName, itemName);
 
-    if (buf.itemType !== 'undefined') {
+    if (parseResult.buffer.itemType !== Project.ItemTypeUndefined) {
       const win = Object.assign({}, Config.windows[0]);
-      win.tabs[0].buffer.projectName = buf.projectName;
-      win.tabs[0].buffer.path = buf.path;
+      win.tabs[0].buffer.projectName = parseResult.buffer.projectName;
+      win.tabs[0].buffer.path = parseResult.buffer.path;
       Config.update({ windows: [win] });
     }
 
     if (Config.followChange) {
-      Project.Manager.watch(projectName, buf.absolutePath, () => {
-        watchCallback(e, projectName, itemName);
-      });
+      watch(e, parseResult);
     }
 
-    return buf;
+    return parseResult.buffer;
   } catch (err) {
     console.log('ipcMain open-page', projectName, itemName, err);
   }
 
   return undefined;
+}
+
+function watch(e, parseResult: Project.ParseResult) {
+  if (parseResult.itemType === Project.ItemTypeUndefined) {
+    return;
+  }
+
+  const { projectName, name: itemName, absolutePath } = parseResult.buffer;
+
+  Project.Manager.watch(projectName, absolutePath, () => {
+    watchCallback(e, projectName, itemName);
+  });
+
+  parseResult.children.forEach((item: Project.ParseResult) => {
+    watch(e, item);
+  });
 }
 
 async function watchCallback(e, projectName: string, itemName: string) {

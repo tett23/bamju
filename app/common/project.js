@@ -23,6 +23,12 @@ export type Buffer = {
   body: string
 };
 
+export type ParseResult = {
+  buffer: Buffer,
+  children: Array<ParseResult>
+};
+export type ParseResults = Array<ParseResult>;
+
 export class Manager {
   static async init() {
     _projects = await Manager.loadProjects();
@@ -100,15 +106,14 @@ export class Manager {
     return ret;
   }
 
-  static async getBuffer(projectName: string, itemName: string): Promise<Buffer> {
+  static async getBuffer(projectName: string, itemName: string): Promise<ParseResult> {
     const item:?ProjectItem = Manager.getProjectItem(projectName, itemName);
     if (item === undefined || item === null) {
-      const ret:Buffer = await Manager.notFoundBuffer(projectName, itemName);
+      const ret:ParseResult = await Manager.notFoundBuffer(projectName, itemName);
       return ret;
     }
 
-    const ret:Buffer = await item.toBuffer();
-
+    const ret:ParseResult = await item.toBuffer();
     return ret;
   }
 
@@ -116,7 +121,7 @@ export class Manager {
     return _projects.find((p: Project): boolean => { return p.name === projectName; });
   }
 
-  static async notFoundBuffer(projectName: string, itemName: string): Promise<Buffer> {
+  static async notFoundBuffer(projectName: string, itemName: string): Promise<ParseResult> {
     const projectItem:ProjectItem = new ProjectItem({
       absolutePath: '',
       path: '',
@@ -133,16 +138,9 @@ export class Manager {
 ${projectName}:${itemName}
 `;
 
-    const html:string = await Markdown.parse(projectItem, md);
+    const ret:ParseResult = await Markdown.parse(projectItem, md);
 
-    return {
-      name: 'not found',
-      projectName: '',
-      path: '',
-      absolutePath: '',
-      itemType: 'undefined',
-      body: html
-    };
+    return ret;
   }
 
   static watch(projectName: string, absolutePath: string, callback: WatchCallback) {
@@ -234,13 +232,13 @@ export class Project {
     return ret;
   }
 
-  async openFile(p: string): Promise<?Buffer> {
+  async openFile(p: string): Promise<?ParseResult> {
     const item:?ProjectItem = this.detect(p);
     if (item === undefined || item === null) {
       return undefined;
     }
 
-    const ret:Buffer = await item.toBuffer();
+    const ret:ParseResult = await item.toBuffer();
     return ret;
   }
 }
@@ -364,30 +362,31 @@ export class ProjectItem {
     return ret;
   }
 
-  async toBuffer(): Promise<Buffer> {
-    let html:string = '';
+  async toBuffer(): Promise<ParseResult> {
+    let ret:ParseResult;
     if (this.itemType === ItemTypeDirectory) {
-      html = await this.openDirectory();
+      ret = await this.openDirectory();
     } else if (this.itemType === ItemTypeUndefined) {
-      html = 'not found';
+      ret = {
+        buffer: {
+          name: '',
+          path: '',
+          projectName: '',
+          absolutePath: '',
+          itemType: ItemTypeUndefined,
+          body: 'not found'
+        },
+        children: []
+      };
     } else {
-      html = await this.openFile();
+      ret = await this.openFile();
     }
-
-    const ret:Buffer = {
-      name: this.name,
-      projectName: this.projectName,
-      path: this.path,
-      absolutePath: this.absolutePath,
-      itemType: this.itemType,
-      body: html
-    };
 
     return ret;
   }
 
-  async openDirectory(): Promise<string> {
-    let ret:string = '';
+  async openDirectory(): Promise<ParseResult> {
+    let ret:ParseResult;
 
     const n = Object.assign({}, this, {
       path: path.join(this.path, 'index.md'),
@@ -405,24 +404,24 @@ export class ProjectItem {
     return ret;
   }
 
-  async openFile(): Promise<string> {
-    const ret:string = await openFile(this);
+  async openFile(): Promise<ParseResult> {
+    const ret:ParseResult = await openFile(this);
 
     return ret;
   }
 }
 export type ProjectItems = Array<ProjectItem>;
 
-async function openDirectory(item: ProjectItem): Promise<string> {
+async function openDirectory(item: ProjectItem): Promise<ParseResult> {
   const md:string = await readDirectory(item);
-  const ret:string = await Markdown.parse(item, md);
+  const ret:ParseResult = await Markdown.parse(item, md);
 
   return ret;
 }
 
-async function openFile(item: ProjectItem): Promise<string> {
+async function openFile(item: ProjectItem): Promise<ParseResult> {
   const md:string = await readFile(item.absolutePath);
-  const ret:string = await Markdown.parse(item, md);
+  const ret:ParseResult = await Markdown.parse(item, md);
 
   return ret;
 }

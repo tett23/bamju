@@ -2,7 +2,7 @@
 // @flow
 
 import marked from 'marked';
-import { Manager, Project, ProjectItem } from '../../common/project';
+import { Manager, Project, ProjectItem, ParseResult, ParseResults, Buffer, ItemTypeUndefined } from '../../common/project';
 
 const { markedParserTok, markedLexerToken } = require('./marked_overrides');
 
@@ -49,7 +49,7 @@ type ParseInlineToken = {
 };
 
 class Markdown {
-  static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<string> {
+  static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
     const options = Object.assign({}, defaultOption, opt);
     stack.push({ projectName: projectItem.projectName, absolutePath: projectItem.absolutePath });
 
@@ -68,6 +68,7 @@ class Markdown {
     lexer.token = markedLexerToken;
     const parser:marked.Parser = new marked.Parser(options);
     parser.tok = markedParserTok;
+    const children:ParseResults = [];
     let currentHeadingLevel:number = 0;
     const tokens:Array<Token> = await Promise.all(lexer.lex(md).map(async (tok: Token): Token => {
       const ret = tok;
@@ -77,9 +78,10 @@ class Markdown {
       }
       if (ret.type === 'inlineLink') {
         ret.repo = ret.repo || projectItem.projectName;
-        const html = await Markdown.parseInline(ret, currentHeadingLevel, stack);
+        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack);
+        children.push(result);
 
-        ret.html = html;
+        ret.html = result.buffer.body;
       }
 
       return ret;
@@ -130,10 +132,20 @@ class Markdown {
       return ret;
     };
 
-    const ret:string = await Promise.resolve(parsed)
+    const html:string = await Promise.resolve(parsed)
       .then(p5);
 
-    return ret;
+    return {
+      buffer: {
+        name: projectItem.name,
+        path: projectItem.path,
+        projectName: projectItem.projectName,
+        absolutePath: projectItem.absolutePath,
+        itemType: projectItem.itemType,
+        body: html
+      },
+      children
+    };
   }
 
   static wikiLinkReplacer(repo: string, name: string, text: string): string {
@@ -147,30 +159,52 @@ class Markdown {
     return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
   }
 
-  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<string> {
+  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<ParseResult> {
     const {
       repo, name, fragment, text
     } = token;
 
-    const item:?ProjectItem = Manager.getProjectItem(repo, name);
-    if (!item) {
-      const t:string = `\\[\\[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}\\]\\]`;
-      return `[[${repo}:${name}]]{${t}}`;
+    const projectItem:?ProjectItem = Manager.getProjectItem(repo, name);
+    if (!projectItem) {
+      let t:string = `\\[\\[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}\\]\\]`;
+      t = `[[${repo}:${name}]]{${t}}`;
+      return {
+        buffer: {
+          name: '',
+          path: '',
+          projectName: '',
+          absolutePath: '',
+          itemType: ItemTypeUndefined,
+          body: t
+        },
+        children: []
+      };
     }
 
-    let altText:string = !text ? `${item.projectName}:${item.path}` : text;
+    let altText:string = !text ? `${projectItem.projectName}:${projectItem.path}` : text;
     altText = `{${altText}}`;
 
+
     // ループしていると壊れるので
-    if (Markdown.checkInlineLoop(item, stack)) {
-      return `!loop [[${repo}:${name}]]${altText}`;
+    if (Markdown.checkInlineLoop(projectItem, stack)) {
+      return {
+        buffer: {
+          name: projectItem.name,
+          path: projectItem.path,
+          projectName: projectItem.projectName,
+          absolutePath: projectItem.absolutePath,
+          itemType: projectItem.itemType,
+          body: `!loop [[${repo}:${name}]]${altText}`
+        },
+        children: []
+      };
     }
 
-    let md:string = await item.content();
+    let md:string = await projectItem.content();
     // h1のおきかえ
-    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{${text || name}}`);
+    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${projectItem.path}]]{${text || name}}`);
 
-    const ret:string = await Markdown.parse(item, md, stack, { headingLevel });
+    const ret:ParseResult = await Markdown.parse(projectItem, md, stack, { headingLevel });
 
     return ret;
   }
