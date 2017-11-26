@@ -13,7 +13,7 @@ import appReducer from './renderer/reducers/index';
 import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 
-const { Config, Window } = require('./common/bamju_config');
+const { Config, Window, defaultConfig } = require('./common/bamju_config');
 const Project = require('./common/project');
 require('./main/window');
 require('./main/project');
@@ -80,4 +80,10 @@ app.on('ready', async () => {
   Config.windows.forEach((win: Window) => {
     WindowManager.create(win);
   });
+});
+
+app.on('activate', async () => {
+  if (WindowManager.getWindows().length === 0) {
+    WindowManager.create(defaultConfig.windows[0]);
+  }
 });

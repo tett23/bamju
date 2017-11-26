@@ -212,7 +212,7 @@ function openFile(item: ProjectItem) {
     return;
   }
 
-  ipcRenderer.send('open-page', { projectName: item.projectName, itemName: item.path });
+  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: item.projectName, itemName: item.path });
 }
 
 function contextmenu(e, item: ProjectItem) {

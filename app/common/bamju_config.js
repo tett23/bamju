@@ -14,11 +14,10 @@ export type BamjuConfig = {
   followChange: boolean,
   init: () => Promise<void>,
   update: ({}) => Promise<void>
-  // init: () => Function,
-  // update: ({}) => Function
 };
 
 export type Window = {
+  id: string,
   rectangle: {
     x: number,
     y: number,
@@ -27,18 +26,19 @@ export type Window = {
   },
   tabs: [{
     buffer: {
-      projectName: ?string,
-      path: ?string
+      projectName: string,
+      path: string
     }
   }]
 };
 export type Windows = Array<Window>;
 
-const defaultConfig:BamjuConfig = {
+export const defaultConfig:BamjuConfig = {
   projects: {
     'bamju-specifications': '/Users/tett23/projects/bamju-specifications',
   },
   windows: [{
+    id: 'init',
     rectangle: {
       x: 100,
       y: 100,
@@ -48,23 +48,13 @@ const defaultConfig:BamjuConfig = {
     tabs: [
       {
         buffer: {
-          projectName: undefined,
-          path: undefined
+          projectName: '',
+          path: ''
         }
       }
     ]
   }],
   followChange: true,
-  // init: (): Promise<void> => {
-  //   return loadConfigFile().then((conf) => {
-  //     return merge(conf);
-  //   }).catch(() => {});
-  // },
-  // update: (values: {}): Promise<void> => {
-  //   merge(values);
-  //
-  //   return updateConfigFile();
-  // }
   init(): Promise<void> {
     return loadConfigFile().then((conf) => {
       return merge(conf);
@@ -112,7 +102,63 @@ async function loadConfigFile(): Promise<BamjuConfig> {
 
   const json = JSON.parse(conf);
 
-  return Object.assign(defaultConfig, json);
+  return Object.assign({}, defaultConfig, json);
+}
+
+export function findWindowConfig(id: string): ?Window {
+  const ret:?Window = Config.windows.find((item: Window): boolean => {
+    return id === item.id;
+  });
+  if (ret === null || ret === undefined) {
+    return ret;
+  }
+
+  return Object.assign({}, ret);
+}
+
+export async function replaceWindowConfig(win: Window): Promise<void> {
+  const u:Array<Window> = [];
+  Config.windows.concat([]).forEach((c: Window) => {
+    if (c.id === win.id) {
+      u.push(Object.assign({}, win));
+      return;
+    }
+
+    u.push(c);
+  });
+
+  await Config.update({
+    windows: u
+  });
+}
+
+export async function addWindowConfig(win: Window): Promise<void> {
+  const c:?Window = findWindowConfig(win.id);
+  if (c) {
+    return;
+  }
+
+  const u:Array<Window> = Config.windows.concat([]);
+  u.push(Object.assign({}, win));
+
+  await Config.update({
+    windows: u
+  });
+}
+
+export async function removeWindowConfig(id: string): Promise<void> {
+  const u:Array<Window> = [];
+  Config.windows.concat([]).forEach((c: Window) => {
+    if (c.id === id) {
+      return;
+    }
+
+    u.push(c);
+  });
+
+  await Config.update({
+    windows: u
+  });
 }
 
 export const Config:BamjuConfig = Object.assign({}, defaultConfig);

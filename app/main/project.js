@@ -5,10 +5,12 @@ import opn from 'opn';
 // import * as Project from '../common/project';
 
 const Project = require('../common/project');
-const { Config } = require('../common/bamju_config');
+const {
+  Config, Window: WindowConfig, findWindowConfig, replaceWindowConfig
+} = require('../common/bamju_config');
 
-ipcMain.on('open-page', async (e, { projectName, itemName }) => {
-  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
+ipcMain.on('open-page', async (e, { windowID, projectName, itemName }) => {
+  const buf:?Project.Buffer = await openPage(e, { windowID, projectName, itemName });
 
   e.sender.send('open-page', buf);
   e.returnValue = buf;
@@ -41,7 +43,7 @@ ipcMain.on('remove-project', async (e, { path }) => {
   e.returnValue = ret;
 });
 
-async function openPage(e, { projectName, itemName }: {projectName: string, itemName: string}): Promise<?Project.Buffer> {
+async function openPage(e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}): Promise<?Project.Buffer> {
   Project.Manager.unwatch();
 
   try {
@@ -51,14 +53,17 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
     console.timeEnd(benchID);
 
     if (parseResult.buffer.itemType !== Project.ItemTypeUndefined) {
-      const win = Object.assign({}, Config.windows[0]);
-      win.tabs[0].buffer.projectName = parseResult.buffer.projectName;
-      win.tabs[0].buffer.path = parseResult.buffer.path;
-      Config.update({ windows: [win] });
+      const win:?WindowConfig = findWindowConfig(windowID);
+
+      if (win !== null && win !== undefined) {
+        win.tabs[0].buffer.projectName = parseResult.buffer.projectName;
+        win.tabs[0].buffer.path = parseResult.buffer.path;
+        replaceWindowConfig(win);
+      }
     }
 
     if (Config.followChange) {
-      watch(e, projectName, itemName, parseResult);
+      watch(e, windowID, projectName, itemName, parseResult);
     }
 
     return parseResult.buffer;
@@ -69,7 +74,7 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
   return undefined;
 }
 
-function watch(e, projectName: string, itemName: string, parseResult: Project.ParseResult) {
+function watch(e, windowID: string, projectName: string, itemName: string, parseResult: Project.ParseResult) {
   if (parseResult.itemType === Project.ItemTypeUndefined) {
     return;
   }
@@ -78,16 +83,16 @@ function watch(e, projectName: string, itemName: string, parseResult: Project.Pa
 
   // projectName, itemNameは（inline call stackの）一番上の要素のものを使う。子の要素を使うと、子のページが表示されてしまう
   Project.Manager.watch(projectName, absolutePath, () => {
-    watchCallback(e, projectName, itemName);
+    watchCallback(e, windowID, projectName, itemName);
   });
 
   parseResult.children.forEach((item: Project.ParseResult) => {
-    watch(e, projectName, itemName, item);
+    watch(e, windowID, projectName, itemName, item);
   });
 }
 
-async function watchCallback(e, projectName: string, itemName: string) {
-  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
+async function watchCallback(e, windowID: string, projectName: string, itemName: string) {
+  const buf:?Project.Buffer = await openPage(e, { windowID, projectName, itemName });
 
   e.sender.send('open-page', buf);
 }

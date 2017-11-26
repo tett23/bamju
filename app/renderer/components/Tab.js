@@ -61,7 +61,7 @@ function breadcrumbItemsOnClick(e, repo: string, path: string) {
   e.preventDefault();
   e.stopPropagation();
 
-  ipcRenderer.send('open-page', { projectName: repo, itemName: path });
+  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: path });
 }
 
 function contextmenu(e, absolutePath: string) {

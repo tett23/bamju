@@ -4,12 +4,18 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
 
-const { Config, Window: WindowConfig } = require('../common/bamju_config');
+const {
+  Config, Window: WindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
+} = require('../common/bamju_config');
 
 export class WindowManager {
   static create(conf: WindowConfig) {
     const w:Window = new Window(conf);
     _windows.push(w);
+  }
+
+  static getWindows(): Array<Window> {
+    return _windows;
   }
 }
 
@@ -17,8 +23,10 @@ const _windows:Array<Window> = [];
 
 export class Window {
   browserWindow: BrowserWindow;
+  conf: WindowConfig;
 
   constructor(conf: WindowConfig) {
+    this.conf = conf;
     const browserWindow:BrowserWindow = new BrowserWindow({
       show: false,
       x: conf.rectangle.x,
@@ -35,20 +43,24 @@ export class Window {
       if (!browserWindow) {
         throw new Error('"browserWindow" is not defined');
       }
+
+      addWindowConfig(this.conf);
+
       browserWindow.show();
       browserWindow.focus();
 
       let { projectName, path: itemName } = conf.tabs[0].buffer;
-      if (projectName === null || projectName === undefined) {
+      if (projectName === '') {
         projectName = 'bamju-specifications';
       }
-      if (itemName === null || itemName === undefined) {
+      if (itemName === '') {
         itemName = 'index.md';
       }
-      this.initializeRenderer(projectName, itemName);
+      this.initializeRenderer();
     });
 
     browserWindow.on('closed', () => {
+      removeWindowConfig(this.conf.id);
       this.browserWindow = null;
     });
 
@@ -62,19 +74,14 @@ export class Window {
 
     const updateRectangle = () => {
       const rectangle = browserWindow.getBounds();
-
-      const r = {
+      this.conf.rectangle = {
         x: rectangle.x,
         y: rectangle.y,
         width: rectangle.width,
         height: rectangle.height
       };
-      const win = Object.assign({}, Config.windows[0]);
-      win.rectangle = r;
 
-      Config.update({
-        windows: [win]
-      });
+      replaceWindowConfig(this.conf);
     };
 
     const menuBuilder = new MenuBuilder(browserWindow);
@@ -83,8 +90,8 @@ export class Window {
     this.browserWindow = browserWindow;
   }
 
-  async initializeRenderer(projectName: string, itemName: string) {
-    this.browserWindow.webContents.send('initialize', { projectName, itemName });
+  async initializeRenderer() {
+    this.browserWindow.webContents.send('initialize', this.conf);
   }
 }
 
@@ -92,10 +99,21 @@ ipcMain.on('open-new-window', async (e, { projectName, itemName }: {projectName:
   console.log('open-new-window', projectName, itemName);
 
   const conf = Object.assign({}, Config.windows[0]);
+  conf.id = createWindowID();
   conf.rectangle.x += 50;
   conf.rectangle.y += 50;
-  conf.tabs[0].buffer.projectName = projectName;
-  conf.tabs[0].buffer.path = itemName;
+  conf.tabs = [{
+    buffer: {
+      projectName,
+      path: itemName
+    }
+  }];
 
   WindowManager.create(conf);
 });
+
+function createWindowID(): string {
+  const timestamp:number = new Date().getTime();
+
+  return `${timestamp}${Math.random()}`;
+}

@@ -19,6 +19,7 @@ import './app.global.css';
 // import * as Project from './common/project';
 
 const Project = require('./common/project');
+const { Window: WindowConfig } = require('./common/bamju_config');
 
 const initialState = getInitialStateRenderer();
 console.log('initialState', initialState);
@@ -57,12 +58,17 @@ if (module.hot.accept !== null && module.hot.accept !== undefined) {
   }
 }
 
-ipcRenderer.on('initialize', (event, { projectName, itemName }) => {
+ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   (async () => {
     await Project.Manager.init();
 
+    window.windowID = conf.id;
+
+    const projectName:string = conf.tabs[0].buffer.projectName || '';
+    const itemName:string = conf.tabs[0].buffer.path || '';
+
     ipcRenderer.sendSync('refresh-tree-view');
-    ipcRenderer.send('open-page', { projectName, itemName });
+    ipcRenderer.send('open-page', { windowID: window.windowID, projectName, itemName });
   })();
 });
 
@@ -90,7 +96,7 @@ ipcRenderer.on('refresh-tree-view', (event, tv) => {
 window.wikiLinkOnClickAvailable = (repo, name) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
-  ipcRenderer.send('open-page', { projectName: repo, itemName: name });
+  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: name });
 };
 
 window.wikiLinkOnClickUnAvailable = (repo, name) => {
