@@ -2,7 +2,7 @@
 // @flow
 
 import path from 'path';
-import { app, BrowserWindow } from 'electron';
+import { app } from 'electron';
 import { createStore, applyMiddleware } from 'redux';
 import {
   forwardToRenderer,
@@ -10,10 +10,11 @@ import {
   replayActionMain
 } from 'electron-redux';
 import appReducer from './renderer/reducers/index';
-import MenuBuilder from './menu';
 import Config from './common/bamju_config';
 import { Manager } from './common/project';
+import { WindowManager } from './main/window';
 
+require('./main/window');
 require('./main/project');
 
 const store = createStore(
@@ -26,8 +27,6 @@ const store = createStore(
 );
 
 replayActionMain(store);
-
-let mainWindow = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -76,55 +75,6 @@ app.on('ready', async () => {
   await Manager.init();
 
   console.log('ready', Config);
-  mainWindow = new BrowserWindow({
-    show: false,
-    x: Config.windows[0].rectangle.x,
-    y: Config.windows[0].rectangle.y,
-    width: Config.windows[0].rectangle.width,
-    height: Config.windows[0].rectangle.height
-  });
 
-  mainWindow.loadURL(`file://${__dirname}/app.html`);
-
-  // @TODO: Use 'ready-to-show' event
-  //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
-  mainWindow.webContents.on('did-finish-load', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    mainWindow.show();
-    mainWindow.focus();
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  mainWindow.on('resize', () => {
-    updateRectangle();
-  });
-
-  mainWindow.on('move', () => {
-    updateRectangle();
-  });
-
-  const updateRectangle = () => {
-    const rectangle = mainWindow.getBounds();
-
-    const r = {
-      x: rectangle.x,
-      y: rectangle.y,
-      width: rectangle.width,
-      height: rectangle.height
-    };
-    const win = Object.assign({}, Config.windows[0]);
-    win.rectangle = r;
-
-    Config.update({
-      windows: [win]
-    });
-  };
-
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  WindowManager.create();
 });
