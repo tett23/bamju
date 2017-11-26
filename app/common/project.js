@@ -117,10 +117,23 @@ export class Manager {
   }
 
   static async notFoundBuffer(projectName: string, itemName: string): Promise<Buffer> {
-    const html:string = await Markdown.parse(projectName, `# not found
+    const projectItem:ProjectItem = new ProjectItem({
+      absolutePath: '',
+      path: '',
+      projectName,
+      itemName,
+      projectPath: '',
+      name: 'not found',
+      itemType: ItemTypeUndefined
+    });
+    const md: string =
+`
+# not found
 
-        ${projectName}:${itemName}
-      `);
+${projectName}:${itemName}
+`;
+
+    const html:string = await Markdown.parse(projectItem, md);
 
     return {
       name: 'not found',
@@ -205,7 +218,7 @@ export class Project {
   isExistPage(page: string): boolean {
     const item:?ProjectItem = this.detect(page);
 
-    return item !== null;
+    return !!item;
   }
 
   detect(name: string): ?ProjectItem {
@@ -341,7 +354,9 @@ export class ProjectItem {
   async content(): Promise<string> {
     let ret:string;
     if (this.itemType === ItemTypeDirectory) {
-      ret = await readDirectory(this.projectName, this.path, this.absolutePath);
+      ret = await readDirectory(this);
+    } else if (this.itemType === ItemTypeUndefined) {
+      ret = 'not found';
     } else {
       ret = await readFile(this.absolutePath);
     }
@@ -351,8 +366,10 @@ export class ProjectItem {
 
   async toBuffer(): Promise<Buffer> {
     let html:string = '';
-    if (this.itemType === 'directory') {
+    if (this.itemType === ItemTypeDirectory) {
       html = await this.openDirectory();
+    } else if (this.itemType === ItemTypeUndefined) {
+      html = 'not found';
     } else {
       html = await this.openFile();
     }
@@ -371,35 +388,41 @@ export class ProjectItem {
 
   async openDirectory(): Promise<string> {
     let ret:string = '';
-    const indexPath:string = path.join(this.absolutePath, 'index.md');
+
+    const n = Object.assign({}, this, {
+      path: path.join(this.path, 'index.md'),
+      absolutePath: path.join(this.absolutePath, 'index.md')
+    });
+    const directoryIndexItem:ProjectItem = new ProjectItem(n);
+
     try {
-      await promisify(fs.stat)(indexPath);
-      ret = await openFile(this.projectName, indexPath);
+      await promisify(fs.stat)(directoryIndexItem.absolutePath);
+      ret = await openFile(directoryIndexItem);
     } catch (e) {
-      ret = await openDirectory(this.projectName, this.path, this.absolutePath);
+      ret = await openDirectory(this);
     }
 
     return ret;
   }
 
   async openFile(): Promise<string> {
-    const ret:string = await openFile(this.projectName, this.absolutePath);
+    const ret:string = await openFile(this);
 
     return ret;
   }
 }
 export type ProjectItems = Array<ProjectItem>;
 
-async function openDirectory(projectName: string, basePath: string, p: string): Promise<string> {
-  const md:string = await readDirectory(projectName, basePath, p);
-  const ret:string = await Markdown.parse(projectName, md);
+async function openDirectory(item: ProjectItem): Promise<string> {
+  const md:string = await readDirectory(item);
+  const ret:string = await Markdown.parse(item, md);
 
   return ret;
 }
 
-async function openFile(projectName: string, p: string): Promise<string> {
-  const md:string = await readFile(p);
-  const ret:string = await Markdown.parse(projectName, md);
+async function openFile(item: ProjectItem): Promise<string> {
+  const md:string = await readFile(item.absolutePath);
+  const ret:string = await Markdown.parse(item, md);
 
   return ret;
 }
@@ -415,18 +438,18 @@ async function readFile(absolutePath: string): Promise<string> {
   }
 }
 
-async function readDirectory(projectName: string, basePath: string, absolutePath: string): Promise<string> {
+async function readDirectory(item: ProjectItem): Promise<string> {
   try {
-    const files:Array<string> = await promisify(fs.readdir)(absolutePath);
+    const files:Array<string> = await promisify(fs.readdir)(item.absolutePath);
     const items:Array<string> = files.map((filename: string) => {
-      const p:string = path.join(basePath, filename);
+      const p:string = path.join(item.path, filename);
       const text:string = path.basename(filename, path.extname(filename));
 
-      return `- [[${projectName}:${p}]]{${text}}`;
+      return `- [[${item.projectName}:${p}]]{${text}}`;
     });
 
     const ret:string = `
-# ${projectName}:${basePath}
+# ${item.projectName}:${item.path}
 
 ${items.join('\n')}
   `;

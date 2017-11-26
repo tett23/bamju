@@ -35,9 +35,24 @@ const defaultOption:MarkdownOption = {
   headingLevel: 0
 };
 
+type StackItem = {
+  projectName: string,
+  absolutePath: string
+};
+type StackItems = Array<StackItem>;
+
+type ParseInlineToken = {
+  repo: string,
+  name: string,
+  fragment: ?string,
+  text: string
+};
+
 class Markdown {
-  static async parse(repo: string, md: string, opt: MarkdownOption = {}): Promise<string> {
+  static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<string> {
     const options = Object.assign({}, defaultOption, opt);
+    stack.push({ projectName: projectItem.projectName, absolutePath: projectItem.absolutePath });
+
     const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
     renderer.inlineLink = renderInlineLink;
@@ -61,8 +76,8 @@ class Markdown {
         currentHeadingLevel = ret.depth;
       }
       if (ret.type === 'inlineLink') {
-        ret.repo = ret.repo || repo;
-        const html = await Markdown.parseInline(ret, currentHeadingLevel);
+        ret.repo = ret.repo || projectItem.projectName;
+        const html = await Markdown.parseInline(ret, currentHeadingLevel, stack);
 
         ret.html = html;
       }
@@ -86,14 +101,14 @@ class Markdown {
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(repo, name, text);
+          return Markdown.wikiLinkReplacer(projectItem.projectName, name, text);
         });
       }
 
       re = /\[\[(?!inline\|)(.+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string): string => {
-          return Markdown.wikiLinkReplacer(repo, name, name);
+          return Markdown.wikiLinkReplacer(projectItem.projectName, name, name);
         });
       }
 
@@ -117,22 +132,38 @@ class Markdown {
     return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
   }
 
-  static async parseInline(token: {repo: string, name: string, fragment: ?string, text: string}, headingLevel: number = 1): Promise<string> {
+  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<string> {
     const {
       repo, name, fragment, text
     } = token;
-    // FIXME: 再帰すると壊れる
-    const item:?ProjectItem = Manager.getProjectItem(repo, name);
 
+    const item:?ProjectItem = Manager.getProjectItem(repo, name);
     if (!item) {
-      return `[[${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
+      return `[[${repo}:${name}]]${fragment ? `#${fragment}` : ''}`;
+    }
+
+    // ループしていると壊れるので
+    if (Markdown.checkInlineLoop(item, stack)) {
+      return `!loop [[${repo}:${name}]]${fragment ? `#${fragment}` : ''}`;
     }
 
     let md:string = await item.content();
     // h1のおきかえ
     md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{${text}}`);
 
-    const ret:string = await Markdown.parse(repo, md, { headingLevel });
+    const ret:string = await Markdown.parse(item, md, stack, { headingLevel });
+
+    return ret;
+  }
+
+  static checkInlineLoop(projectItem: ProjectItem, stackItems: StackItems): boolean {
+    let ret:boolean = false;
+
+    stackItems.forEach((stackItem: StackItem) => {
+      if (stackItem.projectName === projectItem.projectName && stackItem.absolutePath === projectItem.absolutePath) {
+        ret = true;
+      }
+    });
 
     return ret;
   }
