@@ -87,7 +87,7 @@ class Markdown {
       return ret;
     }));
     tokens.links = {};
-    console.log('Markdown.parse', tokens);
+    // console.log('Markdown.parse', tokens);
 
     const parsed:string = parser.parse(tokens);
 

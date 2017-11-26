@@ -58,7 +58,10 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
   Project.Manager.unwatch();
 
   try {
+    const benchID = `Project.openPage benchmark ${projectName}${itemName}`;
+    console.time(benchID);
     const parseResult:Project.ParseResult = await Project.Manager.getBuffer(projectName, itemName);
+    console.timeEnd(benchID);
 
     if (parseResult.buffer.itemType !== Project.ItemTypeUndefined) {
       const win = Object.assign({}, Config.windows[0]);
