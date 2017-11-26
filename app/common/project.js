@@ -352,7 +352,17 @@ export class ProjectItem {
   async content(): Promise<string> {
     let ret:string;
     if (this.itemType === ItemTypeDirectory) {
-      ret = await readDirectory(this);
+      const indexItem:?ProjectItem = this.items.find((item: ProjectItem): boolean => {
+        const name:string = path.basename(item.name, path.extname(item.name));
+
+        return name === 'index';
+      });
+
+      if (indexItem) {
+        ret = await readFile(indexItem.absolutePath);
+      } else {
+        ret = await readDirectory(this);
+      }
     } else if (this.itemType === ItemTypeUndefined) {
       ret = 'not found';
     } else {
