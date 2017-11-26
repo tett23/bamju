@@ -131,7 +131,27 @@ export class Manager {
       body: html
     };
   }
+
+  static watch(projectName: string, absolutePath: string, callback: WatchCallback) {
+    watchFiles.push({ projectName, absolutePath });
+
+    // bufferとTreeViewの更新
+    fs.unwatchFile(absolutePath);
+    fs.watchFile(absolutePath, {}, callback);
+  }
+
+  static unwatch() {
+    watchFiles.forEach(({ absolutePath }) => {
+      fs.unwatchFile(absolutePath);
+    });
+
+    watchFiles = [];
+  }
 }
+
+export type WatchCallback = () => void;
+
+let watchFiles:Array<{projectName: string, absolutePath: string}> = [];
 
 export class Project {
   name: string;
