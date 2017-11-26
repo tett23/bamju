@@ -32,8 +32,6 @@ const store = createStore(
 
 replayActionRenderer(store);
 
-store.dispatch({ type: 'INITIALIZE_APP' });
-
 const root = document.getElementById('root');
 if (root !== null && root !== undefined) {
   render(
@@ -48,8 +46,6 @@ if (module.hot.accept !== null && module.hot.accept !== undefined) {
   if (root !== null && root !== undefined) {
     module.hot.accept('./renderer/containers/Root', () => {
       const NextRoot = require('./renderer/containers/Root');
-
-      store.dispatch({ type: 'INITIALIZE_APP' });
 
       render(
         <AppContainer>
