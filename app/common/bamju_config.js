@@ -1,3 +1,4 @@
+/* eslint no-underscore-dangle: 0 */
 // @flow
 
 import fs from 'fs';
@@ -13,7 +14,8 @@ export type BamjuConfig = {
   windows: Windows,
   followChange: boolean,
   init: () => Promise<void>,
-  update: ({}) => Promise<void>
+  update: ({}) => Promise<void>,
+  quit: ({}) => void
 };
 
 export type Window = {
@@ -64,8 +66,14 @@ export const defaultConfig:BamjuConfig = {
     merge(values);
 
     return updateConfigFile();
+  },
+  quit() {
+    fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
+    _quit = true;
   }
 };
+
+let _quit:boolean = false;
 
 function merge(values: {}) {
   Object.keys(values).forEach((k: string) => {
@@ -80,6 +88,10 @@ if (process.platform === 'windows') {
 const configPath:string = expandHomeDir(p);
 
 async function updateConfigFile(): Promise<void> {
+  if (_quit) {
+    return;
+  }
+
   try {
     await promisify(fs.stat)(path.dirname(configPath));
   } catch (e) {

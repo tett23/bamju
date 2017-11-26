@@ -82,6 +82,10 @@ app.on('ready', async () => {
   });
 });
 
+app.on('before-quit', () => {
+  Config.quit();
+});
+
 app.on('activate', async () => {
   if (WindowManager.getWindows().length === 0) {
     WindowManager.create(defaultConfig.windows[0]);
