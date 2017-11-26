@@ -283,7 +283,7 @@ const markedLexerToken = function (src, top, bq) {
         repo: cap[1],
         name: cap[2],
         fragment: cap[3],
-        text: cap[2]
+        text: undefined
       });
       continue;
     }
@@ -307,7 +307,7 @@ const markedLexerToken = function (src, top, bq) {
         repo: undefined,
         name: cap[1],
         fragment: cap[2],
-        text: cap[1]
+        text: undefined
       });
       continue;
     }
@@ -331,7 +331,7 @@ const markedLexerToken = function (src, top, bq) {
         repo: cap[1],
         name: cap[2],
         fragment: undefined,
-        text: cap[1]
+        text: undefined
       });
       continue;
     }
@@ -355,7 +355,7 @@ const markedLexerToken = function (src, top, bq) {
         repo: undefined,
         name: cap[1],
         fragment: undefined,
-        text: cap[1]
+        text: undefined
       });
       continue;
     }

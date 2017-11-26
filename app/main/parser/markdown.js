@@ -45,7 +45,7 @@ type ParseInlineToken = {
   repo: string,
   name: string,
   fragment: ?string,
-  text: string
+  text: ?string
 };
 
 class Markdown {
@@ -98,6 +98,20 @@ class Markdown {
         });
       }
 
+      re = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]/;
+      while (re.test(ret)) {
+        ret = ret.replace(re, (_, r: string, name: string): string => {
+          return Markdown.wikiLinkReplacer(r, name, name);
+        });
+      }
+
+      re = /\[\[(?!inline\|)([^{[\]]+?):(.+?)\]\]/;
+      while (re.test(ret)) {
+        ret = ret.replace(re, (_, repo: string, name: string): string => {
+          return Markdown.wikiLinkReplacer(repo, name, name);
+        });
+      }
+
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string, text: string): string => {
@@ -105,7 +119,7 @@ class Markdown {
         });
       }
 
-      re = /\[\[(?!inline\|)(.+?)\]\]/;
+      re = /\[\[(?!inline\|)([^{[\]]+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string): string => {
           return Markdown.wikiLinkReplacer(projectItem.projectName, name, name);
@@ -142,14 +156,17 @@ class Markdown {
       return `[[${repo}:${name}]]${fragment ? `#${fragment}` : ''}`;
     }
 
+    let altText:string = !text ? `${item.projectName}:${item.path}` : text;
+    altText = `{${altText}}`;
+
     // ループしていると壊れるので
     if (Markdown.checkInlineLoop(item, stack)) {
-      return `!loop [[${repo}:${name}]]${fragment ? `#${fragment}` : ''}`;
+      return `!loop [[${repo}:${name}]]${altText}`;
     }
 
     let md:string = await item.content();
     // h1のおきかえ
-    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{${text}}`);
+    md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${item.path}]]{${text || name}}`);
 
     const ret:string = await Markdown.parse(item, md, stack, { headingLevel });
 
