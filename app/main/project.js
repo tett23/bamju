@@ -58,7 +58,7 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
   Project.Manager.unwatch();
 
   try {
-    const benchID = `Project.openPage benchmark ${projectName}${itemName}`;
+    const benchID = `Project.openPage benchmark ${projectName} ${itemName}`;
     console.time(benchID);
     const parseResult:Project.ParseResult = await Project.Manager.getBuffer(projectName, itemName);
     console.timeEnd(benchID);
@@ -71,7 +71,7 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
     }
 
     if (Config.followChange) {
-      watch(e, parseResult);
+      watch(e, projectName, itemName, parseResult);
     }
 
     return parseResult.buffer;
@@ -82,27 +82,25 @@ async function openPage(e, { projectName, itemName }: {projectName: string, item
   return undefined;
 }
 
-function watch(e, parseResult: Project.ParseResult) {
+function watch(e, projectName: string, itemName: string, parseResult: Project.ParseResult) {
   if (parseResult.itemType === Project.ItemTypeUndefined) {
     return;
   }
 
-  const { projectName, name: itemName, absolutePath } = parseResult.buffer;
+  const { absolutePath } = parseResult.buffer;
 
+  // projectName, itemNameは（inline call stackの）一番上の要素のものを使う。子の要素を使うと、子のページが表示されてしまう
   Project.Manager.watch(projectName, absolutePath, () => {
     watchCallback(e, projectName, itemName);
   });
 
   parseResult.children.forEach((item: Project.ParseResult) => {
-    watch(e, item);
+    watch(e, projectName, itemName, item);
   });
 }
 
 async function watchCallback(e, projectName: string, itemName: string) {
-  openPage(e, { projectName, itemName }).then((b: ?Project.Buffer) => {
-    e.sender.send('open-page', b);
-    return b;
-  }).catch((err) => {
-    console.log('watch', err);
-  });
+  const buf:?Project.Buffer = await openPage(e, { projectName, itemName });
+
+  e.sender.send('open-page', buf);
 }
