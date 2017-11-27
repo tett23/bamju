@@ -3,6 +3,9 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
+import type { Projects } from '../common/project';
+
+// const { Projects } = require('../common/project');
 
 const {
   Config, Window: WindowConfig, findWindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
@@ -16,6 +19,14 @@ export class WindowManager {
 
   static getWindows(): Array<Window> {
     return _windows;
+  }
+
+  static async updateTreeView(tv): Promise<void> {
+    const p: Array<Promise<void>> = _windows.map(async (item: Window): Promise<void> => {
+      await item.updateTreeView(tv);
+    });
+
+    await Promise.all(p);
   }
 }
 
@@ -92,6 +103,10 @@ export class Window {
 
   async initializeRenderer() {
     this.browserWindow.webContents.send('initialize', this.conf);
+  }
+
+  async updateTreeView(tv: Projects): Promise<void> {
+    return this.browserWindow.webContents.send('refresh-tree-view', tv);
   }
 }
 
