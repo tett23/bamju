@@ -22,6 +22,7 @@
     "compat/compat": "error",
     "consistent-return": "off",
     "comma-dangle": "off",
+    "no-underscore-dangle": "off",
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,
