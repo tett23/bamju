@@ -23,6 +23,7 @@
     "consistent-return": "off",
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,
