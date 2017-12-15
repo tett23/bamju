@@ -24,6 +24,7 @@
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-await-in-loop": "off",
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,
