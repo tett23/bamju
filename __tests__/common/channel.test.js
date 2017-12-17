@@ -32,7 +32,20 @@ describe('Channel', () => {
       chan.enqueue(1);
 
       expect(chan._queue.length).toBe(1);
-      expect(chan._queue[0]).toBe(1);
+      expect(chan._queue[0].value).toBe(1);
+    });
+
+    it('キューの中身が読みだされたらresolveされる', async () => {
+      const p:Promise<void> = chan.enqueue(1);
+
+      expect(chan._queue.length).toBe(1);
+      expect(chan._queue[0].value).toBe(1);
+
+      await p;
+
+      await chan.enqueue(1);
+
+      await expect(chan._queue.length).toBe(0);
     });
   });
 

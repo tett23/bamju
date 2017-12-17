@@ -4,7 +4,7 @@
 import { sleep } from './util';
 
 export class Channel<T> {
-  _queue: Array<T> = []
+  _queue: Array<{value: T, resolve: (any)=>void, reject: (any)=>void}> = []
   _isClosed: boolean = false;
 
   constructor(q: Array<T> = []) {
@@ -12,10 +12,14 @@ export class Channel<T> {
     this._isClosed = false;
   }
 
-  enqueue(item: T): void {
+  enqueue(item: T): Promise<void> {
     this._checkClosed();
 
-    this._queue.push(item);
+    const p:Promise = new Promise((resolve, reject) => {
+      this._queue.push({ value: item, resolve, reject });
+    });
+
+    return p;
   }
 
   async dequeue(): Promise<?T> {
@@ -31,9 +35,11 @@ export class Channel<T> {
         continue;
       }
 
-      const ret:T = this._queue.shift();
+      const ret:{value: T, resolve: (any)=>void, reject: (any)=>void} = this._queue.shift();
 
-      return ret;
+      ret.resolve();
+
+      return ret.value;
     }
   }
 
