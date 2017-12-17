@@ -8,7 +8,9 @@ export class Channel<T> {
   _isClosed: boolean = false;
 
   constructor(q: Array<T> = []) {
-    this._queue = q;
+    this._queue = q.map((v: T) => {
+      return { value: v, resolve: (_) => {}, reject: (_) => {} };
+    });
     this._isClosed = false;
   }
 

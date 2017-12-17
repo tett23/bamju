@@ -2,7 +2,7 @@
 
 import { Channel } from '../../app/common/channel';
 
-jest.setTimeout(5000);
+jest.setTimeout(500);
 global.Promise = require.requireActual('promise');
 
 describe('Channel', () => {
@@ -21,9 +21,13 @@ describe('Channel', () => {
     it('引数あり', () => {
       chan = new Channel([1, 2, 3]);
       expect(chan._queue.length).toBe(3);
-      expect(chan._queue[0]).toBe(1);
-      expect(chan._queue[1]).toBe(2);
-      expect(chan._queue[2]).toBe(3);
+      expect(chan._queue[0].value).toBe(1);
+      expect(chan._queue[1].value).toBe(2);
+      expect(chan._queue[2].value).toBe(3);
+
+      expect(chan.dequeue).rejects.toBe(1);
+      expect(chan.dequeue).rejects.toBe(2);
+      expect(chan.dequeue).rejects.toBe(2);
     });
   });
 
@@ -41,9 +45,8 @@ describe('Channel', () => {
       expect(chan._queue.length).toBe(1);
       expect(chan._queue[0].value).toBe(1);
 
+      await chan.dequeue();
       await p;
-
-      await chan.enqueue(1);
 
       await expect(chan._queue.length).toBe(0);
     });
