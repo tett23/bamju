@@ -1,6 +1,8 @@
 /* eslint no-continue: 0, no-await-in-loop: 0 */
 // @flow
 
+import { sleep } from './util';
+
 export class Channel<T> {
   _queue: Array<T> = []
   _isClosed: boolean = false;
@@ -47,14 +49,6 @@ export class Channel<T> {
       throw new Error('');
     }
   }
-}
-
-function sleep(t: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, t);
-  });
 }
 
 export default Channel;
