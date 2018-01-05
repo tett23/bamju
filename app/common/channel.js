@@ -8,16 +8,20 @@ export class Channel<T> {
   _isClosed: boolean = false;
 
   constructor(q: Array<T> = []) {
-    this._queue = q.map((v: T) => {
+    this._queue = q.map((v) => {
       return { value: v, resolve: (_) => {}, reject: (_) => {} };
     });
     this._isClosed = false;
+
+    process.on('SIGINT', () => {
+      this.close();
+    });
   }
 
   enqueue(item: T): Promise<void> {
     this._checkClosed();
 
-    const p:Promise = new Promise((resolve, reject) => {
+    const p:Promise<void> = new Promise((resolve, reject) => {
       this._queue.push({ value: item, resolve, reject });
     });
 
@@ -28,12 +32,14 @@ export class Channel<T> {
     this._checkClosed();
 
     for (;;) {
+      await sleep(100);
+      console.log('queue length', this._queue.length);
       if (this._isClosed) {
         return null;
       }
 
       if (this._queue.length === 0) {
-        await sleep(10);
+        await sleep(100);
         continue;
       }
 

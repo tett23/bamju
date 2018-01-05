@@ -23,21 +23,23 @@ export type mainViewState = {
   browser: browser
 };
 
-export const initialMainViewState = (): mainViewState => ({
-  projects: [],
-  browser: {
-    tabs: [
-      {
-        name: '',
-        projectName: '',
-        path: '',
-        absolutePath: '',
-        itemType: 'undefined',
-        body: ''
-      }
-    ]
-  }
-});
+export const initialMainViewState = (): mainViewState => {
+  return {
+    projects: [],
+    browser: {
+      tabs: [
+        {
+          name: '',
+          projectName: '',
+          path: '',
+          absolutePath: '',
+          itemType: 'undefined',
+          body: ''
+        }
+      ]
+    }
+  };
+};
 
 const mainView = (state: mainViewState = initialMainViewState(), action: actionType = actionTypeDefault): mainViewState => {
   console.log(`reducer mainView ${action.type}`, action, state);
