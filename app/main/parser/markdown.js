@@ -2,7 +2,8 @@
 // @flow
 
 import marked from 'marked';
-import { Manager, Project, ProjectItem, ParseResult, ParseResults, Buffer, ItemTypeUndefined } from '../../common/project';
+import { Manager, ItemTypeUndefined } from '../../common/project';
+import type { Project, ProjectItem, ParseResult, ParseResults } from '../../common/project';
 
 const { markedParserTok, markedLexerToken } = require('./marked_overrides');
 

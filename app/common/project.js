@@ -9,7 +9,7 @@ import watcher from './file_watcher';
 
 const { Config } = require('./bamju_config');
 
-export const ItemTypeProject:string = 'project';
+export const ItemTypeProject = 'project';
 export const ItemTypeDirectory = 'directory';
 export const ItemTypeMarkdown = 'markdown';
 export const ItemTypeText = 'text';
@@ -78,10 +78,12 @@ export class Manager {
       watchCallback();
     };
     const item:ProjectItem = ret.items[0];
-    watcher.register('add', item, callback, { recursive: true });
-    watcher.register('unlink', item, callback, { recursive: true });
-    watcher.register('addDir', item, callback, { recursive: true });
-    watcher.register('unlinkDir', item, callback, { recursive: true });
+    if (item !== null && item !== undefined) {
+      // watcher.register('add', item, callback, { recursive: false });
+      // watcher.register('unlink', item, callback, { recursive: false });
+      // watcher.register('addDir', item, callback, { recursive: false });
+      // watcher.register('unlinkDir', item, callback, { recursive: false });
+    }
 
     return ret;
   }
@@ -154,11 +156,24 @@ ${projectName}:${itemName}
     return ret;
   }
 
+  static detect(projectName: string, itemName: string): ?ProjectItem {
+    const projects:Projects = Manager.projects();
+    const project:?Project = projects.find((p: Project): boolean => {
+      return p.name === projectName;
+    });
+
+    if (project === null || project === undefined) {
+      return null;
+    }
+
+    return project.detect(itemName);
+  }
+
   static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
     // bufferとTreeViewの更新
 
     const item:?ProjectItem = Manager.detect(projectName, absolutePath);
-    if (!item) {
+    if (item === null || item === undefined) {
       return;
     }
 

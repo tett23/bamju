@@ -3,7 +3,8 @@
 
 import chokidar from 'chokidar';
 import { Stats } from 'fs';
-import { ProjectItem } from './project';
+import type { ProjectItem } from './project';
+import * as Project from './project';
 import { Channel } from './channel';
 
 const OperationTypeRegsiter = 'register';
@@ -23,6 +24,13 @@ type CallbackItem = {
 };
 
 type PFunc = () => void;
+
+type RegisterOption = {
+  recursive: boolean
+};
+const registerOptionDefault:RegisterOption = {
+  recursive: true
+};
 
 export class FileWatcher {
   _chan: Channel<CallbackItem>
@@ -84,7 +92,12 @@ export class FileWatcher {
     return false;
   }
 
-  register(eventType: string, projectItem: ProjectItem, callback: FileUpdateEvent, options: {recursive: boolean} = { recursive: false }): Promise<Array<void>> {
+  register(
+    eventType: string,
+    projectItem: Project.ProjectItem,
+    callback: FileUpdateEvent,
+    options: RegisterOption = registerOptionDefault
+  ): Promise<Array<void>> {
     const p:Promise<void> = new Promise((resolve, reject) => {
       this._chan.enqueue({
         operation: OperationTypeRegsiter,

@@ -86,9 +86,9 @@ function watch(e, windowID: string, projectName: string, itemName: string, parse
     watchCallback(e, windowID, projectName, itemName);
   });
 
-  parseResult.children.forEach((item: Project.ParseResult) => {
-    watch(e, windowID, projectName, itemName, item);
-  });
+  // parseResult.children.forEach((item: Project.ParseResult) => {
+  //   watch(e, windowID, projectName, itemName, item);
+  // });
 }
 
 async function watchCallback(e, windowID: string, projectName: string, itemName: string) {

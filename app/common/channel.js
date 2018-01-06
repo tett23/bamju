@@ -32,14 +32,13 @@ export class Channel<T> {
     this._checkClosed();
 
     for (;;) {
-      await sleep(100);
-      console.log('queue length', this._queue.length);
+      // console.log('queue length', this._queue.length);
       if (this._isClosed) {
         return null;
       }
 
       if (this._queue.length === 0) {
-        await sleep(100);
+        await sleep(10);
         continue;
       }
 
