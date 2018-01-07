@@ -6,18 +6,24 @@ import { sleep } from './util';
 export class Channel<T> {
   _queue: Array<{value: T, resolve: (any)=>void, reject: (any)=>void}> = []
   _isClosed: boolean = false;
+  interval: number;
 
   constructor(q: Array<T> = []) {
-    this._queue = q.map((v: T) => {
+    this._queue = q.map((v) => {
       return { value: v, resolve: (_) => {}, reject: (_) => {} };
     });
     this._isClosed = false;
+    this.interval = 50;
+
+    process.on('SIGINT', () => {
+      this.close();
+    });
   }
 
   enqueue(item: T): Promise<void> {
     this._checkClosed();
 
-    const p:Promise = new Promise((resolve, reject) => {
+    const p:Promise<void> = new Promise((resolve, reject) => {
       this._queue.push({ value: item, resolve, reject });
     });
 
@@ -33,7 +39,7 @@ export class Channel<T> {
       }
 
       if (this._queue.length === 0) {
-        await sleep(10);
+        await sleep(this.interval);
         continue;
       }
 

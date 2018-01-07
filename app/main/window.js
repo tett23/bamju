@@ -3,6 +3,7 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
+import { Manager as ProjectManager } from '../common/project';
 import type { Projects } from '../common/project';
 
 // const { Projects } = require('../common/project');
@@ -14,6 +15,11 @@ const {
 export class WindowManager {
   static create(conf: WindowConfig) {
     const w:Window = new Window(conf);
+
+    ProjectManager.loadProjects(() => {
+      WindowManager.updateTreeView(ProjectManager.projects());
+    });
+
     _windows.push(w);
   }
 
@@ -21,12 +27,17 @@ export class WindowManager {
     return _windows;
   }
 
-  static async updateTreeView(tv): Promise<void> {
+  static async updateTreeView(tv: Projects): Promise<void> {
     const p: Array<Promise<void>> = _windows.map(async (item: Window): Promise<void> => {
+      console.log('Manager updateTreeView before updateTreeView await');
       await item.updateTreeView(tv);
+      console.log('Manager updateTreeView after updateTreeView await');
     });
+    console.log('Manager updateTreeView create promise array');
 
+    console.log('Manager updateTreeView before Promise.all');
     await Promise.all(p);
+    console.log('Manager updateTreeView after Promise.all');
   }
 }
 
@@ -106,7 +117,7 @@ export class Window {
   }
 
   async updateTreeView(tv: Projects): Promise<void> {
-    return this.browserWindow.webContents.send('refresh-tree-view', tv);
+    this.browserWindow.webContents.send('refresh-tree-view', tv);
   }
 }
 

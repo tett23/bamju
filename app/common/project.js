@@ -5,10 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import Markdown from '../main/parser/markdown';
+import watcher from './file_watcher';
 
 const { Config } = require('./bamju_config');
 
-export const ItemTypeProject:string = 'project';
+export const ItemTypeProject = 'project';
 export const ItemTypeDirectory = 'directory';
 export const ItemTypeMarkdown = 'markdown';
 export const ItemTypeText = 'text';
@@ -40,12 +41,14 @@ export class Manager {
     return _projects;
   }
 
-  static async loadProjects(): Promise<Projects> {
+  static async loadProjects(watchCallback: Function = () => {}): Promise<Projects> {
     _projects.splice(0);
+
+    await watcher.unregisterAll();
 
     const projectNames:Array<string> = Object.keys(Config.projects);
     await Promise.all(projectNames.map(async (projectName: string): Promise<Project> => {
-      const ret:Project = await Manager.loadProject(projectName);
+      const ret:Project = await Manager.loadProject(projectName, watchCallback);
 
       return ret;
     }));
@@ -53,13 +56,13 @@ export class Manager {
     return _projects;
   }
 
-  static async loadProject(projectName: string): Promise<Project> {
+  static async loadProject(projectName: string, watchCallback: Function = () => {}): Promise<Project> {
     const projectPath:string = Config.projects[projectName];
     if (projectPath === undefined) {
       throw new Error(`loadProject error${projectName}`);
     }
 
-    const ret:Project = new Project(projectName);
+    const ret:Project = new Project(projectName, projectPath);
     await ret.load();
 
     if (Manager.find(projectName) === undefined) {
@@ -70,6 +73,17 @@ export class Manager {
       _projects[idx] = ret;
     }
 
+    // const callback = () => {
+    //   Manager.loadProject(ret.name);
+    //   watchCallback();
+    // };
+    // const item:ProjectItem = ret.items[0];
+    // if (item !== null && item !== undefined) {
+    //   watcher.register('add', item, callback, { recursive: false });
+    //   watcher.register('unlink', item, callback, { recursive: false });
+    //   watcher.register('addDir', item, callback, { recursive: false });
+    //   watcher.register('unlinkDir', item, callback, { recursive: false });
+    // }
 
     return ret;
   }
@@ -142,26 +156,36 @@ ${projectName}:${itemName}
     return ret;
   }
 
-  static watch(projectName: string, absolutePath: string, callback: WatchCallback) {
-    watchFiles.push({ projectName, absolutePath });
-
-    // bufferとTreeViewの更新
-    fs.unwatchFile(absolutePath);
-    fs.watchFile(absolutePath, {}, callback);
-  }
-
-  static unwatch() {
-    watchFiles.forEach(({ absolutePath }) => {
-      fs.unwatchFile(absolutePath);
+  static detect(projectName: string, itemName: string): ?ProjectItem {
+    const projects:Projects = Manager.projects();
+    const project:?Project = projects.find((p: Project): boolean => {
+      return p.name === projectName;
     });
 
-    watchFiles = [];
+    if (project === null || project === undefined) {
+      return null;
+    }
+
+    return project.detect(itemName);
+  }
+
+  static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
+    // bufferとTreeViewの更新
+
+    const item:?ProjectItem = Manager.detect(projectName, absolutePath);
+    if (item == null) {
+      return;
+    }
+
+    await watcher.register('change', item, callback);
+  }
+
+  static async unwatch(): Promise<void> {
+    await watcher.unregisterAll();
   }
 }
 
 export type WatchCallback = () => void;
-
-let watchFiles:Array<{projectName: string, absolutePath: string}> = [];
 
 export class Project {
   name: string;
@@ -171,15 +195,10 @@ export class Project {
   items: ProjectItems;
   isLoaded: boolean;
 
-  constructor(projectName: string) {
-    const p:?string = Config.projects[projectName];
-    if (p === null || p === undefined) {
-      throw Error(`project not found ${projectName}`);
-    }
-
+  constructor(projectName: string, absolutePath: string) {
     this.name = projectName;
     this.path = '/';
-    this.absolutePath = p;
+    this.absolutePath = path.normalize(absolutePath);
     this.itemType = 'project';
     this.items = [];
     this.isLoaded = false;
@@ -264,7 +283,7 @@ export class ProjectItem {
     this.projectPath = projectPath;
     this.name = name;
     this.path = p;
-    this.absolutePath = absolutePath;
+    this.absolutePath = path.normalize(absolutePath);
     this.itemType = itemType;
     this.items = [];
     this.isLoaded = false;
