@@ -6,12 +6,14 @@ import { sleep } from './util';
 export class Channel<T> {
   _queue: Array<{value: T, resolve: (any)=>void, reject: (any)=>void}> = []
   _isClosed: boolean = false;
+  interval: number;
 
   constructor(q: Array<T> = []) {
     this._queue = q.map((v) => {
       return { value: v, resolve: (_) => {}, reject: (_) => {} };
     });
     this._isClosed = false;
+    this.interval = 50;
 
     process.on('SIGINT', () => {
       this.close();
@@ -32,13 +34,12 @@ export class Channel<T> {
     this._checkClosed();
 
     for (;;) {
-      // console.log('queue length', this._queue.length);
       if (this._isClosed) {
         return null;
       }
 
       if (this._queue.length === 0) {
-        await sleep(10);
+        await sleep(this.interval);
         continue;
       }
 
