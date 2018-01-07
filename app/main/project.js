@@ -93,6 +93,7 @@ function watch(e, windowID: string, projectName: string, itemName: string, parse
 
 async function watchCallback(e, windowID: string, projectName: string, itemName: string) {
   const buf:?Project.Buffer = await openPage(e, { windowID, projectName, itemName });
+  console.log('call watchCallback', buf);
 
   e.sender.send('open-page', buf);
 }

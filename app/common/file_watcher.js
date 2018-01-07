@@ -3,8 +3,7 @@
 
 import chokidar from 'chokidar';
 import { Stats } from 'fs';
-import type { ProjectItem } from './project';
-import * as Project from './project';
+import { ProjectItem } from './project';
 import { Channel } from './channel';
 
 const OperationTypeRegsiter = 'register';
@@ -94,7 +93,7 @@ export class FileWatcher {
 
   register(
     eventType: string,
-    projectItem: Project.ProjectItem,
+    projectItem: ProjectItem,
     callback: FileUpdateEvent,
     options: RegisterOption = registerOptionDefault
   ): Promise<Array<void>> {

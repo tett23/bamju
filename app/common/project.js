@@ -73,17 +73,17 @@ export class Manager {
       _projects[idx] = ret;
     }
 
-    const callback = () => {
-      Manager.loadProject(ret.name);
-      watchCallback();
-    };
-    const item:ProjectItem = ret.items[0];
-    if (item !== null && item !== undefined) {
-      // watcher.register('add', item, callback, { recursive: false });
-      // watcher.register('unlink', item, callback, { recursive: false });
-      // watcher.register('addDir', item, callback, { recursive: false });
-      // watcher.register('unlinkDir', item, callback, { recursive: false });
-    }
+    // const callback = () => {
+    //   Manager.loadProject(ret.name);
+    //   watchCallback();
+    // };
+    // const item:ProjectItem = ret.items[0];
+    // if (item !== null && item !== undefined) {
+    //   watcher.register('add', item, callback, { recursive: false });
+    //   watcher.register('unlink', item, callback, { recursive: false });
+    //   watcher.register('addDir', item, callback, { recursive: false });
+    //   watcher.register('unlinkDir', item, callback, { recursive: false });
+    // }
 
     return ret;
   }
@@ -173,7 +173,7 @@ ${projectName}:${itemName}
     // bufferとTreeViewの更新
 
     const item:?ProjectItem = Manager.detect(projectName, absolutePath);
-    if (item === null || item === undefined) {
+    if (item == null) {
       return;
     }
 
