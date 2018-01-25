@@ -96,7 +96,7 @@
     ]
   },
   "devDependencies": {
-    "babel-core": "^6.24.1",
+    "babel-core": "^6.26.0",
     "babel-eslint": "^8.1.2",
     "babel-jest": "^20.0.3",
     "babel-loader": "^7.1.0",
@@ -123,7 +123,7 @@
     "electron-devtools-installer": "^2.2.0",
     "enzyme": "^2.9.1",
     "enzyme-to-json": "^1.5.1",
-    "eslint": "^4.14.0",
+    "eslint": "^4.16.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-formatter-pretty": "^1.1.0",
     "eslint-import-resolver-webpack": "^0.8.3",
@@ -141,7 +141,7 @@
     "file-loader": "^0.11.1",
     "flow-bin": "^0.63.1",
     "flow-runtime": "^0.13.0",
-    "flow-typed": "^2.1.2",
+    "flow-typed": "^2.2.3",
     "html-webpack-plugin": "^2.29.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^21.2.1",
