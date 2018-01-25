@@ -14,7 +14,7 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import appReducer from './renderer/reducers';
 import { openPageByBuffer } from './renderer/actions/tab';
-import { refreshTreeView } from './renderer/actions/tree_view';
+import { refreshTreeView, refreshTreeViewItem } from './renderer/actions/tree_view';
 import './app.global.css';
 // import * as Project from './common/project';
 
@@ -90,6 +90,22 @@ ipcRenderer.on('refresh-tree-view', (event, tv) => {
     await Project.Manager.loadProjects();
     const projects:Project.Projects = Project.Manager.projects();
     store.dispatch(refreshTreeView(projects));
+  })();
+});
+
+ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, items }) => {
+  console.log('refresh-tree-view-item', projectName, path, items);
+
+  // なんで送られたきた値を使わないで直接Managerに触れるみたいな治安の悪い状態になっているかというと、
+  // ipcがネイティブの実装のため、classのインスタンスを送ると単なるObjectになって、型の検証に失敗するため
+  (async () => {
+    await Project.Manager.loadProjects();
+    const update = Project.Manager.detect(projectName, path);
+    if (update == null) {
+      return;
+    }
+
+    store.dispatch(refreshTreeViewItem(projectName, path, update));
   })();
 });
 

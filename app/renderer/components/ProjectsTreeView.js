@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { mainViewState } from '../reducers/main_view';
 import type { Projects, Project, ProjectItems, ProjectItem, ItemType } from '../../common/project';
+import { ItemTypeDirectory } from '../../common/project';
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
 
@@ -111,6 +112,14 @@ class projectsTreeView extends React.Component<Props> {
     default:
       return <FontAwesome name="question-circle" />;
     }
+  }
+
+  mapStateToProps(state) {
+    return mapStateToProps(state);
+  }
+
+  mapDispatchToProps(dispatch) {
+    return mapDispatchToProps(dispatch);
   }
 
   render() {
@@ -240,6 +249,13 @@ function contextmenu(e, item: ProjectItem) {
       }
     }));
   }
+  menu.append(new MenuItem({
+    label: 'reload',
+    click: () => {
+      ipcRenderer.send('reload-tree', { windowID: window.windowID, projectName: item.projectName, path: item.path });
+    },
+    enabled: item.itemType === ItemTypeDirectory
+  }));
 
   menu.popup(remote.getCurrentWindow());
 }

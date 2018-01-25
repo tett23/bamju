@@ -43,6 +43,29 @@ ipcMain.on('remove-project', async (e, { path }) => {
   e.returnValue = ret;
 });
 
+ipcMain.on('reload-tree', async (e, { projectName, path }) => {
+  const project:?Project.Project = Project.Manager.find(projectName);
+
+  if (project == null) {
+    return;
+  }
+
+  const item = project.detect(path);
+  if (item == null) {
+    return;
+  }
+  await item.load();
+
+  const ret = {
+    projectName,
+    path,
+    items: item.items
+  };
+
+  e.sender.send('refresh-tree-view-item', ret);
+  e.returnValue = ret;
+});
+
 async function openPage(e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}): Promise<?Project.Buffer> {
   Project.Manager.unwatch();
 
