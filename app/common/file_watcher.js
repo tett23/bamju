@@ -1,7 +1,7 @@
 /* eslint no-cond-assign: 0, no-loop-func: 0 */
 // @flow
 
-import chokidar from 'chokidar';
+// import chokidar from 'chokidar';
 import { Stats } from 'fs';
 import { ProjectItem } from './project';
 import { Channel } from './channel';
@@ -17,7 +17,7 @@ type CallbackItem = {
   eventType: string,
   path: string,
   callback: FileUpdateEvent,
-  watcher: chokidar.watcher,
+  // watcher: chokidar.watcher,
   resolve: PFunc,
   reject: PFunc
 };
@@ -55,15 +55,15 @@ export class FileWatcher {
       if (item.operation === OperationTypeRegsiter) {
         this._removeCallbackItem(item);
 
-        item.watcher = chokidar.watch(item.path);
-        item.watcher.on(item.eventType, item.callback);
+        // item.watcher = chokidar.watch(item.path);
+        // item.watcher.on(item.eventType, item.callback);
 
         this._callbacks.push(item);
       } else if (item.operation === OperationTypeUnregister) {
         this._removeCallbackItem(item);
       } else if (item.operation === OperationTypeUnregisterAll) {
         this._callbacks.forEach((i: CallbackItem) => {
-          i.watcher.close();
+          // i.watcher.close();
         });
       }
 
@@ -81,8 +81,8 @@ export class FileWatcher {
     if (idx !== -1) {
       const oldItem = this._callbacks[idx];
 
-      oldItem.watcher.unwatch(oldItem.path);
-      oldItem.watcher.close();
+      // oldItem.watcher.unwatch(oldItem.path);
+      // oldItem.watcher.close();
       this._callbacks.splice(idx, 1);
 
       return true;
