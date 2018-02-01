@@ -10,11 +10,18 @@ import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
 
 const { Menu, MenuItem } = remote.require('electron');
-const { PropTypes } = React;
+
+const tabDefault = {
+  name: '',
+  projectName: '',
+  path: '',
+  absolutePath: '',
+  body: ''
+};
 
 const tab = ({
   name, projectName, path, absolutePath, body
-}) => {
+}: Buffer = tabDefault) => {
   console.log('refresh tab', body);
 
   const breadcrumbItems = [];
@@ -79,23 +86,7 @@ function contextmenu(e, absolutePath: string) {
   menu.popup(remote.getCurrentWindow());
 }
 
-tab.defaultProps = {
-  name: '',
-  projectName: '',
-  path: '',
-  absolutePath: '',
-  body: ''
-};
-
-tab.propTypes = {
-  name: PropTypes.string,
-  projectName: PropTypes.string,
-  path: PropTypes.string,
-  absolutePath: PropTypes.string,
-  body: PropTypes.string
-};
-
-const mapStateToProps = (state: {mainView: mainViewState}) => {
+const mapStateToProps = (state: BrowserState) => {
   console.log('Tab mapStateToProps', state);
   const t:?Buffer = state.mainView.browser.tabs[0];
 

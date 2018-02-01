@@ -7,9 +7,15 @@ import Tab from './Tab';
 import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
 
-const { PropTypes } = React;
+type browserType = {
+  tabs: Array<Buffer>
+};
 
-const browser = ({ tabs }) => {
+const browserDefault = {
+  tabs: []
+};
+
+const browser = ({ tabs }: browserType = browserDefault) => {
   console.log('refresh browser', tabs);
   console.log('refresh browser buf=', tabs[0].buf);
 
@@ -28,20 +34,7 @@ const browser = ({ tabs }) => {
   );
 };
 
-browser.defaultProps = {
-  tabs: []
-};
-
-browser.propTypes = {
-  tabs: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string,
-    path: PropTypes.string,
-    absolutePath: PropTypes.string,
-    buf: PropTypes.string
-  }))
-};
-
-const mapStateToProps = (state: {mainView: mainViewState}) => {
+const mapStateToProps = (state: BrowserState) => {
   console.log('Browser mapStateToProps', state);
 
   const tabs = [];
