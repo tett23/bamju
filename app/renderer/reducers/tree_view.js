@@ -1,11 +1,8 @@
-
-import { combineReducers } from 'redux';
-import { browser, type BrowserAction } from './browser';
-// import { treeView } from './tree_view';
-// import type { TreeViewAction, TreeViewPartialUpdateAction } from './tree_view';
+// @flow
 
 import { REFRESH_TREE_VIEW, REFRESH_TREE_VIEW_ITEM } from '../actions/tree_view';
 import type { BufferItem } from '../../common/project';
+import type { ActionTypes } from './index';
 
 export type TreeViewAction = {
   type: 'REFRESH_TREE_VIEW',
@@ -83,11 +80,4 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
   }
 }
 
-export type ActionTypes = BrowserAction | TreeViewAction | TreeViewPartialUpdateAction | {type: string};
-
-export const appReducer = combineReducers({
-  browser,
-  treeView,
-});
-
-export default appReducer;
+export default treeView;

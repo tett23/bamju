@@ -4,8 +4,8 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import type { mainViewState } from '../reducers/main_view';
-import type { Projects, Project, ProjectItems, ProjectItem, ItemType } from '../../common/project';
+import type { TreeViewState } from '../reducers/tree_view';
+import type { BufferItem, ItemType } from '../../common/project';
 import { ItemTypeDirectory } from '../../common/project';
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
@@ -15,8 +15,8 @@ const {
 } = remote.require('electron');
 
 type Props = {
-  projects: Projects,
-  refreshTreeView: (Projects) => void
+  projects: Array<BufferItem>,
+  refreshTreeView: (Array<BufferItem>) => void
 };
 
 class projectsTreeView extends React.Component<Props> {
@@ -29,7 +29,7 @@ class projectsTreeView extends React.Component<Props> {
     super(props);
   }
 
-  onClickItem(e, item: ProjectItem) {
+  onClickItem(e, item: BufferItem) {
     console.log(this);
 
     e.preventDefault();
@@ -49,7 +49,7 @@ class projectsTreeView extends React.Component<Props> {
     }
   }
 
-  async toggleTreeView(e, item: ProjectItem) {
+  async toggleTreeView(e, item: BufferItem) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -64,12 +64,12 @@ class projectsTreeView extends React.Component<Props> {
     }
   }
 
-  buildItems(items: ProjectItems): Array<*> {
+  buildItems(items: Array<BufferItem>): Array<*> {
     if (items.length === 0) {
       return [];
     }
 
-    const ret:Array<*> = items.map((item: ProjectItem) => {
+    const ret:Array<*> = items.map((item: BufferItem) => {
       const spanClass = `${itemType(item.itemType)}`;
 
       return ((
@@ -95,7 +95,7 @@ class projectsTreeView extends React.Component<Props> {
     return ret;
   }
 
-  icon(item: ProjectItem) {
+  icon(item: BufferItem) {
     switch (item.itemType) {
     case 'project':
       return <FontAwesome name="database" />;
@@ -126,7 +126,7 @@ class projectsTreeView extends React.Component<Props> {
     console.log('projectsTreeView.render this', this);
     const { projects } = this.props;
 
-    const items:Array<*> = projects.map((item: Project) => {
+    const items:Array<*> = projects.map((item: BufferItem) => {
       return (
         <li key={item.absolutePath}>
           {this.buildItems(item.items)}
@@ -162,11 +162,11 @@ function addProject(e) {
   });
 }
 
-async function closeTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
+async function closeTreeView(projects: Array<BufferItem>, projectItem: BufferItem): Promise<Array<BufferItem>> {
   const searchPath:string = projectItem.absolutePath;
 
-  const find = async (items: ProjectItems): Promise<ProjectItems> => {
-    return Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+  const find = async (items: Array<BufferItem>): Promise<Array<BufferItem>> => {
+    return Promise.all(items.map(async (item: BufferItem): Promise<BufferItem> => {
       const r = item;
       if (item.absolutePath === searchPath) {
         r.items = [];
@@ -179,8 +179,8 @@ async function closeTreeView(projects: Projects, projectItem: ProjectItem): Prom
     }));
   };
 
-  const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
-    const r:Project = p;
+  const ret:Array<BufferItem> = await Promise.all(projects.map(async (p: BufferItem): Promise<BufferItem> => {
+    const r:BufferItem = p;
     r.items = await find(p.items);
 
     return r;
@@ -189,14 +189,15 @@ async function closeTreeView(projects: Projects, projectItem: ProjectItem): Prom
   return ret;
 }
 
-async function openTreeView(projects: Projects, projectItem: ProjectItem): Promise<Projects> {
+async function openTreeView(projects: Array<BufferItem>, projectItem: BufferItem): Promise<Array<BufferItem>> {
   const searchPath:string = projectItem.absolutePath;
 
-  const find = async (items: ProjectItems): Promise<ProjectItems> => {
-    return Promise.all(items.map(async (item: ProjectItem): Promise<ProjectItem> => {
+  const find = async (items: Array<BufferItem>): Promise<Array<BufferItem>> => {
+    return Promise.all(items.map(async (item: BufferItem): Promise<BufferItem> => {
       const r = item;
       if (item.absolutePath === searchPath) {
-        await r.load();
+        // TODO: dispatchする
+        // await r.load();
       } else {
         r.items = await find(item.items);
       }
@@ -205,8 +206,8 @@ async function openTreeView(projects: Projects, projectItem: ProjectItem): Promi
     }));
   };
 
-  const ret:Projects = await Promise.all(projects.map(async (p: Project): Promise<Project> => {
-    const r:Project = p;
+  const ret:Array<BufferItem> = await Promise.all(projects.map(async (p: BufferItem): Promise<BufferItem> => {
+    const r:BufferItem = p;
     r.items = await find(p.items);
 
     return r;
@@ -216,7 +217,7 @@ async function openTreeView(projects: Projects, projectItem: ProjectItem): Promi
 }
 
 
-function openFile(item: ProjectItem) {
+function openFile(item: BufferItem) {
   if (item.itemType === 'undefined') {
     return;
   }
@@ -224,7 +225,7 @@ function openFile(item: ProjectItem) {
   ipcRenderer.send('open-page', { windowID: window.windowID, projectName: item.projectName, itemName: item.path });
 }
 
-function contextmenu(e, item: ProjectItem) {
+function contextmenu(e, item: BufferItem) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -275,11 +276,14 @@ function itemType(t: ItemType) {
   }
 }
 
-const mapStateToProps = (state: {mainView: mainViewState}): {projects: Projects} => {
+const mapStateToProps = (state: {treeView: TreeViewState}): {projects: Array<BufferItem>} => {
   console.log('projectsTreeView mapStateToProps', state);
+  if (state == null) {
+    return { projects: [] };
+  }
 
   return {
-    projects: state.mainView.projects
+    projects: state.treeView.projects
   };
 };
 
@@ -288,7 +292,7 @@ const mapDispatchToProps = (dispatch) => {
   console.log('projectsTreeView mapDispatchToProps', dispatch);
 
   return {
-    refreshTreeView: (projects: Projects) => {
+    refreshTreeView: (projects: Array<BufferItem>) => {
       dispatch(refreshTreeView(projects));
     }
   };

@@ -2,50 +2,43 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-// import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
 import ProjectsTreeView from '../components/ProjectsTreeView';
 import Browser from '../components/Browser';
-// import { openFragmentByTreeViewOnClick } from '../actions/tree_view';
-import { initialMainViewState } from '../reducers/main_view';
 import styles from './App.css';
+import { initialBrowserState, type BrowserState } from '../reducers/browser';
+import { initialTreeViewState, type TreeViewState } from '../reducers/tree_view';
 
-const app = ({ mainView }) => {
+type appState = {
+  treeView: TreeViewState,
+  browser: BrowserState
+};
+
+const app = ({ treeView, browser }: appState = defaultState) => {
   console.log('init app');
-  console.log('create app VDOM', mainView);
+  console.log('create app VDOM', treeView, browser);
 
   return (
     <div className={styles.app} data-tid="app">
-      <ProjectsTreeView treeView={mainView.projects} />
-      <Browser tabs={[mainView.browser.tabs]} />
+      <ProjectsTreeView treeView={treeView} />
+      <Browser tabs={[browser.tabs]} />
     </div>
   );
 };
 
-app.defaultProps = {
-  mainView: initialMainViewState()
-};
-
-app.propTypes = {
-  mainView: PropTypes.shape({
-    tab: PropTypes.string
-  })
+const defaultState = {
+  treeView: initialTreeViewState(),
+  browser: initialBrowserState()
 };
 
 const mapStateToProps = (state) => {
   console.log('App mapStateToProps', state);
 
-  return {
-    mainView: state.mainView,
-  };
+  return state;
 };
 
 const mapDispatchToProps = (dispatch) => {
   console.log('App mapDispatchToProps', dispatch);
 
-  // return {
-  //   onFragmentClick: bindActionCreators(openFragmentByTreeViewOnClick, dispatch)
-  // };
   return {};
 };
 

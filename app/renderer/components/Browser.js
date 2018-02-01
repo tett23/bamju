@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import type { mainViewState } from '../reducers/main_view';
+import type { BrowserState } from '../reducers/browser';
 import Tab from './Tab';
 import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
@@ -17,7 +17,7 @@ const browserDefault = {
 
 const browser = ({ tabs }: browserType = browserDefault) => {
   console.log('refresh browser', tabs);
-  console.log('refresh browser buf=', tabs[0].buf);
+  // console.log('refresh browser buf=', tabs[0].buf);
 
   const t:Buffer = tabs[0];
 
@@ -34,11 +34,11 @@ const browser = ({ tabs }: browserType = browserDefault) => {
   );
 };
 
-const mapStateToProps = (state: BrowserState) => {
+const mapStateToProps = (state: {browser: BrowserState}) => {
   console.log('Browser mapStateToProps', state);
 
   const tabs = [];
-  state.mainView.browser.tabs.forEach((tab: Buffer) => {
+  state.browser.tabs.forEach((tab: Buffer) => {
     tabs.push(tab);
   });
 

@@ -12,9 +12,10 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
-import appReducer from './renderer/reducers';
+import { appReducer } from './renderer/reducers/index';
 import { openPageByBuffer } from './renderer/actions/tab';
 import { refreshTreeView, refreshTreeViewItem } from './renderer/actions/tree_view';
+import type { BufferItem } from './common/project';
 import './app.global.css';
 // import * as Project from './common/project';
 
@@ -81,32 +82,16 @@ ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
   store.dispatch(openPageByBuffer(buf));
 });
 
-ipcRenderer.on('refresh-tree-view', (event, tv) => {
+ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
   console.log('refresh-tree-view', tv);
 
-  // なんで送られたきた値を使わないで直接Managerに触れるみたいな治安の悪い状態になっているかというと、
-  // ipcがネイティブの実装のため、classのインスタンスを送ると単なるObjectになって、型の検証に失敗するため
-  (async () => {
-    await Project.Manager.loadProjects();
-    const projects:Project.Projects = Project.Manager.projects();
-    store.dispatch(refreshTreeView(projects));
-  })();
+  store.dispatch(refreshTreeView(tv));
 });
 
-ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, items }) => {
+ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, items }: {projectName: string, path: string, items: Array<BufferItem>}) => {
   console.log('refresh-tree-view-item', projectName, path, items);
 
-  // なんで送られたきた値を使わないで直接Managerに触れるみたいな治安の悪い状態になっているかというと、
-  // ipcがネイティブの実装のため、classのインスタンスを送ると単なるObjectになって、型の検証に失敗するため
-  (async () => {
-    await Project.Manager.loadProjects();
-    const update = Project.Manager.detect(projectName, path);
-    if (update == null) {
-      return;
-    }
-
-    store.dispatch(refreshTreeViewItem(projectName, path, update));
-  })();
+  store.dispatch(refreshTreeViewItem(projectName, path, items));
 });
 
 window.wikiLinkOnClickAvailable = (repo, name) => {

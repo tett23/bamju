@@ -5,7 +5,7 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import type { mainViewState } from '../reducers/main_view';
+import type { BrowserState } from '../reducers/browser';
 import type { Buffer } from '../../common/project';
 import styles from './Browser.css';
 
@@ -86,9 +86,9 @@ function contextmenu(e, absolutePath: string) {
   menu.popup(remote.getCurrentWindow());
 }
 
-const mapStateToProps = (state: BrowserState) => {
+const mapStateToProps = (state: {browser: BrowserState}) => {
   console.log('Tab mapStateToProps', state);
-  const t:?Buffer = state.mainView.browser.tabs[0];
+  const t:?Buffer = state.browser.tabs[0];
 
   return t || tab.defaultProps;
 };

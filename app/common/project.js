@@ -16,6 +16,17 @@ export const ItemTypeText = 'text';
 export const ItemTypeUndefined = 'undefined';
 export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefined';
 
+export type BufferItem = {
+  name: string,
+  projectName: string,
+  projectPath: string,
+  path: string,
+  absolutePath: string,
+  itemType: ItemType,
+  items: Array<BufferItem>,
+  isLoaded: boolean
+};
+
 export type Buffer = {
   name: string,
   path: string,
@@ -259,6 +270,23 @@ export class Project {
     const ret:ParseResult = await item.toBuffer();
     return ret;
   }
+
+  toBufferItem(): BufferItem {
+    const items = this.items.map((item) => {
+      return item.toBufferItem();
+    });
+
+    return {
+      name: this.name,
+      projectName: this.name,
+      projectPath: this.path,
+      path: this.path,
+      absolutePath: this.absolutePath,
+      itemType: this.itemType,
+      items,
+      isLoaded: this.isLoaded,
+    };
+  }
 }
 export type Projects = Array<Project>;
 
@@ -437,6 +465,23 @@ export class ProjectItem {
     const ret:ParseResult = await openFile(this);
 
     return ret;
+  }
+
+  toBufferItem(): BufferItem {
+    const items = this.items.map((item) => {
+      return item.toBufferItem();
+    });
+
+    return {
+      name: this.name,
+      projectName: this.projectName,
+      projectPath: this.projectPath,
+      path: this.path,
+      absolutePath: this.absolutePath,
+      itemType: this.itemType,
+      items,
+      isLoaded: this.isLoaded,
+    };
   }
 }
 export type ProjectItems = Array<ProjectItem>;
