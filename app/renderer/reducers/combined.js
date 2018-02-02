@@ -73,10 +73,9 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
     }
 
     const update:BufferItem = deepMerge(find, {
-      isLoaded: false,
+      isOpened: false,
       items: []
     });
-    console.log('CLOSE_TREE_VIEW_ITEM update', update);
 
     const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, update);
     return Object.assign({}, state, { projects: newProjects });

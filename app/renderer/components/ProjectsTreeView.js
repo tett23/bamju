@@ -55,7 +55,7 @@ class projectsTreeView extends React.Component<Props> {
 
     console.log('projectsTreeView.toggleTreeView item', item);
     console.log('projectsTreeView.toggleTreeView props', this.props);
-    if (item.isLoaded) {
+    if (item.isOpened) {
       this.props.closeTreeViewItem(item.projectName, item.path);
     } else {
       ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
@@ -70,6 +70,11 @@ class projectsTreeView extends React.Component<Props> {
     const ret:Array<*> = items.map((item: BufferItem) => {
       const spanClass = `${itemType(item.itemType)}`;
 
+      let children = [];
+      if (item.isOpened) {
+        children = this.buildItems(item.items);
+      }
+
       return ((
         <ul className={styles.projectItem} key={item.absolutePath}>
           <li
@@ -83,7 +88,7 @@ class projectsTreeView extends React.Component<Props> {
               <span className={spanClass}>
                 {item.name}
               </span>
-              {this.buildItems(item.items)}
+              {children}
             </div>
           </li>
         </ul>
@@ -98,7 +103,7 @@ class projectsTreeView extends React.Component<Props> {
     case 'project':
       return <FontAwesome name="database" onClick={e => { return this.toggleTreeView(e, item); }} />;
     case 'directory':
-      if (item.isLoaded) {
+      if (item.isOpened) {
         return <FontAwesome name="folder-open" onClick={e => { return this.toggleTreeView(e, item); }} />;
       }
       return <FontAwesome name="folder" onClick={e => { return this.toggleTreeView(e, item); }} />;

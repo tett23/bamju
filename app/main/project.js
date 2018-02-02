@@ -18,7 +18,7 @@ ipcMain.on('open-page', async (e, { windowID, projectName, itemName }) => {
 
 ipcMain.on('refresh-tree-view', async (e) => {
   const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return item.toBufferItem();
+    return Object.assign({}, item.toBufferItem(), { isOpened: true });
   });
 
   e.sender.send('refresh-tree-view', ret);
@@ -32,7 +32,7 @@ ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
 ipcMain.on('add-project', async (e, { path }) => {
   Project.Manager.addProject(path);
   const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return item.toBufferItem();
+    return Object.assign({}, item.toBufferItem(), { isOpened: true });
   });
 
   e.sender.send('refresh-tree-view', ret);
@@ -42,7 +42,7 @@ ipcMain.on('add-project', async (e, { path }) => {
 ipcMain.on('remove-project', async (e, { path }) => {
   Project.Manager.removeProject(path);
   const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return item.toBufferItem();
+    return Object.assign({}, item.toBufferItem(), { isOpened: true });
   });
 
   e.sender.send('refresh-tree-view', ret);
@@ -56,10 +56,10 @@ ipcMain.on('reload-tree', async (e, { projectName, path }) => {
   }
   await item.load();
 
-  const ret = {
+  const ret: {projectName: string, path: string, item: Project.BufferItem} = {
     projectName,
     path,
-    item: item.toBufferItem()
+    item: Object.assign({}, item.toBufferItem(), { isOpened: true })
   };
 
   e.sender.send('refresh-tree-view-item', ret);

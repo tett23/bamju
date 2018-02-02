@@ -16,25 +16,24 @@ export const ItemTypeText = 'text';
 export const ItemTypeUndefined = 'undefined';
 export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefined';
 
-export type BufferItem = {
+export type FileItem = {
   name: string,
-  projectName: string,
-  projectPath: string,
   path: string,
+  projectName: string,
   absolutePath: string,
-  itemType: ItemType,
-  items: Array<BufferItem>,
-  isLoaded: boolean
+  itemType: ItemType
 };
 
 export type Buffer = {
-  name: string,
-  path: string,
-  projectName: string,
-  absolutePath: string,
-  itemType: ItemType,
   body: string
-};
+} & FileItem;
+
+export type BufferItem = {
+  projectPath: string,
+  isLoaded: boolean,
+  isOpened: boolean,
+  items: Array<BufferItem>
+} & FileItem;
 
 export type ParseResult = {
   buffer: Buffer,
@@ -81,7 +80,8 @@ export class Manager {
       absolutePath: projectPath,
       itemType: ItemTypeProject,
       items: [],
-      isLoaded: false
+      isLoaded: false,
+      isOpened: false,
     });
     await ret.load();
 
@@ -164,7 +164,8 @@ export class Manager {
       name: 'not found',
       itemType: ItemTypeUndefined,
       items: [],
-      isLoaded: false
+      isLoaded: false,
+      isOpened: false,
     });
     const md: string =
 `
@@ -221,6 +222,7 @@ export class ProjectItem {
   itemType: ItemType;
   items: ProjectItems;
   isLoaded: boolean;
+  isOpened: boolean;
 
   constructor(bufItem: BufferItem) {
     this.projectName = bufItem.projectName;
@@ -229,8 +231,11 @@ export class ProjectItem {
     this.path = bufItem.path;
     this.absolutePath = path.normalize(bufItem.absolutePath);
     this.itemType = bufItem.itemType;
-    this.items = [];
-    this.isLoaded = false;
+    this.items = bufItem.items.map((item) => {
+      return new ProjectItem(item);
+    });
+    this.isLoaded = bufItem.isLoaded;
+    this.isOpened = bufItem.isOpened;
   }
 
   async load(): Promise<boolean> {
@@ -252,7 +257,7 @@ export class ProjectItem {
     return true;
   }
 
-  async loadDirectory(basePath: string, recursive:boolean = false): Promise<ProjectItems> {
+  async loadDirectory(basePath: string, lazyLoad: boolean = true): Promise<ProjectItems> {
     // console.log('ProjectItem.loadDirectory this', this);
     // console.log('ProjectItem.loadDirectory basePath', basePath);
     let files: Array<string>;
@@ -269,6 +274,7 @@ export class ProjectItem {
         itemType: ItemTypeUndefined,
         items: [],
         isLoaded: true,
+        isOpened: false,
       })];
     }
 
@@ -288,9 +294,12 @@ export class ProjectItem {
         itemType,
         items: [],
         isLoaded: false,
+        isOpened: false,
       });
 
-      if (recursive) {
+      if (lazyLoad) {
+        item.load();
+      } else {
         await item.load();
       }
 
@@ -367,7 +376,7 @@ export class ProjectItem {
           projectName: '',
           absolutePath: '',
           itemType: ItemTypeUndefined,
-          body: 'not found'
+          body: 'not found',
         },
         children: []
       };
@@ -417,6 +426,7 @@ export class ProjectItem {
       itemType: this.itemType,
       items,
       isLoaded: this.isLoaded,
+      isOpened: this.isOpened
     };
   }
 }
