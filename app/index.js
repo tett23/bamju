@@ -12,9 +12,9 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
-import { appReducer } from './renderer/reducers/index';
+import { appReducer } from './renderer/reducers/combined';
 import { openPageByBuffer } from './renderer/actions/tab';
-import { refreshTreeView, refreshTreeViewItem } from './renderer/actions/tree_view';
+import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
 import type { BufferItem } from './common/project';
 import './app.global.css';
 // import * as Project from './common/project';
@@ -88,10 +88,10 @@ ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
   store.dispatch(refreshTreeView(tv));
 });
 
-ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, items }: {projectName: string, path: string, items: Array<BufferItem>}) => {
-  console.log('refresh-tree-view-item', projectName, path, items);
+ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, item }: {projectName: string, path: string, item: BufferItem}) => {
+  console.log('refresh-tree-view-item', projectName, path, item);
 
-  store.dispatch(refreshTreeViewItem(projectName, path, items));
+  store.dispatch(openTreeViewItem(projectName, path, item));
 });
 
 window.wikiLinkOnClickAvailable = (repo, name) => {

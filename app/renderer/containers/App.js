@@ -25,6 +25,7 @@ const app = ({ treeView, browser }: appState = defaultState) => {
   );
 };
 
+// FIXME: いらない気がする
 const defaultState = {
   treeView: initialTreeViewState(),
   browser: initialBrowserState()

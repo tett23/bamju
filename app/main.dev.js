@@ -9,7 +9,7 @@ import {
   triggerAlias,
   replayActionMain
 } from 'electron-redux';
-import { appReducer } from './renderer/reducers/index';
+import { appReducer } from './renderer/reducers/combined';
 import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 

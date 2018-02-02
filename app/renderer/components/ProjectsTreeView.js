@@ -8,7 +8,7 @@ import type { TreeViewState } from '../reducers/tree_view';
 import type { BufferItem, ItemType } from '../../common/project';
 import { ItemTypeDirectory } from '../../common/project';
 import styles from './ProjectsTreeView.css';
-import { refreshTreeView } from '../actions/tree_view';
+import { refreshTreeView, closeTreeViewItem, openTreeViewItem } from '../actions/tree_view';
 
 const {
   Menu, MenuItem, dialog
@@ -16,7 +16,7 @@ const {
 
 type Props = {
   projects: Array<BufferItem>,
-  refreshTreeView: (Array<BufferItem>) => void
+  closeTreeViewItem: (string, string) => void
 };
 
 class projectsTreeView extends React.Component<Props> {
@@ -56,11 +56,9 @@ class projectsTreeView extends React.Component<Props> {
     console.log('projectsTreeView.toggleTreeView item', item);
     console.log('projectsTreeView.toggleTreeView props', this.props);
     if (item.isLoaded) {
-      const projects = await closeTreeView(this.props.projects, item);
-      this.props.refreshTreeView(projects);
+      this.props.closeTreeViewItem(item.projectName, item.path);
     } else {
-      const projects = await openTreeView(this.props.projects, item);
-      this.props.refreshTreeView(projects);
+      ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
     }
   }
 
@@ -154,61 +152,6 @@ function addProject(e) {
   });
 }
 
-async function closeTreeView(projects: Array<BufferItem>, projectItem: BufferItem): Promise<Array<BufferItem>> {
-  const searchPath:string = projectItem.absolutePath;
-
-  const find = async (items: Array<BufferItem>): Promise<Array<BufferItem>> => {
-    return Promise.all(items.map(async (item: BufferItem): Promise<BufferItem> => {
-      const r = item;
-      if (item.absolutePath === searchPath) {
-        r.items = [];
-        r.isLoaded = false;
-      } else {
-        r.items = await find(item.items);
-      }
-
-      return r;
-    }));
-  };
-
-  const ret:Array<BufferItem> = await Promise.all(projects.map(async (p: BufferItem): Promise<BufferItem> => {
-    const r:BufferItem = p;
-    r.items = await find(p.items);
-
-    return r;
-  }));
-
-  return ret;
-}
-
-async function openTreeView(projects: Array<BufferItem>, projectItem: BufferItem): Promise<Array<BufferItem>> {
-  const searchPath:string = projectItem.absolutePath;
-
-  const find = async (items: Array<BufferItem>): Promise<Array<BufferItem>> => {
-    return Promise.all(items.map(async (item: BufferItem): Promise<BufferItem> => {
-      const r = item;
-      if (item.absolutePath === searchPath) {
-        // TODO: dispatchする
-        // await r.load();
-      } else {
-        r.items = await find(item.items);
-      }
-
-      return r;
-    }));
-  };
-
-  const ret:Array<BufferItem> = await Promise.all(projects.map(async (p: BufferItem): Promise<BufferItem> => {
-    const r:BufferItem = p;
-    r.items = await find(p.items);
-
-    return r;
-  }));
-
-  return ret;
-}
-
-
 function openFile(item: BufferItem) {
   if (item.itemType === 'undefined') {
     return;
@@ -286,6 +229,12 @@ const mapDispatchToProps = (dispatch) => {
   return {
     refreshTreeView: (projects: Array<BufferItem>) => {
       dispatch(refreshTreeView(projects));
+    },
+    closeTreeViewItem: (projectName: string, path: string) => {
+      dispatch(closeTreeViewItem(projectName, path));
+    },
+    openTreeViewItem: (projectName: string, path: string) => {
+      dispatch(openTreeViewItem(projectName, path));
     }
   };
 };

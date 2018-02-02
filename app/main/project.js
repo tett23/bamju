@@ -65,10 +65,10 @@ ipcMain.on('reload-tree', async (e, { projectName, path }) => {
   const ret = {
     projectName,
     path,
-    items: item.items
+    item: item.toBufferItem()
   };
 
-  e.sender.send('refresh-tree-view-item', item.toBufferItem());
+  e.sender.send('refresh-tree-view-item', ret);
   e.returnValue = ret;
 });
 
