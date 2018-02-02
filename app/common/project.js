@@ -526,12 +526,17 @@ async function readFile(absolutePath: string): Promise<string> {
 async function readDirectory(item: ProjectItem): Promise<string> {
   try {
     const files:Array<string> = await promisify(fs.readdir)(item.absolutePath);
-    const items:Array<string> = files.map((filename: string) => {
-      const p:string = path.join(item.path, filename);
-      const text:string = path.basename(filename, path.extname(filename));
+    const items:Array<string> = files.map((filename) => {
+      const p = path.join(item.path, filename);
+      const text = path.basename(filename, path.extname(filename));
+      const absPath = path.join(item.absolutePath, filename);
+
+      if (detectItemTypeByAbsPath(absPath) === ItemTypeUndefined) {
+        return null;
+      }
 
       return `- [[${item.projectName}:${p}]]{${text}}`;
-    });
+    }).filter(Boolean); // nullを消したい
 
     const ret:string = `
 # ${item.projectName}:${item.path}
