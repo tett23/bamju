@@ -31,7 +31,7 @@ ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
 
 ipcMain.on('add-project', async (e, { path }) => {
   Project.Manager.addProject(path);
-  const ret:Array<Project.BufferItem> = Project.Manager.projects().map((item) => {
+  const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
     return item.toBufferItem();
   });
 
@@ -41,7 +41,7 @@ ipcMain.on('add-project', async (e, { path }) => {
 
 ipcMain.on('remove-project', async (e, { path }) => {
   Project.Manager.removeProject(path);
-  const ret:Array<Project.BufferItem> = Project.Manager.projects().map((item) => {
+  const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
     return item.toBufferItem();
   });
 
