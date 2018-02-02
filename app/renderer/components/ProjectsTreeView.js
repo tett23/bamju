@@ -173,7 +173,15 @@ function contextmenu(e, item: BufferItem) {
     menu.append(new MenuItem({
       label: 'remove',
       click: () => {
-        ipcRenderer.send('remove-project', { path: item.absolutePath });
+        const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: '削除しますか',
+          message: '削除しますか'
+        });
+        if (choice === 0) {
+          ipcRenderer.send('remove-project', { path: item.absolutePath });
+        }
       }
     }));
   }
