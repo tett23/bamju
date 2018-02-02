@@ -185,6 +185,7 @@ function contextmenu(e, item: BufferItem) {
     label: 'edit on bamju editor',
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
+        parentWindowID: window.windowID,
         projectName: item.projectName,
         itemName: item.path
       });

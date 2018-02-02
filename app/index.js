@@ -8,9 +8,9 @@ window.loadWindow = (windowType: WindowType) => {
   case 'app':
     require('./app_index');
     break;
-  // case 'editor':
-  //   require('./editor_index');
-  //   break;
+  case 'editor':
+    require('./editor_index');
+    break;
   default:
     break;
   }

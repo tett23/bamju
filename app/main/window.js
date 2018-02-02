@@ -3,8 +3,12 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
-import { Manager as ProjectManager } from '../common/project';
-import type { ProjectItems } from '../common/project';
+import EditorMenuBuilder from '../editor_menu';
+import {
+  Manager as ProjectManager,
+  internalPath,
+  type ProjectItem
+} from '../common/project';
 
 // const { Projects } = require('../common/project');
 
@@ -141,6 +145,69 @@ ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {wi
 
   WindowManager.create(conf);
 });
+
+ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
+  console.log('open-by-bamju-editor', fileInfo);
+
+  const projectItem = ProjectManager.detect(fileInfo.projectName, fileInfo.itemName);
+  if (projectItem == null) {
+    e.send('show-information', {
+      type: 'error',
+      message: `file not found. projectName${internalPath(fileInfo.projectName, fileInfo.itemName)}`
+    });
+
+    return;
+  }
+
+  EditorWindow.create(projectItem, fileInfo.parentWindowID);
+});
+
+export class EditorWindow {
+  browserWindow: BrowserWindow;
+  projectItem: ProjectItem;
+  parentWindowID: ?string;
+
+  static create(projectItem: ProjectItem, parentWindowID: ?string) {
+    new EditorWindow(projectItem, parentWindowID); /* eslint no-new: 0 */
+  }
+
+  constructor(projectItem: ProjectItem, parentWindowID: ?string) {
+    this.projectItem = projectItem;
+    this.parentWindowID = parentWindowID;
+    const browserWindow = new BrowserWindow({
+      show: false
+    });
+    this.browserWindow = browserWindow;
+
+    browserWindow.loadURL(`file://${__dirname}/../editor.html`);
+
+    browserWindow.webContents.on('did-finish-load', () => {
+      if (!browserWindow) {
+        throw new Error('"browserWindow" is not defined');
+      }
+
+      browserWindow.show();
+      browserWindow.focus();
+
+      this.initializeRenderer();
+    });
+
+    const menuBuilder = new EditorMenuBuilder(browserWindow);
+    menuBuilder.buildMenu();
+
+    browserWindow.on('closed', () => {
+      // FIXME: 閉じるダイアログが必要
+    });
+  }
+
+  initializeRenderer() {
+    this.browserWindow.webContents.send('initialize', this.projectItem.toBuffer());
+  }
+
+  sendSaveEvent() {
+    this.browserWindow.webContents.send('collect-save-information', {});
+  }
+}
 
 function createWindowID(): string {
   const timestamp:number = new Date().getTime();
