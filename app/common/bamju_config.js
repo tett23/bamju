@@ -15,7 +15,7 @@ export type BamjuConfig = {
   followChange: boolean,
   init: () => Promise<void>,
   update: ({}) => Promise<void>,
-  quit: ({}) => void
+  quit: () => void
 };
 
 export type Window = {
