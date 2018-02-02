@@ -25,7 +25,7 @@ ipcMain.on('refresh-tree-view', async (e) => {
   e.returnValue = ret;
 });
 
-ipcMain.on('open-by-editor', async (e, absolutePath: string) => {
+ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
   opn(absolutePath);
 });
 

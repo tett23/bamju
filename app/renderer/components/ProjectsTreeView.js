@@ -173,7 +173,7 @@ function contextmenu(e, item: BufferItem) {
   menu.append(new MenuItem({
     label: 'edit on system editor',
     click: () => {
-      ipcRenderer.send('open-by-editor', item.absolutePath);
+      ipcRenderer.send('open-by-system-editor', item.absolutePath);
     }
   }));
   menu.append(new MenuItem({
