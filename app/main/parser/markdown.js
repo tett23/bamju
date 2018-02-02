@@ -61,7 +61,7 @@ type ParseInlineToken = {
 class Markdown implements Parser<MarkdownOption> {
   static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
     if (md === '') {
-      return emptyFile(projectItem);
+      return emptyFileBuffer(projectItem);
     }
 
     const options = Object.assign({}, defaultOption, opt);
@@ -177,55 +177,17 @@ class Markdown implements Parser<MarkdownOption> {
   }
 
   static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<ParseResult> {
-    const {
-      repo, name, fragment, text
-    } = token;
-
-    const projectItem:?ProjectItem = Manager.detect(repo, name);
+    const projectItem:?ProjectItem = Manager.detect(token.repo, token.name);
     if (!projectItem) {
-      let t:string = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
-      t = `[[${repo}:${name}]]{${t}}`;
-      return {
-        buffer: {
-          name: '',
-          path: '',
-          projectName: '',
-          absolutePath: '',
-          itemType: ItemTypeUndefined,
-          body: t
-        },
-        children: []
-      };
+      return inlineNotFoundBuffer(token);
     }
 
-    let ret:ParseResult;
     const { itemType } = projectItem;
+    let ret:ParseResult;
     if (itemType === ItemTypeCSV || itemType === ItemTypeTSV) {
       ret = await projectItem.toBuffer();
     } else if (itemType === ItemTypeMarkdown || itemType === ItemTypeText) {
-      let altText:string = !text ? `${projectItem.projectName}:${projectItem.path}` : text;
-      altText = `{${altText}}`;
-
-      // ループしていると壊れるので
-      if (Markdown.checkInlineLoop(projectItem, stack)) {
-        return {
-          buffer: {
-            name: projectItem.name,
-            path: projectItem.path,
-            projectName: projectItem.projectName,
-            absolutePath: projectItem.absolutePath,
-            itemType: projectItem.itemType,
-            body: `!loop [[${repo}:${name}]]${altText}`
-          },
-          children: []
-        };
-      }
-
-      let md:string = await projectItem.content();
-      // h1のおきかえ
-      md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${projectItem.path}]]{${text || name}}`);
-
-      ret = await Markdown.parse(projectItem, md, stack, { headingLevel });
+      ret = await parseChild(projectItem, token, headingLevel, stack);
     } else {
       ret = await projectItem.toBuffer();
     }
@@ -264,7 +226,29 @@ function renderInlineLink(html: string): string {
   return `<div>${html}</div>`;
 }
 
-function emptyFile(projectItem: ProjectItem): ParseResult {
+async function parseChild(projectItem, token: ParseInlineToken, headingLevel = 1, stack: StackItems): Promise<ParseResult> {
+  const {
+    repo, name, text
+  } = token;
+
+  let altText:string = !text ? `${projectItem.projectName}:${projectItem.path}` : text;
+  altText = `{${altText}}`;
+
+  // ループしていると壊れるので
+  if (Markdown.checkInlineLoop(projectItem, stack)) {
+    return loopBuffer(projectItem, altText);
+  }
+
+  let md:string = await projectItem.content();
+  // h1のおきかえ
+  md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${projectItem.path}]]{${text || name}}`);
+
+  const ret = await Markdown.parse(projectItem, md, stack, { headingLevel });
+
+  return ret;
+}
+
+function emptyFileBuffer(projectItem: ProjectItem): ParseResult {
   return {
     buffer: {
       name: projectItem.name,
@@ -277,4 +261,40 @@ function emptyFile(projectItem: ProjectItem): ParseResult {
     children: []
   };
 }
+
+function inlineNotFoundBuffer(token: ParseInlineToken): ParseResult {
+  const {
+    repo, name, fragment
+  } = token;
+
+  let t:string = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
+  t = `[[${repo}:${name}]]{${t}}`;
+
+  return {
+    buffer: {
+      name: '',
+      path: '',
+      projectName: '',
+      absolutePath: '',
+      itemType: ItemTypeUndefined,
+      body: t
+    },
+    children: []
+  };
+}
+
+function loopBuffer(projectItem: ProjectItem, altText: string): ParseResult {
+  return {
+    buffer: {
+      name: projectItem.name,
+      path: projectItem.path,
+      projectName: projectItem.projectName,
+      absolutePath: projectItem.absolutePath,
+      itemType: projectItem.itemType,
+      body: `!loop [[${projectItem.projectName}:${projectItem.path}]]${altText}`
+    },
+    children: []
+  };
+}
+
 export default Markdown;
