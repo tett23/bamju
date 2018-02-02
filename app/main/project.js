@@ -67,7 +67,7 @@ ipcMain.on('reload-tree', async (e, { projectName, path }) => {
 });
 
 ipcMain.on('create-file', async (e, { projectName, path }: {projectName: string, path: string}) => {
-  const info = Project.resolvePath(path);
+  const info = Project.resolveInternalPath(path);
   info.projectName = info.projectName || projectName;
 
   const ret = await Project.Manager.createFile(info.projectName, info.path);

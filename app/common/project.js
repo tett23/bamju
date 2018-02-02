@@ -510,6 +510,10 @@ export class ProjectItem {
       isOpened: this.isOpened
     };
   }
+
+  internalPath(): string {
+    return internalPath(this.projectName, this.path);
+  }
 }
 export type ProjectItems = Array<ProjectItem>;
 
@@ -611,7 +615,7 @@ export function detectItemType(projectName: string, itemName: string): ItemType 
   return detectItemTypeByAbsPath(abs);
 }
 
-export function resolvePath(p: string): {projectName: ?string, path: string} {
+export function resolveInternalPath(p: string): {projectName: ?string, path: string} {
   const split = p.split(':', 2);
   let projectName: ?string;
   let retPath: string;
@@ -627,4 +631,7 @@ export function resolvePath(p: string): {projectName: ?string, path: string} {
     projectName,
     path: retPath
   };
+}
+export function internalPath(projectName: string, itemPath: string): string {
+  return `${projectName}:${itemPath}`;
 }
