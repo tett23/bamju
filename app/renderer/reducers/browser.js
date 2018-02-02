@@ -3,11 +3,6 @@
 import type { Buffer } from '../../common/project';
 // import type { ActionTypes } from './combined';
 
-export type BrowserAction = {
-  type: 'OPEN_PAGE',
-  buffer: Buffer
-};
-
 export type BrowserState = {
   tabs: Array<Buffer>
 };

@@ -1,16 +1,21 @@
 // @flow
 
 import { combineReducers } from 'redux';
-import { type BrowserAction } from './browser';
-import type { TreeViewAction, TreeViewPartialUpdateAction, TreeViewCloseItemAction } from './tree_view';
-
-import { REFRESH_TREE_VIEW, REFRESH_TREE_VIEW_ITEM, CLOSE_TREE_VIEW_ITEM } from '../actions/tree_view';
-import { OPEN_PAGE } from '../actions/tab';
 import type { BufferItem } from '../../common/project';
+import { deepCopy, deepMerge } from '../../common/util';
+
+import {
+  REFRESH_TREE_VIEW,
+  REFRESH_TREE_VIEW_ITEM,
+  CLOSE_TREE_VIEW_ITEM,
+  refreshTreeView,
+  closeTreeViewItem,
+  openTreeViewItem
+} from '../actions/tree_view';
+import { OPEN_PAGE, openPageByBuffer } from '../actions/tab';
 
 import { type TreeViewState } from './tree_view';
 import { type BrowserState } from './browser';
-import { deepCopy, deepMerge } from '../../common/util';
 
 function initialTreeViewState(): TreeViewState {
   return {
@@ -57,9 +62,9 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
 
   switch (action.type) {
   case REFRESH_TREE_VIEW: {
-    return (Object.assign({}, state, {
+    return Object.assign({}, state, {
       projects: action.projects
-    }): TreeViewState);
+    });
   }
   case REFRESH_TREE_VIEW_ITEM: {
     const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, action.item);
@@ -114,7 +119,13 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   }
 }
 
-export type ActionTypes = BrowserAction | TreeViewAction | TreeViewPartialUpdateAction | TreeViewCloseItemAction | {type: string};
+type __ReturnType<B, F: (...any) => B> = B;
+type $ReturnType<F> = __ReturnType<*, F>;
+
+export type ActionTypes = $ReturnType<typeof openPageByBuffer>
+| $ReturnType<typeof refreshTreeView>
+| $ReturnType<typeof closeTreeViewItem>
+| $ReturnType<typeof openTreeViewItem>;
 
 export const appReducer = combineReducers({
   browser,
