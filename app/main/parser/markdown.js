@@ -1,14 +1,18 @@
-/* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0 */
+/* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0, flowtype-errors/show-errors: 0 */
 // @flow
 
 import marked from 'marked';
 import { Manager, ItemTypeUndefined } from '../../common/project';
 import type { ProjectItem, ParseResult, ParseResults } from '../../common/project';
+import {
+  type Parser,
+  type StackItem,
+  type StackItems,
+} from './parser';
 
 const { markedParserTok, markedLexerToken } = require('./marked_overrides');
 
-type Token = Object;
-type MarkdownOption = {
+export type MarkdownOption = {
   gfm?: boolean,
   tables?: boolean,
   breaks?: boolean,
@@ -28,6 +32,8 @@ type MarkdownOption = {
   headingLevel?: number
 };
 
+type Token = Object; /* eslint flowtype/no-weak-types: 0 */
+
 const defaultOption:MarkdownOption = {
   gfm: true,
   tables: true,
@@ -36,12 +42,6 @@ const defaultOption:MarkdownOption = {
   headingLevel: 0
 };
 
-type StackItem = {
-  projectName: string,
-  absolutePath: string
-};
-type StackItems = Array<StackItem>;
-
 type ParseInlineToken = {
   repo: string,
   name: string,
@@ -49,7 +49,7 @@ type ParseInlineToken = {
   text: ?string
 };
 
-class Markdown {
+class Markdown implements Parser<MarkdownOption> {
   static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
     const options = Object.assign({}, defaultOption, opt);
     stack.push({ projectName: projectItem.projectName, absolutePath: projectItem.absolutePath });
