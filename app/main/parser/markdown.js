@@ -168,12 +168,7 @@ class Markdown implements Parser<MarkdownOption> {
   static wikiLinkReplacer(repo: string, name: string, text: string): string {
     const isExist:boolean = Markdown.isExistPage(repo, name);
 
-    const availableClass:string = isExist ? 'available' : 'unavailable';
-    const absolutePath:string = Markdown.absolutePath(repo, name);
-
-    const onClickString:string = `${isExist ? 'wikiLinkOnClickAvailable' : 'wikiLinkOnClickUnAvailable'}('${repo}', '${name}')`;
-
-    return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
+    return linkString(repo, name, text, isExist);
   }
 
   static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<ParseResult> {
@@ -222,6 +217,15 @@ class Markdown implements Parser<MarkdownOption> {
   }
 }
 
+function linkString(repo, name, text: string, isExist: boolean): string {
+  const availableClass:string = isExist ? 'available' : 'unavailable';
+  const absolutePath:string = Markdown.absolutePath(repo, name);
+
+  const onClickString:string = `${isExist ? 'wikiLinkOnClickAvailable' : 'wikiLinkOnClickUnAvailable'}('${repo}', '${name}')`;
+
+  return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
+}
+
 function renderInlineLink(html: string): string {
   return `<div>${html}</div>`;
 }
@@ -267,8 +271,9 @@ function inlineNotFoundBuffer(token: ParseInlineToken): ParseResult {
     repo, name, fragment
   } = token;
 
-  let t:string = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
-  t = `[[${repo}:${name}]]{${t}}`;
+  const linkText = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
+  console.log('inlineNotFoundBuffer linkText', linkText);
+  const body = linkString(repo, name, linkText, false);
 
   return {
     buffer: {
@@ -277,7 +282,7 @@ function inlineNotFoundBuffer(token: ParseInlineToken): ParseResult {
       projectName: '',
       absolutePath: '',
       itemType: ItemTypeUndefined,
-      body: t
+      body
     },
     children: []
   };
