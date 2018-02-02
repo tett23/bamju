@@ -1,6 +1,7 @@
 // @flow
 /* eslint disable-line: 0, global-require:0 */
 
+import path from 'path';
 import React from 'react';
 import { createStore, applyMiddleware } from 'redux';
 import {
@@ -14,6 +15,7 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import { appReducer } from './renderer/reducers/combined';
 import { openPageByBuffer } from './renderer/actions/tab';
+import { openNewFileDialog } from './renderer/actions/modal';
 import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
 import type { BufferItem } from './common/project';
 import './app.global.css';
@@ -88,18 +90,19 @@ ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
   store.dispatch(refreshTreeView(tv));
 });
 
-ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path, item }: {projectName: string, path: string, item: BufferItem}) => {
+ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
   console.log('refresh-tree-view-item', projectName, path, item);
 
-  store.dispatch(openTreeViewItem(projectName, path, item));
+  store.dispatch(openTreeViewItem(projectName, itemPath, item));
 });
 
-window.wikiLinkOnClickAvailable = (repo, name) => {
+window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
   ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: name });
 };
 
-window.wikiLinkOnClickUnAvailable = (repo, name) => {
-  console.log('wikiLinkOnClickUnAvailable', repo, name);
+window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {
+  console.log('wikiLinkOnClickUnAvailable', repo, formValue);
+  store.dispatch(openNewFileDialog(repo, formValue));
 };

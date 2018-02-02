@@ -12,10 +12,20 @@ import {
   closeTreeViewItem,
   openTreeViewItem
 } from '../actions/tree_view';
-import { OPEN_PAGE, openPageByBuffer } from '../actions/tab';
+import {
+  OPEN_PAGE,
+  openPageByBuffer
+} from '../actions/tab';
+import {
+  CLOSE_DIALOG,
+  OPEN_NEW_FILE_DIALOG,
+  openNewFileDialog,
+  closeDialog
+} from '../actions/modal';
 
 import { type TreeViewState } from './tree_view';
 import { type BrowserState } from './browser';
+import { type ModalState } from './modal';
 
 function initialTreeViewState(): TreeViewState {
   return {
@@ -119,17 +129,49 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   }
 }
 
+const initialModalState:ModalState = {
+  newFileDialog: {
+    isOpened: false,
+    projectName: '',
+    formValue: ''
+  }
+};
+
+export function modal(state: ModalState = initialModalState, action: ActionTypes): ModalState {
+  console.log(`reducer modal ${action.type}`, action, state);
+
+  switch (action.type) {
+  case OPEN_NEW_FILE_DIALOG: {
+    return Object.assign({}, {
+      newFileDialog: {
+        isOpened: true,
+        projectName: action.projectName,
+        formValue: action.formValue
+      }
+    });
+  }
+  case CLOSE_DIALOG: {
+    return Object.assign({}, initialModalState);
+  }
+  default:
+    return state;
+  }
+}
+
 type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
 type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openPageByBuffer>
 | $ReturnType<typeof refreshTreeView>
 | $ReturnType<typeof closeTreeViewItem>
-| $ReturnType<typeof openTreeViewItem>;
+| $ReturnType<typeof openTreeViewItem>
+| $ReturnType<typeof openNewFileDialog>
+| $ReturnType<typeof closeDialog>;
 
 export const appReducer = combineReducers({
   browser,
   treeView,
+  modal,
 });
 
 export default appReducer;

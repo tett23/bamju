@@ -4,13 +4,16 @@ import React from 'react';
 import { connect } from 'react-redux';
 import ProjectsTreeView from '../components/ProjectsTreeView';
 import Browser from '../components/Browser';
+import NewFileDialog from '../components/NewFileDialog';
 import styles from './App.css';
 import { initialBrowserState, type BrowserState } from '../reducers/browser';
 import { initialTreeViewState, type TreeViewState } from '../reducers/tree_view';
+import { type ModalState } from '../reducers/modal';
 
 type appState = {
   treeView: TreeViewState,
-  browser: BrowserState
+  browser: BrowserState,
+  modal: ModalState
 };
 
 const app = ({ treeView, browser }: appState = defaultState) => {
@@ -21,6 +24,7 @@ const app = ({ treeView, browser }: appState = defaultState) => {
     <div className={styles.app} data-tid="app">
       <ProjectsTreeView treeView={treeView} />
       <Browser tabs={[browser.tabs]} />
+      <NewFileDialog />
     </div>
   );
 };
