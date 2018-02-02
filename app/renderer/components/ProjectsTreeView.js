@@ -96,7 +96,7 @@ class projectsTreeView extends React.Component<Props> {
   icon(item: BufferItem) {
     switch (item.itemType) {
     case 'project':
-      return <FontAwesome name="database" />;
+      return <FontAwesome name="database" onClick={e => { return this.toggleTreeView(e, item); }} />;
     case 'directory':
       if (item.isLoaded) {
         return <FontAwesome name="folder-open" onClick={e => { return this.toggleTreeView(e, item); }} />;
