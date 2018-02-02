@@ -28,7 +28,7 @@
     "test-e2e": "cross-env NODE_ENV=test BABEL_DISABLE_CACHE=1 node --trace-warnings ./test/runTests.js e2e",
     "test-watch": "npm test -- --watch"
   },
-  "browserslist": "electron 1.7.12",
+  "browserslist": "electron 1.8",
   "build": {
     "productName": "bamju",
     "appId": "org.donuthole.bamju",
