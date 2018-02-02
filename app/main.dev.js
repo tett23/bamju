@@ -7,7 +7,6 @@ import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 
 const { Config, Window, defaultConfig } = require('./common/bamju_config');
-const Project = require('./common/project');
 require('./main/window');
 require('./main/project');
 
@@ -56,8 +55,7 @@ app.on('ready', async () => {
   console.log('event app ready');
 
   await Config.init();
-  await Project.Manager.init();
-  await Manager.init();
+  Manager.init();
 
   Config.windows.forEach((win: Window) => {
     WindowManager.create(win);
