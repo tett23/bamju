@@ -16,12 +16,14 @@ const tabDefault = {
   projectName: '',
   path: '',
   absolutePath: '',
-  body: ''
+  body: '',
+  itemType: 'undefined'
 };
 
-const tab = ({
-  name, projectName, path, absolutePath, body
-}: Buffer = tabDefault) => {
+const tab = (buffer: Buffer = tabDefault) => {
+  const {
+    name, projectName, path, absolutePath, body
+  } = buffer;
   console.log('refresh tab', body);
 
   const breadcrumbItems = [];
@@ -57,7 +59,7 @@ const tab = ({
   };
 
   return (
-    <div className={styles.tab} data-absolute-path={absolutePath} onContextMenu={e => { return contextmenu(e, absolutePath); }}>
+    <div className={styles.tab} data-absolute-path={absolutePath} onContextMenu={e => { return contextmenu(e, buffer); }}>
       <Breadcrumb>{breadcrumbItems}</Breadcrumb>
       <div className="markdown-body" name={name} dangerouslySetInnerHTML={html} />
     </div>
@@ -71,7 +73,7 @@ function breadcrumbItemsOnClick(e, repo: string, path: string) {
   ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: path });
 }
 
-function contextmenu(e, absolutePath: string) {
+function contextmenu(e, buf: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -79,7 +81,17 @@ function contextmenu(e, absolutePath: string) {
   menu.append(new MenuItem({
     label: 'edit on system editor',
     click: () => {
-      ipcRenderer.send('open-by-editor', absolutePath);
+      ipcRenderer.send('open-by-editor', buf.absolutePath);
+    }
+  }));
+  menu.append(new MenuItem({
+    label: 'reload',
+    click: () => {
+      ipcRenderer.send('open-page', {
+        windowID: window.windowID,
+        projectName: buf.projectName,
+        itemName: buf.name,
+      });
     }
   }));
 

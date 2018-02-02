@@ -164,7 +164,7 @@ export class Manager {
       projectName,
       itemName,
       projectPath: '',
-      name: 'not found',
+      name: itemName,
       itemType: ItemTypeUndefined,
       items: [],
       isLoaded: false,
