@@ -170,7 +170,7 @@ class Markdown implements Parser<MarkdownOption> {
 
     const projectItem:?ProjectItem = Manager.getProjectItem(repo, name);
     if (!projectItem) {
-      let t:string = `\\[\\[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}\\]\\]`;
+      let t:string = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
       t = `[[${repo}:${name}]]{${t}}`;
       return {
         buffer: {
