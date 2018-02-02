@@ -24,28 +24,13 @@ const store = createStore(
 );
 
 const root = document.getElementById('root');
-if (root !== null && root !== undefined) {
+if (root != null) {
   render(
     <AppContainer>
       <Root store={store} />
     </AppContainer>,
     root
   );
-}
-
-if (module.hot.accept !== null && module.hot.accept !== undefined) {
-  if (root !== null && root !== undefined) {
-    module.hot.accept('./renderer/containers/Root', () => {
-      const NextRoot = require('./renderer/containers/Root');
-
-      render(
-        <AppContainer>
-          <NextRoot store={store} />
-        </AppContainer>,
-        root
-      );
-    });
-  }
 }
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
