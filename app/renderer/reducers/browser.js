@@ -38,9 +38,7 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   switch (action.type) {
   case OPEN_PAGE: {
     return (Object.assign({}, state, {
-      browser: {
-        tabs: [action.buffer]
-      }
+      tabs: [action.buffer]
     }): BrowserState);
   }
   default:
