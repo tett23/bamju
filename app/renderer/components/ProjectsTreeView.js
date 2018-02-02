@@ -114,14 +114,6 @@ class projectsTreeView extends React.Component<Props> {
     }
   }
 
-  mapStateToProps(state) {
-    return mapStateToProps(state);
-  }
-
-  mapDispatchToProps(dispatch) {
-    return mapDispatchToProps(dispatch);
-  }
-
   render() {
     console.log('projectsTreeView.render this', this);
     const { projects } = this.props;
