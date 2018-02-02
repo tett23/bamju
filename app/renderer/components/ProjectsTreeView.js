@@ -6,7 +6,12 @@ import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { TreeViewState } from '../reducers/tree_view';
 import type { BufferItem, ItemType } from '../../common/project';
-import { ItemTypeDirectory, ItemTypeProject } from '../../common/project';
+import {
+  ItemTypeMarkdown,
+  ItemTypeText,
+  ItemTypeDirectory,
+  ItemTypeProject
+} from '../../common/project';
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView, closeTreeViewItem } from '../actions/tree_view';
 
@@ -175,6 +180,16 @@ function contextmenu(e, item: BufferItem) {
     click: () => {
       ipcRenderer.send('open-by-system-editor', item.absolutePath);
     }
+  }));
+  menu.append(new MenuItem({
+    label: 'edit on bamju editor',
+    click: () => {
+      ipcRenderer.send('open-by-bamju-editor', {
+        projectName: item.projectName,
+        itemName: item.path
+      });
+    },
+    enabled: item.itemType === ItemTypeMarkdown || item.itemType === ItemTypeText
   }));
   menu.append(new MenuItem({
     label: 'open new window',

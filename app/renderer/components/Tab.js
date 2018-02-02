@@ -6,7 +6,11 @@ import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import type { BrowserState } from '../reducers/browser';
-import type { Buffer } from '../../common/project';
+import {
+  ItemTypeMarkdown,
+  ItemTypeText,
+  type Buffer
+} from '../../common/project';
 import styles from './Browser.css';
 
 const { Menu, MenuItem } = remote.require('electron');
@@ -83,6 +87,16 @@ function contextmenu(e, buf: Buffer) {
     click: () => {
       ipcRenderer.send('open-by-system-editor', buf.absolutePath);
     }
+  }));
+  menu.append(new MenuItem({
+    label: 'edit on bamju editor',
+    click: () => {
+      ipcRenderer.send('open-by-bamju-editor', {
+        projectName: buf.projectName,
+        itemName: buf.path
+      });
+    },
+    enabled: buf.itemType === ItemTypeMarkdown || buf.itemType === ItemTypeText
   }));
   menu.append(new MenuItem({
     label: 'reload',
