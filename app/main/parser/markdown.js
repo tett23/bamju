@@ -3,7 +3,7 @@
 
 import marked from 'marked';
 import { Manager, ItemTypeUndefined } from '../../common/project';
-import type { Project, ProjectItem, ParseResult, ParseResults } from '../../common/project';
+import type { ProjectItem, ParseResult, ParseResults } from '../../common/project';
 
 const { markedParserTok, markedLexerToken } = require('./marked_overrides');
 
@@ -226,12 +226,8 @@ class Markdown {
   }
 
   static isExistPage(repo: string, name: string): boolean {
-    const p:?Project = Manager.find(repo);
-    if (p === null || p === undefined) {
-      return false;
-    }
-
-    return p.isExistPage(name);
+    const p:?ProjectItem = Manager.detect(repo, name);
+    return p != null;
   }
 
   static absolutePath(repo: string, name: string): string {

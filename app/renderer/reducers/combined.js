@@ -20,8 +20,8 @@ function initialTreeViewState(): TreeViewState {
 
 function updateBufferItem(source: Array<BufferItem>, projectName: string, path: string, update: BufferItem): Array<BufferItem> {
   const ret = source.map((item) => {
-    if (item.projectName === projectName && path === update.path) {
-      return deepMerge(item, update);
+    if (item.projectName === projectName && item.path === path) {
+      return update;
     }
 
     const r = Object.assign({}, item);
@@ -62,7 +62,7 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
     }): TreeViewState);
   }
   case REFRESH_TREE_VIEW_ITEM: {
-    const newProjects = updateBufferItem(deepCopy(state.projects), action.item);
+    const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, action.item);
 
     return Object.assign({}, state, { projects: newProjects });
   }
@@ -78,7 +78,7 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
     });
     console.log('CLOSE_TREE_VIEW_ITEM update', update);
 
-    const newProjects = updateBufferItem(deepCopy(state.projects), update);
+    const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, update);
     return Object.assign({}, state, { projects: newProjects });
   }
   default:

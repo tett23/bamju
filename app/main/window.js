@@ -4,7 +4,7 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
 import { Manager as ProjectManager } from '../common/project';
-import type { Projects } from '../common/project';
+import type { ProjectItems } from '../common/project';
 
 // const { Projects } = require('../common/project');
 
@@ -27,7 +27,7 @@ export class WindowManager {
     return _windows;
   }
 
-  static async updateTreeView(tv: Projects): Promise<void> {
+  static async updateTreeView(tv: ProjectItems): Promise<void> {
     const p: Array<Promise<void>> = _windows.map(async (item: Window): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
       await item.updateTreeView(tv);
@@ -116,7 +116,7 @@ export class Window {
     this.browserWindow.webContents.send('initialize', this.conf);
   }
 
-  async updateTreeView(tv: Projects): Promise<void> {
+  async updateTreeView(tv: ProjectItems): Promise<void> {
     this.browserWindow.webContents.send('refresh-tree-view', tv);
   }
 }

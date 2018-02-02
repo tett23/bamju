@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { TreeViewState } from '../reducers/tree_view';
 import type { BufferItem, ItemType } from '../../common/project';
-import { ItemTypeDirectory } from '../../common/project';
+import { ItemTypeDirectory, ItemTypeProject } from '../../common/project';
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView, closeTreeViewItem } from '../actions/tree_view';
 
@@ -114,15 +114,7 @@ class projectsTreeView extends React.Component<Props> {
 
   render() {
     console.log('projectsTreeView.render this', this);
-    const { projects } = this.props;
-
-    const items:Array<*> = projects.map((item: BufferItem) => {
-      return (
-        <li key={item.absolutePath}>
-          {this.buildItems(item.items)}
-        </li>
-      );
-    });
+    const items = this.buildItems(this.props.projects);
 
     return (
       <div className={styles.treeView}>
@@ -190,7 +182,7 @@ function contextmenu(e, item: BufferItem) {
     click: () => {
       ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
     },
-    enabled: item.itemType === ItemTypeDirectory
+    enabled: item.itemType === ItemTypeDirectory || item.itemType === ItemTypeProject
   }));
 
   menu.popup(remote.getCurrentWindow());

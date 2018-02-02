@@ -48,18 +48,18 @@ export class Manager {
     await Manager.loadProjects();
   }
 
-  static projects(): Projects {
+  static projects(): ProjectItems {
     return _projects;
   }
 
-  static async loadProjects(watchCallback: Function = () => {}): Promise<Projects> {
+  static async loadProjects(watchCallback: Function = () => {}): Promise<ProjectItems> {
     _projects.splice(0);
 
     await watcher.unregisterAll();
 
     const projectNames:Array<string> = Object.keys(Config.projects);
-    await Promise.all(projectNames.map(async (projectName: string): Promise<Project> => {
-      const ret:Project = await Manager.loadProject(projectName, watchCallback);
+    await Promise.all(projectNames.map(async (projectName: string): Promise<ProjectItem> => {
+      const ret:ProjectItem = await Manager.loadProject(projectName, watchCallback);
 
       return ret;
     }));
@@ -67,19 +67,28 @@ export class Manager {
     return _projects;
   }
 
-  static async loadProject(projectName: string, watchCallback: Function = () => {}): Promise<Project> {
+  static async loadProject(projectName: string, watchCallback: Function = () => {}): Promise<ProjectItem> {
     const projectPath:string = Config.projects[projectName];
     if (projectPath === undefined) {
       throw new Error(`loadProject error${projectName}`);
     }
 
-    const ret:Project = new Project(projectName, projectPath);
+    const ret:ProjectItem = new ProjectItem({
+      name: projectName,
+      projectName,
+      projectPath,
+      path: '/',
+      absolutePath: projectPath,
+      itemType: ItemTypeProject,
+      items: [],
+      isLoaded: false
+    });
     await ret.load();
 
     if (Manager.find(projectName) === undefined) {
       _projects.push(ret);
     } else {
-      const idx:number = _projects.findIndex((item: Project): boolean => { return item.name === projectName; });
+      const idx:number = _projects.findIndex((item: ProjectItem): boolean => { return item.name === projectName; });
 
       _projects[idx] = ret;
     }
@@ -120,9 +129,9 @@ export class Manager {
   }
 
   static getProjectItem(projectName: string, itemName: string): ?ProjectItem {
-    const p:?Project = this.find(projectName);
+    const p:?ProjectItem = this.find(projectName);
     if (p === undefined || p === null) {
-      return undefined;
+      return null;
     }
 
     const ret:?ProjectItem = p.detect(itemName);
@@ -141,8 +150,8 @@ export class Manager {
     return ret;
   }
 
-  static find(projectName: string): ?Project {
-    return _projects.find((p: Project): boolean => { return p.name === projectName; });
+  static find(projectName: string): ?ProjectItem {
+    return _projects.find((p: ProjectItem): boolean => { return p.name === projectName; });
   }
 
   static async notFoundBuffer(projectName: string, itemName: string): Promise<ParseResult> {
@@ -153,7 +162,9 @@ export class Manager {
       itemName,
       projectPath: '',
       name: 'not found',
-      itemType: ItemTypeUndefined
+      itemType: ItemTypeUndefined,
+      items: [],
+      isLoaded: false
     });
     const md: string =
 `
@@ -168,8 +179,8 @@ ${projectName}:${itemName}
   }
 
   static detect(projectName: string, itemName: string): ?ProjectItem {
-    const projects:Projects = Manager.projects();
-    const project:?Project = projects.find((p: Project): boolean => {
+    const projects:ProjectItems = Manager.projects();
+    const project:?ProjectItem = projects.find((p: ProjectItem): boolean => {
       return p.name === projectName;
     });
 
@@ -198,99 +209,7 @@ ${projectName}:${itemName}
 
 export type WatchCallback = () => void;
 
-export class Project {
-  name: string;
-  path: string;
-  absolutePath: string;
-  itemType: ItemType;
-  items: ProjectItems;
-  isLoaded: boolean;
-
-  constructor(projectName: string, absolutePath: string) {
-    this.name = projectName;
-    this.path = '/';
-    this.absolutePath = path.normalize(absolutePath);
-    this.itemType = 'project';
-    this.items = [];
-    this.isLoaded = false;
-  }
-
-  async load(): Promise<boolean> {
-    try {
-      this.items = await this.loadDirectory();
-    } catch (e) {
-      throw e;
-    }
-
-    this.isLoaded = true;
-
-    return true;
-  }
-
-  async loadDirectory(): Promise<ProjectItems> {
-    const rootItem:ProjectItem = new ProjectItem({
-      name: this.name,
-      projectName: this.name,
-      projectPath: this.absolutePath,
-      path: '/',
-      absolutePath: this.absolutePath,
-      itemType: 'directory',
-    });
-    await rootItem.load();
-    this.items = [rootItem];
-
-    return this.items;
-  }
-
-  isExistPage(page: string): boolean {
-    const item:?ProjectItem = this.detect(page);
-
-    return !!item;
-  }
-
-  detect(name: string): ?ProjectItem {
-    let ret:?ProjectItem;
-    this.items.forEach((item: ProjectItem) => {
-      const i:?ProjectItem = item.detect(name);
-
-      if (i !== undefined && i !== null) {
-        ret = i;
-      }
-    });
-
-    return ret;
-  }
-
-  async openFile(p: string): Promise<?ParseResult> {
-    const item:?ProjectItem = this.detect(p);
-    if (item === undefined || item === null) {
-      return undefined;
-    }
-
-    const ret:ParseResult = await item.toBuffer();
-    return ret;
-  }
-
-  toBufferItem(): BufferItem {
-    const items = this.items.map((item) => {
-      return item.toBufferItem();
-    });
-
-    return {
-      name: this.name,
-      projectName: this.name,
-      projectPath: this.path,
-      path: this.path,
-      absolutePath: this.absolutePath,
-      itemType: this.itemType,
-      items,
-      isLoaded: this.isLoaded,
-    };
-  }
-}
-export type Projects = Array<Project>;
-
-const _projects: Projects = [];
+const _projects: Array<ProjectItem> = [];
 console.log('require projects _projects', _projects);
 
 export class ProjectItem {
@@ -303,22 +222,19 @@ export class ProjectItem {
   items: ProjectItems;
   isLoaded: boolean;
 
-  constructor({
-    name, projectName, projectPath, path: p, absolutePath, itemType
-  }: {
-    name: string, projectName: string, projectPath: string, path: string, absolutePath: string, itemType: ItemType}) {
-    this.projectName = projectName;
-    this.projectPath = projectPath;
-    this.name = name;
-    this.path = p;
-    this.absolutePath = path.normalize(absolutePath);
-    this.itemType = itemType;
+  constructor(bufItem: BufferItem) {
+    this.projectName = bufItem.projectName;
+    this.projectPath = bufItem.projectPath;
+    this.name = bufItem.name;
+    this.path = bufItem.path;
+    this.absolutePath = path.normalize(bufItem.absolutePath);
+    this.itemType = bufItem.itemType;
     this.items = [];
     this.isLoaded = false;
   }
 
   async load(): Promise<boolean> {
-    if (this.itemType !== 'directory') {
+    if (this.itemType !== ItemTypeDirectory && this.itemType !== ItemTypeProject) {
       this.isLoaded = true;
       return true;
     }
@@ -350,7 +266,9 @@ export class ProjectItem {
         projectPath,
         path: this.path,
         absolutePath: this.absolutePath,
-        itemType: ItemTypeUndefined
+        itemType: ItemTypeUndefined,
+        items: [],
+        isLoaded: true,
       })];
     }
 
@@ -368,6 +286,8 @@ export class ProjectItem {
         path: path.join('/', basePath, filename),
         absolutePath: abs,
         itemType,
+        items: [],
+        isLoaded: false,
       });
       await item.load();
       ret.push(item);
@@ -433,7 +353,7 @@ export class ProjectItem {
 
   async toBuffer(): Promise<ParseResult> {
     let ret:ParseResult;
-    if (this.itemType === ItemTypeDirectory) {
+    if (this.itemType === ItemTypeDirectory || this.itemType === ItemTypeProject) {
       ret = await this.openDirectory();
     } else if (this.itemType === ItemTypeUndefined) {
       ret = {
@@ -457,7 +377,7 @@ export class ProjectItem {
   async openDirectory(): Promise<ParseResult> {
     let ret:ParseResult;
 
-    const n = Object.assign({}, this, {
+    const n = Object.assign(this.toBufferItem(), {
       path: path.join(this.path, 'index.md'),
       absolutePath: path.join(this.absolutePath, 'index.md')
     });

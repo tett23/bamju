@@ -50,13 +50,7 @@ ipcMain.on('remove-project', async (e, { path }) => {
 });
 
 ipcMain.on('reload-tree', async (e, { projectName, path }) => {
-  const project:?Project.Project = Project.Manager.find(projectName);
-
-  if (project == null) {
-    return;
-  }
-
-  const item = project.detect(path);
+  const item:?Project.ProjectItem = Project.Manager.detect(projectName, path);
   if (item == null) {
     return;
   }
