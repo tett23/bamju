@@ -158,7 +158,7 @@ function contextmenu(e, item: BufferItem) {
 
   const menu = new Menu();
   menu.append(new MenuItem({
-    label: 'open',
+    label: 'edit on system editor',
     click: () => {
       ipcRenderer.send('open-by-editor', item.absolutePath);
     }
