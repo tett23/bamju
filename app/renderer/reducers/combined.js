@@ -18,14 +18,14 @@ function initialTreeViewState(): TreeViewState {
   };
 }
 
-function updateBufferItem(source: Array<BufferItem>, update: BufferItem): Array<BufferItem> {
+function updateBufferItem(source: Array<BufferItem>, projectName: string, path: string, update: BufferItem): Array<BufferItem> {
   const ret = source.map((item) => {
-    if (item.projectName === update.projectName && item.path === update.path) {
-      return update;
+    if (item.projectName === projectName && path === update.path) {
+      return deepMerge(item, update);
     }
 
     const r = Object.assign({}, item);
-    r.items = updateBufferItem(item.items, update);
+    r.items = updateBufferItem(item.items, projectName, path, update);
 
     return r;
   });
