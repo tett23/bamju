@@ -19,8 +19,12 @@ import {
 import {
   CLOSE_DIALOG,
   OPEN_NEW_FILE_DIALOG,
+  UPDATE_MESSAGE,
+  UPDATE_FORM_VALUE,
   openNewFileDialog,
-  closeDialog
+  closeDialog,
+  updateMessage,
+  updateFormValue
 } from '../actions/modal';
 
 import { type TreeViewState } from './tree_view';
@@ -133,7 +137,8 @@ const initialModalState:ModalState = {
   newFileDialog: {
     isOpened: false,
     projectName: '',
-    formValue: ''
+    formValue: '',
+    message: ''
   }
 };
 
@@ -142,16 +147,33 @@ export function modal(state: ModalState = initialModalState, action: ActionTypes
 
   switch (action.type) {
   case OPEN_NEW_FILE_DIALOG: {
-    return Object.assign({}, {
-      newFileDialog: {
-        isOpened: true,
-        projectName: action.projectName,
-        formValue: action.formValue
-      }
-    });
+    const newState = deepCopy(state);
+    newState.newFileDialog = {
+      isOpened: true,
+      projectName: action.projectName,
+      formValue: action.formValue,
+      message: '',
+    };
+
+    return newState;
   }
   case CLOSE_DIALOG: {
-    return Object.assign({}, initialModalState);
+    const newState = deepCopy(state);
+    newState.newFileDialog = initialModalState.newFileDialog;
+
+    return newState;
+  }
+  case UPDATE_MESSAGE: {
+    const newState = deepCopy(state);
+    newState.newFileDialog.message = action.message;
+
+    return newState;
+  }
+  case UPDATE_FORM_VALUE: {
+    const newState = deepCopy(state);
+    newState.newFileDialog.formValue = action.formValue;
+
+    return newState;
   }
   default:
     return state;
@@ -166,7 +188,9 @@ export type ActionTypes = $ReturnType<typeof openPageByBuffer>
 | $ReturnType<typeof closeTreeViewItem>
 | $ReturnType<typeof openTreeViewItem>
 | $ReturnType<typeof openNewFileDialog>
-| $ReturnType<typeof closeDialog>;
+| $ReturnType<typeof closeDialog>
+| $ReturnType<typeof updateMessage>
+| $ReturnType<typeof updateFormValue>;
 
 export const appReducer = combineReducers({
   browser,

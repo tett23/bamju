@@ -10,7 +10,7 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import { appReducer } from './renderer/reducers/combined';
 import { openPageByBuffer } from './renderer/actions/tab';
-import { openNewFileDialog } from './renderer/actions/modal';
+import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
 import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
 import type { BufferItem } from './common/project';
 import './app.global.css';
@@ -66,6 +66,16 @@ ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path: itemPath, 
   console.log('refresh-tree-view-item', projectName, path, item);
 
   store.dispatch(openTreeViewItem(projectName, itemPath, item));
+});
+
+ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
+  console.log('file-created', result);
+
+  if (result.success) {
+    store.dispatch(closeDialog());
+  } else {
+    store.dispatch(updateMessage(result.message));
+  }
 });
 
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {

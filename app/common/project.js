@@ -195,6 +195,68 @@ ${projectName}:${itemName}
     return project.detect(itemName);
   }
 
+  static async createFile(projectName: string, itemName: string) {
+    const project = Manager.find(projectName);
+    if (project == null) {
+      return {
+        success: false,
+        message: `repository '${projectName}' not found`
+      };
+    }
+
+    if (itemName === '' || itemName === '/') {
+      return {
+        success: false,
+        message: `invalid filename ${itemName}`
+      };
+    }
+
+    const absolutePath = path.join(project.absolutePath, itemName);
+    if (fs.existsSync(absolutePath)) {
+      return {
+        success: false,
+        message: `already exist ${absolutePath}`
+      };
+    }
+
+    const fileInfo = path.parse(itemName);
+    let content:string;
+    switch (fileInfo.ext) {
+    case '.md': {
+      content = `# ${fileInfo.name}`;
+      break;
+    }
+    case '.txt': {
+      content = fileInfo.name;
+      break;
+    }
+    case '.csv': {
+      content = '';
+      break;
+    }
+    case '.tsv': {
+      content = '';
+      break;
+    }
+    default:
+      return {
+        success: false,
+        message: `extension error: '${fileInfo.ext}'`
+      };
+    }
+
+    try {
+      promisify(fs.writeFile)(absolutePath, content);
+    } catch (e) {
+      return {
+        success: false,
+        message: e.message
+      };
+    }
+
+    return { success: true, message: '' };
+  }
+
   static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
     // bufferとTreeViewの更新
 
@@ -423,6 +485,14 @@ export class ProjectItem {
     return ret;
   }
 
+  parent(): ?ProjectItem {
+    if (this.path === '/') {
+      return null;
+    }
+
+    return Manager.detect(this.projectName, path.dirname(this.path));
+  }
+
   toBufferItem(): BufferItem {
     const items = this.items.map((item) => {
       return item.toBufferItem();
@@ -539,4 +609,22 @@ export function detectItemType(projectName: string, itemName: string): ItemType 
   const abs:string = path.join(projectPath, itemName);
 
   return detectItemTypeByAbsPath(abs);
+}
+
+export function resolvePath(p: string): {projectName: ?string, path: string} {
+  const split = p.split(':', 2);
+  let projectName: ?string;
+  let retPath: string;
+  if (split.length === 2) {
+    [projectName, retPath] = split;
+  } else {
+    [retPath] = split;
+  }
+
+  retPath = path.join('/', retPath);
+
+  return {
+    projectName,
+    path: retPath
+  };
 }

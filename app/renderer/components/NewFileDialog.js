@@ -5,14 +5,16 @@ import { ipcRenderer } from 'electron';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { ModalState } from '../reducers/modal';
-import { closeDialog } from '../actions/modal';
+import { closeDialog, updateFormValue } from '../actions/modal';
 import styles from './NewFileDialog.css';
 
 type Props= {
   formValue: string,
   isOpened: boolean,
   projectName: string,
-  closeDialog: typeof closeDialog
+  message: string,
+  closeDialog: typeof closeDialog,
+  updateFormValue: typeof updateFormValue
 };
 
 
@@ -20,16 +22,13 @@ class newFileDialog extends React.Component<Props> {
   filename: ?HTMLInputElement;
 
   handleChange(e) {
-    this.setState(Object.assign({}, this.state, {
-      formValue: e.target.value,
-    }));
+    this.props.updateFormValue(e.target.value);
   }
 
   render() {
-    // console.log('refresh newFileDialog', this.props);
+    console.log('refresh newFileDialog', this.props, this);
 
     const visibility = this.props.isOpened ? 'block' : 'none';
-    const formValue = this.state == null ? this.props.formValue : this.state.formValue;
 
     return (
       <div>
@@ -53,12 +52,13 @@ class newFileDialog extends React.Component<Props> {
               id="modalNewFileDialogInput"
               className={styles.input}
               ref={(input) => { if (input) { input.focus(); } this.filename = input; }}
-              value={formValue}
+              value={this.props.formValue}
               onClick={cancelPropagation}
               onChange={e => { return this.handleChange(e); }}
               onKeyUp={e => { return checkEnter(e, this.props.projectName, this.props.closeDialog); }}
               placeholder="input file name"
             />
+            <p className={styles.error}>{this.props.message}</p>
           </div>
         </div>
       </div>
@@ -86,9 +86,6 @@ function checkEnter(e, projectName: string, dispatchClose: typeof closeDialog) {
 
   if (e.key === 'Enter') {
     ipcRenderer.send('create-file', { projectName, path: e.target.value });
-
-    // NOTE: ここでcloseしないで、create-fileのレスポンスをもとに閉じたほうがいい？
-    dispatchClose();
   } else if (e.key === 'Escape') {
     dispatchClose();
   }
@@ -97,7 +94,7 @@ function checkEnter(e, projectName: string, dispatchClose: typeof closeDialog) {
 }
 
 const mapStateToProps = (state: {modal: ModalState}) => {
-  return state.modal.newFileDialog;
+  return Object.assign({}, state.modal.newFileDialog);
 };
 
 const mapDispatchToProps = (dispatch) => {
@@ -105,6 +102,9 @@ const mapDispatchToProps = (dispatch) => {
     closeDialog: () => {
       dispatch(closeDialog());
     },
+    updateFormValue: (value) => {
+      dispatch(updateFormValue(value));
+    }
   };
 };
 

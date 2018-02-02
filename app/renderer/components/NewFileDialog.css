@@ -34,3 +34,9 @@
   background-color: #1b1d23;
   font-weight: normal;
 }
+
+.error {
+  margin: 0;
+  margin-top: 1rem;
+  padding: 0;
+}

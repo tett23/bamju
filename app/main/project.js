@@ -66,6 +66,32 @@ ipcMain.on('reload-tree', async (e, { projectName, path }) => {
   e.returnValue = ret;
 });
 
+ipcMain.on('create-file', async (e, { projectName, path }: {projectName: string, path: string}) => {
+  const info = Project.resolvePath(path);
+  info.projectName = info.projectName || projectName;
+
+  const ret = await Project.Manager.createFile(info.projectName, info.path);
+
+  if (ret.success) {
+    const item = Project.Manager.detect(projectName, path);
+    if (item) {
+      const parentItem = item.parent();
+      if (parentItem) {
+        const treeUpdateEvent = {
+          projectName: item.projectName,
+          path: item.path,
+          item: Object.assign({}, parentItem.toBufferItem(), { isOpened: true })
+        };
+
+        e.sender.send('refresh-tree-view-item', treeUpdateEvent);
+      }
+    }
+  }
+
+  e.sender.send('file-created', ret);
+  e.returnValue = ret;
+});
+
 async function openPage(e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}): Promise<?Project.Buffer> {
   Project.Manager.unwatch();
 

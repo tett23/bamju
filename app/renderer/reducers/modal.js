@@ -4,7 +4,8 @@ export type ModalState = {
   newFileDialog: {
     isOpened: boolean,
     projectName: string,
-    formValue: string
+    formValue: string,
+    message: string
   }
 };
 
