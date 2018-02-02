@@ -339,8 +339,20 @@ export class ProjectItem {
   async loadDirectory(basePath: string): Promise<ProjectItems> {
     // console.log('ProjectItem.loadDirectory this', this);
     // console.log('ProjectItem.loadDirectory basePath', basePath);
+    let files: Array<string>;
     const { projectName, projectPath } = this;
-    const files:Array<string> = await promisify(fs.readdir)(this.absolutePath);
+    try {
+      files = await promisify(fs.readdir)(this.absolutePath);
+    } catch (e) {
+      return [new ProjectItem({
+        name: 'directory not found',
+        projectName,
+        projectPath,
+        path: this.path,
+        absolutePath: this.absolutePath,
+        itemType: ItemTypeUndefined
+      })];
+    }
 
     const ret:ProjectItems = [];
     await Promise.all(files.map(async (filename: string) => {
