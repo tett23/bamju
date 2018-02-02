@@ -8,7 +8,7 @@ import type { TreeViewState } from '../reducers/tree_view';
 import type { BufferItem, ItemType } from '../../common/project';
 import { ItemTypeDirectory } from '../../common/project';
 import styles from './ProjectsTreeView.css';
-import { refreshTreeView, closeTreeViewItem, openTreeViewItem } from '../actions/tree_view';
+import { refreshTreeView, closeTreeViewItem } from '../actions/tree_view';
 
 const {
   Menu, MenuItem, dialog
@@ -233,9 +233,6 @@ const mapDispatchToProps = (dispatch) => {
     closeTreeViewItem: (projectName: string, path: string) => {
       dispatch(closeTreeViewItem(projectName, path));
     },
-    openTreeViewItem: (projectName: string, path: string) => {
-      dispatch(openTreeViewItem(projectName, path));
-    }
   };
 };
 
