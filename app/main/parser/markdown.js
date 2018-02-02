@@ -51,6 +51,10 @@ type ParseInlineToken = {
 
 class Markdown implements Parser<MarkdownOption> {
   static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
+    if (md === '') {
+      return emptyFile(projectItem);
+    }
+
     const options = Object.assign({}, defaultOption, opt);
     stack.push({ projectName: projectItem.projectName, absolutePath: projectItem.absolutePath });
 
@@ -244,4 +248,17 @@ function renderInlineLink(html: string): string {
   return `<div>${html}</div>`;
 }
 
+function emptyFile(projectItem: ProjectItem): ParseResult {
+  return {
+    buffer: {
+      name: projectItem.name,
+      path: projectItem.path,
+      projectName: projectItem.projectName,
+      absolutePath: projectItem.absolutePath,
+      itemType: projectItem.itemType,
+      body: '(empty file)'
+    },
+    children: []
+  };
+}
 export default Markdown;
