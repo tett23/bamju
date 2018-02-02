@@ -189,19 +189,26 @@ export class EditorWindow {
       browserWindow.show();
       browserWindow.focus();
 
+      if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+        browserWindow.toggleDevTools();
+      }
+
       this.initializeRenderer();
     });
 
-    const menuBuilder = new EditorMenuBuilder(browserWindow);
-    menuBuilder.buildMenu();
+    // FIXME: ふたつのmenuを運用するか、ひとつにまとめるか決めないといけない
+    // const menuBuilder = new EditorMenuBuilder(browserWindow);
+    // menuBuilder.buildMenu();
 
     browserWindow.on('closed', () => {
       // FIXME: 閉じるダイアログが必要
     });
   }
 
-  initializeRenderer() {
-    this.browserWindow.webContents.send('initialize', this.projectItem.toBuffer());
+  async initializeRenderer() {
+    const parseResult = await this.projectItem.toBuffer();
+    console.log('editor window initialize', parseResult.buffer);
+    this.browserWindow.webContents.send('initialize', parseResult.buffer);
   }
 
   sendSaveEvent() {
