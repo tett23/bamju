@@ -188,7 +188,7 @@ function contextmenu(e, item: BufferItem) {
   menu.append(new MenuItem({
     label: 'reload',
     click: () => {
-      ipcRenderer.send('reload-tree', { windowID: window.windowID, projectName: item.projectName, path: item.path });
+      ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
     },
     enabled: item.itemType === ItemTypeDirectory
   }));
