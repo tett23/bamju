@@ -119,7 +119,7 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   }
 }
 
-type __ReturnType<B, F: (...any) => B> = B;
+type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
 type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openPageByBuffer>
