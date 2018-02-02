@@ -231,12 +231,7 @@ class Markdown implements Parser<MarkdownOption> {
   }
 
   static absolutePath(repo: string, name: string): string {
-    const p:?Project = Manager.find(repo);
-    if (p === null || p === undefined) {
-      return '';
-    }
-
-    const item:?ProjectItem = p.detect(name);
+    const item:?ProjectItem = Manager.detect(repo, name);
     if (item === null || item === undefined) {
       return '';
     }
