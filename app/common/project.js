@@ -331,6 +331,14 @@ export class ProjectItem {
       return this;
     }
 
+    if (this.name === `${name}.csv`) {
+      return this;
+    }
+
+    if (this.name === `${name}.tsv`) {
+      return this;
+    }
+
     let ret:?ProjectItem;
     this.items.forEach((item: ProjectItem) => {
       const i:?ProjectItem = item.detect(name);
