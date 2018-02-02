@@ -3,13 +3,6 @@
 
 import path from 'path';
 import { app } from 'electron';
-import { createStore, applyMiddleware } from 'redux';
-import {
-  forwardToRenderer,
-  triggerAlias,
-  replayActionMain
-} from 'electron-redux';
-import { appReducer } from './renderer/reducers/combined';
 import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 
@@ -17,17 +10,6 @@ const { Config, Window, defaultConfig } = require('./common/bamju_config');
 const Project = require('./common/project');
 require('./main/window');
 require('./main/project');
-
-const store = createStore(
-  appReducer,
-  undefined, // optional
-  applyMiddleware(
-    triggerAlias, // optional, see below
-    forwardToRenderer, // IMPORTANT! This goes last
-  )
-);
-
-replayActionMain(store);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

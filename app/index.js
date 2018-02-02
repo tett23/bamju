@@ -3,12 +3,7 @@
 
 import path from 'path';
 import React from 'react';
-import { createStore, applyMiddleware } from 'redux';
-import {
-  forwardToMain,
-  replayActionRenderer,
-  getInitialStateRenderer,
-} from 'electron-redux';
+import { createStore } from 'redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
@@ -19,22 +14,14 @@ import { openNewFileDialog } from './renderer/actions/modal';
 import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
 import type { BufferItem } from './common/project';
 import './app.global.css';
-// import * as Project from './common/project';
 
 const Project = require('./common/project');
 const { Window: WindowConfig } = require('./common/bamju_config');
 
-const initialState = getInitialStateRenderer();
-console.log('initialState', initialState);
-
 const store = createStore(
   appReducer,
-  initialState,
-  applyMiddleware(forwardToMain)
-  // IMPORTANT! This goes first
+  undefined,
 );
-
-replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root !== null && root !== undefined) {
