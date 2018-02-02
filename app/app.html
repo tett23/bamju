@@ -44,6 +44,10 @@
             .map(script => '<script defer src="' + script + '"><\/script>')
             .join('')
         );
+
+        document.addEventListener('DOMContentLoaded', () => {
+          window.loadWindow('app');
+        });
       }
     </script>
   </body>
