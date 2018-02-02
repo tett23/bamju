@@ -252,7 +252,7 @@ export class ProjectItem {
     return true;
   }
 
-  async loadDirectory(basePath: string): Promise<ProjectItems> {
+  async loadDirectory(basePath: string, recursive = false): Promise<ProjectItems> {
     // console.log('ProjectItem.loadDirectory this', this);
     // console.log('ProjectItem.loadDirectory basePath', basePath);
     let files: Array<string>;
@@ -289,7 +289,11 @@ export class ProjectItem {
         items: [],
         isLoaded: false,
       });
-      await item.load();
+
+      if (recursive) {
+        await item.load();
+      }
+
       ret.push(item);
     }));
 
