@@ -1,6 +1,7 @@
 /* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0, flowtype-errors/show-errors: 0 */
 // @flow
 
+import path from 'path';
 import marked from 'marked';
 import {
   Manager,
@@ -95,7 +96,7 @@ class Markdown implements Parser<MarkdownOption> {
       }
       if (ret.type === 'inlineLink') {
         ret.repo = ret.repo || projectItem.projectName;
-        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack);
+        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack, path.dirname(projectItem.path));
         children.push(result);
 
         ret.html = result.buffer.body;
@@ -114,35 +115,35 @@ class Markdown implements Parser<MarkdownOption> {
       let re:RegExp = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, r: string, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, text);
+          return Markdown.wikiLinkReplacer(r, name, text, path.dirname(projectItem.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, r: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, name);
+          return Markdown.wikiLinkReplacer(r, name, name, path.dirname(projectItem.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?):(.+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, repo: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(repo, name, name);
+          return Markdown.wikiLinkReplacer(repo, name, name, path.dirname(projectItem.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(projectItem.projectName, name, text);
+          return Markdown.wikiLinkReplacer(projectItem.projectName, name, text, path.dirname(projectItem.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string): string => {
-          return Markdown.wikiLinkReplacer(projectItem.projectName, name, name);
+          return Markdown.wikiLinkReplacer(projectItem.projectName, name, name, path.dirname(projectItem.path));
         });
       }
 
@@ -165,16 +166,16 @@ class Markdown implements Parser<MarkdownOption> {
     };
   }
 
-  static wikiLinkReplacer(repo: string, name: string, text: string): string {
+  static wikiLinkReplacer(repo: string, name: string, text: string, dirname: string): string {
     const isExist:boolean = Markdown.isExistPage(repo, name);
 
-    return linkString(repo, name, text, isExist);
+    return linkString(repo, name, text, dirname, isExist);
   }
 
-  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems): Promise<ParseResult> {
+  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems, dirname: string): Promise<ParseResult> {
     const projectItem:?ProjectItem = Manager.detect(token.repo, token.name);
     if (!projectItem) {
-      return inlineNotFoundBuffer(token);
+      return inlineNotFoundBuffer(token, dirname);
     }
 
     const { itemType } = projectItem;
@@ -217,11 +218,26 @@ class Markdown implements Parser<MarkdownOption> {
   }
 }
 
-function linkString(repo, name, text: string, isExist: boolean): string {
-  const availableClass:string = isExist ? 'available' : 'unavailable';
+function linkString(repo: string, name: string, text: string, dirname: string, isExist: boolean): string {
   const absolutePath:string = Markdown.absolutePath(repo, name);
 
-  const onClickString:string = `${isExist ? 'wikiLinkOnClickAvailable' : 'wikiLinkOnClickUnAvailable'}('${repo}', '${name}')`;
+  let availableClass:string;
+  let onClickString:string;
+  if (isExist) {
+    onClickString = `wikiLinkOnClickAvailable('${repo}', '${name}')`;
+    availableClass = 'available';
+  } else {
+    availableClass = 'unavailable';
+
+    let formValue:string;
+    if (path.isAbsolute(name)) {
+      formValue = `${repo}:${name}.md`;
+    } else {
+      formValue = `${repo}:${path.join('/', dirname, name)}.md`;
+    }
+
+    onClickString = `wikiLinkOnClickUnAvailable('${repo}', '${formValue}')`;
+  }
 
   return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
 }
@@ -266,14 +282,14 @@ function emptyFileBuffer(projectItem: ProjectItem): ParseResult {
   };
 }
 
-function inlineNotFoundBuffer(token: ParseInlineToken): ParseResult {
+function inlineNotFoundBuffer(token: ParseInlineToken, dirname: string): ParseResult {
   const {
     repo, name, fragment
   } = token;
 
   const linkText = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
   console.log('inlineNotFoundBuffer linkText', linkText);
-  const body = linkString(repo, name, linkText, false);
+  const body = linkString(repo, name, linkText, dirname, false);
 
   return {
     buffer: {
