@@ -101,7 +101,7 @@ export function initialBrowserState(): BrowserState {
   };
 }
 
-export function browser(state: BrowserState = initialBrowserState(), action: ActionTypes = defaultAction()): BrowserState {
+export function browser(state: BrowserState = initialBrowserState(), action: ActionTypes): BrowserState {
   console.log(`reducer tabReducer ${action.type}`, action, state);
 
   switch (action.type) {
