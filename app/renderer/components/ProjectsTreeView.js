@@ -45,6 +45,10 @@ class projectsTreeView extends React.Component<Props> {
       return openFile(item);
     case 'text':
       return openFile(item);
+    case 'csv':
+      return openFile(item);
+    case 'tsv':
+      return openFile(item);
     default:
     }
   }
@@ -111,6 +115,10 @@ class projectsTreeView extends React.Component<Props> {
     case 'markdown':
       return <FontAwesome name="file-text" />;
     case 'text':
+      return <FontAwesome name="file-text" />;
+    case 'csv':
+      return <FontAwesome name="file-text" />;
+    case 'tsv':
       return <FontAwesome name="file-text" />;
     default:
       return <FontAwesome name="question-circle" />;
@@ -210,6 +218,10 @@ function itemType(t: ItemType) {
   case 'markdown':
     return styles.itemTypeAvailable;
   case 'text':
+    return styles.itemTypeAvailable;
+  case 'csv':
+    return styles.itemTypeAvailable;
+  case 'tsv':
     return styles.itemTypeAvailable;
   default:
     return styles.itemTypeUnavailable;

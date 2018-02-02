@@ -1,7 +1,9 @@
 // @flow
 
-import { ProjectItem } from '../../common/project';
-import type { ParseResult } from '../../common/project';
+import {
+  ProjectItem,
+  type ParseResult,
+} from '../../common/project';
 
 export type StackItem = {
   projectName: string,

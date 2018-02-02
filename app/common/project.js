@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import Markdown from '../main/parser/markdown';
+import TableParser from '../main/parser/table';
 import watcher from './file_watcher';
 
 const { Config } = require('./bamju_config');
@@ -13,8 +14,10 @@ export const ItemTypeProject = 'project';
 export const ItemTypeDirectory = 'directory';
 export const ItemTypeMarkdown = 'markdown';
 export const ItemTypeText = 'text';
+export const ItemTypeCSV = 'csv';
+export const ItemTypeTSV = 'tsv';
 export const ItemTypeUndefined = 'undefined';
-export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'undefined';
+export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'csv' | 'tsv' | 'undefined';
 
 export type FileItem = {
   name: string,
@@ -440,8 +443,18 @@ async function openDirectory(item: ProjectItem): Promise<ParseResult> {
 }
 
 async function openFile(item: ProjectItem): Promise<ParseResult> {
-  const md:string = await readFile(item.absolutePath);
-  const ret:ParseResult = await Markdown.parse(item, md);
+  const text:string = await readFile(item.absolutePath);
+
+  let ret:ParseResult;
+  if (item.itemType === ItemTypeMarkdown || item.itemType === ItemTypeText) {
+    ret = await Markdown.parse(item, text);
+  } else if (item.itemType === ItemTypeCSV) {
+    ret = await TableParser.parse(item, text, [], { delimiter: ',' });
+  } else if (item.itemType === ItemTypeTSV) {
+    ret = await TableParser.parse(item, text, [], { delimiter: '\t' });
+  } else {
+    ret = await Markdown.parse(item, 'error');
+  }
 
   return ret;
 }
@@ -497,6 +510,13 @@ export function detectItemTypeByAbsPath(p: string): ItemType {
 
   if (p.match(/\.txt$/)) {
     return ItemTypeText;
+  }
+
+  if (p.match(/\.csv$/)) {
+    return ItemTypeCSV;
+  }
+  if (p.match(/\.tsv/)) {
+    return ItemTypeTSV;
   }
 
   return ItemTypeUndefined;
