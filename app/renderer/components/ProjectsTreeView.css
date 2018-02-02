@@ -19,6 +19,8 @@
   resize: horizontal;
   user-select: none;
   white-space: nowrap;
+  min-width: 200px;
+  width: 200px;
 }
 
 .treeViewItems li {
