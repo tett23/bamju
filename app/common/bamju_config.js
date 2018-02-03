@@ -13,6 +13,9 @@ export type BamjuConfig = {
   },
   windows: Windows,
   followChange: boolean,
+  config: {
+    mkdirP: boolean
+  },
   init: () => Promise<void>,
   update: ({}) => Promise<void>,
   quit: () => void
@@ -57,6 +60,9 @@ export const defaultConfig:BamjuConfig = {
     ]
   }],
   followChange: true,
+  config: {
+    mkdirP: true
+  },
   init(): Promise<void> {
     return loadConfigFile().then((conf) => {
       return merge(conf);

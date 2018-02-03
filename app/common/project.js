@@ -4,9 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import mkdirp from 'mkdirp';
 import Markdown from '../main/parser/markdown';
 import TableParser from '../main/parser/table';
 import watcher from './file_watcher';
+import { sleep } from './util';
 
 const { Config } = require('./bamju_config');
 
@@ -219,6 +221,18 @@ ${projectName}:${itemName}
       };
     }
 
+    const parentDir = path.dirname(absolutePath);
+    if (!fs.existsSync(parentDir)) {
+      if (Config.config.mkdirP) {
+        mkdirp.sync(parentDir, 0o755);
+      } else {
+        return {
+          success: false,
+          message: `parent directory doesen't exist. '${parentDir}'`
+        };
+      }
+    }
+
     const fileInfo = path.parse(itemName);
     let content:string;
     switch (fileInfo.ext) {
@@ -245,16 +259,18 @@ ${projectName}:${itemName}
       };
     }
 
-    try {
-      promisify(fs.writeFile)(absolutePath, content);
-    } catch (e) {
+    // await sleep(100);
+
+    return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(() => {
+      return { success: true, message: '' };
+    }).catch((err) => {
+      console.log('reason', err);
+      console.log('reason', err.message);
       return {
         success: false,
-        message: e.message
+        message: `write file error: '${err.message}'`
       };
-    }
-
-    return { success: true, message: '' };
+    });
   }
 
   static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
