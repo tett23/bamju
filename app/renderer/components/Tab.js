@@ -50,7 +50,7 @@ const tab = (buffer: Buffer = tabDefault) => {
     const p = breadcrumbPath;
     breadcrumbItems.push((
       <Breadcrumb.Item
-        key={item}
+        key={breadcrumbPath}
         onClick={e => { return breadcrumbItemsOnClick(e, projectName, p); }}
       >
         {item}
