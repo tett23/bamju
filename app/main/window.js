@@ -207,9 +207,8 @@ export class EditorWindow {
   }
 
   async initializeRenderer() {
-    const parseResult = await this.projectItem.toBuffer();
-    console.log('editor window initialize', parseResult.buffer);
-    this.browserWindow.webContents.send('initialize', parseResult.buffer);
+    const buffer = await this.projectItem.toRawBuffer();
+    this.browserWindow.webContents.send('initialize', buffer);
   }
 
   sendSaveEvent() {

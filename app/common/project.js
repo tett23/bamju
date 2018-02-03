@@ -460,6 +460,21 @@ export class ProjectItem {
     return ret;
   }
 
+  async toRawBuffer(): Promise<Buffer> {
+    // NOTE: 雑
+    const ret:Buffer = Object.assign({}, this.toBufferItem(), { body: '' });
+
+    if (this.itemType !== ItemTypeMarkdown && this.itemType !== ItemTypeText) {
+      ret.body = '';
+      ret.itemType = ItemTypeUndefined;
+      return ret;
+    }
+
+    ret.body = await readFile(this.absolutePath);
+
+    return ret;
+  }
+
   async openDirectory(): Promise<ParseResult> {
     let ret:ParseResult;
 
