@@ -175,7 +175,8 @@ export class EditorWindow {
     this.projectItem = projectItem;
     this.parentWindowID = parentWindowID;
     const browserWindow = new BrowserWindow({
-      show: false
+      show: false,
+      title: `${projectItem.internalPath()}`,
     });
     this.browserWindow = browserWindow;
 
