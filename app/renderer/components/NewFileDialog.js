@@ -85,7 +85,11 @@ function checkEnter(e, projectName: string, dispatchClose: typeof closeDialog) {
   e.stopPropagation();
 
   if (e.key === 'Enter') {
-    ipcRenderer.send('create-file', { projectName, path: e.target.value });
+    ipcRenderer.send('create-file', {
+      windowID: window.windowID,
+      projectName,
+      path: e.target.value
+    });
   } else if (e.key === 'Escape') {
     dispatchClose();
   }

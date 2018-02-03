@@ -63,7 +63,7 @@ ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
 });
 
 ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
-  console.log('refresh-tree-view-item', projectName, path, item);
+  console.log('refresh-tree-view-item', projectName, itemPath, item);
 
   store.dispatch(openTreeViewItem(projectName, itemPath, item));
 });

@@ -8,7 +8,6 @@ import mkdirp from 'mkdirp';
 import Markdown from '../main/parser/markdown';
 import TableParser from '../main/parser/table';
 import watcher from './file_watcher';
-import { sleep } from './util';
 
 const { Config } = require('./bamju_config');
 
@@ -259,17 +258,46 @@ ${projectName}:${itemName}
       };
     }
 
-    // await sleep(100);
+    return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(async () => {
+      await Manager.openTree(projectName, itemName);
 
-    return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(() => {
       return { success: true, message: '' };
     }).catch((err) => {
-      console.log('reason', err);
-      console.log('reason', err.message);
       return {
         success: false,
         message: `write file error: '${err.message}'`
       };
+    });
+  }
+
+  static async openTree(projectName: string, itemPath: string) {
+    const project = Manager.find(projectName);
+    if (project == null) {
+      return;
+    }
+
+    await project.load();
+    project.isOpened = true;
+    const open = async (parent: ProjectItem, searchPath: string) => {
+      await Promise.all(parent.items.map(async (_, i) => {
+        if (searchPath.startsWith(parent.items[i].path)) {
+          await parent.items[i].load();
+          parent.items[i].isOpened = true; /* eslint no-param-reassign: 0 */
+
+          await open(parent.items[i], searchPath);
+        }
+      }));
+    };
+    await open(project, itemPath);
+
+    // FIXME
+    _projects.some((_, i) => {
+      if (_projects[i].projectName === projectName) {
+        _projects[i] = project;
+        return true;
+      }
+
+      return false;
     });
   }
 
