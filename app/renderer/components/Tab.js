@@ -105,7 +105,7 @@ function contextmenu(e, buf: Buffer) {
       ipcRenderer.send('open-page', {
         windowID: window.windowID,
         projectName: buf.projectName,
-        itemName: buf.name,
+        itemName: buf.path,
       });
     }
   }));
