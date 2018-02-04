@@ -51,9 +51,8 @@ export type ParseResult = {
 export type ParseResults = Array<ParseResult>;
 
 export class Manager {
-  static async init() {
-    console.log('Project.Manager.init _projects', _projects);
-    await Manager.loadProjects();
+  static init(bufferItems: Array<BufferItem>) {
+    Manager.loadBufferItems(bufferItems);
   }
 
   static projects(): ProjectItems {

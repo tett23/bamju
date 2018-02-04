@@ -1,7 +1,6 @@
 // @flow
 /* eslint disable-line: 0, global-require:0 */
 
-import path from 'path';
 import React from 'react';
 import { createStore } from 'redux';
 import { render } from 'react-dom';

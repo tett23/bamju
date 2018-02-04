@@ -6,7 +6,7 @@ import { app } from 'electron';
 import { Manager } from './common/project';
 import { WindowManager } from './main/window';
 
-const { Config, Window, defaultConfig } = require('./common/bamju_config');
+const { Config, defaultConfig } = require('./common/bamju_config');
 require('./main/window');
 require('./main/project');
 
@@ -54,9 +54,10 @@ app.on('ready', async () => {
   }
   console.log('event app ready');
 
-  Manager.init(); // こっちは非同期でいい
-  WindowManager.init(); // これは同期
   await Config.init();
+
+  Manager.init(Config.bufferItems);
+  Manager.loadProjects();
 
   WindowManager.loadWindows(Config.windows);
 });
