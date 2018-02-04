@@ -45,10 +45,6 @@ export class WindowManager {
   static createAppWindow(conf: WindowConfig) {
     const w:AppWindow = new AppWindow(conf);
 
-    ProjectManager.loadProjects(() => {
-      WindowManager.updateTreeView(ProjectManager.projects());
-    });
-
     _appWindows.push(w);
   }
 
