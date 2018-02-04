@@ -461,6 +461,22 @@ export class ProjectItem {
     return ret;
   }
 
+  async open(lazyLoad: boolean = true): Promise<boolean> {
+    await this.load(lazyLoad);
+
+    this.isOpened = true;
+
+    return true;
+  }
+
+  async close() {
+    this.isOpened = false;
+    this.items.forEach((_, i) => {
+      this.items[i].isOpened = false;
+      this.items[i].close();
+    });
+  }
+
   detect(name: string): ?ProjectItem {
     if (name.match(/^\//)) {
       if (this.path === name) {

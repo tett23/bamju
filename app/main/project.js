@@ -53,14 +53,12 @@ ipcMain.on('close-tree-view-item', async (e, { projectName, path }) => {
     return;
   }
 
-  item.items = [];
-  item.isLoaded = false;
-  item.isOpened = false;
+  item.close();
 
   const ret = {
     projectName,
     path,
-    item: Object.assign({}, item.toBufferItem(), { isOpened: true })
+    item: item.toBufferItem()
   };
 
   e.sender.send('refresh-tree-view-item', ret);
@@ -72,14 +70,12 @@ ipcMain.on('open-tree-view-item', async (e, { projectName, path }) => {
   if (item == null) {
     return;
   }
-  await item.load();
-
-  item.isOpened = true;
+  await item.open();
 
   const ret = {
     projectName,
     path,
-    item: Object.assign({}, item.toBufferItem(), { isOpened: true })
+    item: item.toBufferItem()
   };
 
   e.sender.send('refresh-tree-view-item', ret);
