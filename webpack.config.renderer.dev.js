@@ -28,9 +28,7 @@ const manifest = path.resolve(dll, 'renderer.json');
  * Warn if the DLL is not built
  */
 if (!(fs.existsSync(dll) && fs.existsSync(manifest))) {
-  console.log(chalk.black.bgYellow.bold(
-    'The DLL files are missing. Sit back while we build them for you with "npm run build-dll"'
-  ));
+  console.log(chalk.black.bgYellow.bold('The DLL files are missing. Sit back while we build them for you with "npm run build-dll"'));
   execSync('npm run build-dll');
 }
 
@@ -272,8 +270,8 @@ export default merge.smart(baseConfig, {
           ['run', 'start-main-dev'],
           { shell: true, env: process.env, stdio: 'inherit' }
         )
-        .on('close', code => process.exit(code))
-        .on('error', spawnError => console.error(spawnError));
+          .on('close', code => { return process.exit(code); })
+          .on('error', spawnError => { return console.error(spawnError); });
       }
     }
   },
