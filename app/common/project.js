@@ -319,6 +319,12 @@ ${projectName}:${itemName}
     });
   }
 
+  static getBufferItems(): Array<BufferItem> {
+    return _projects.map((item) => {
+      return item.toBufferItem();
+    });
+  }
+
   static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
     // bufferとTreeViewの更新
 

@@ -6,6 +6,10 @@ import path from 'path';
 import { promisify } from 'util';
 import mkdirp from 'mkdirp';
 import expandHomeDir from 'expand-home-dir';
+import {
+  Manager,
+  type BufferItem
+} from './project';
 
 export type BamjuConfig = {
   projects: {
@@ -16,6 +20,7 @@ export type BamjuConfig = {
   config: {
     mkdirP: boolean
   },
+  bufferItems: Array<BufferItem>,
   init: () => Promise<void>,
   update: ({}) => Promise<void>,
   quit: () => void
@@ -59,6 +64,7 @@ export const defaultConfig:BamjuConfig = {
       }
     ]
   }],
+  bufferItems: [],
   followChange: true,
   config: {
     mkdirP: true
@@ -74,6 +80,8 @@ export const defaultConfig:BamjuConfig = {
     return updateConfigFile();
   },
   quit() {
+    Config.bufferItems = Manager.getBufferItems();
+
     fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
     _quit = true;
   }
