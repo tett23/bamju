@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import { connect } from 'react-redux';
-import AceEditor from 'react-ace';
 import 'brace/mode/markdown';
 import 'brace/mode/text';
 import 'brace/theme/monokai';
+import AceEditor from 'react-ace';
 import type { EditorState } from '../reducers/editor';
 import {
   ItemTypeMarkdown,
@@ -54,6 +54,8 @@ class editor extends React.Component<Props> {
           name="aceEditor"
           width="100vw"
           height="100vh"
+          focus
+          showPrintMargin={false}
           editorProps={{ $blockScrolling: true }}
           onChange={this.handleOnChange.bind(this)}
           onLoad={this.handleOnLoad.bind(this)}
