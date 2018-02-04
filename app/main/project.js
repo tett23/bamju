@@ -78,32 +78,20 @@ ipcMain.on('open-tree-view-item', async (e, { projectName, path }) => {
   e.returnValue = ret;
 });
 
-ipcMain.on('create-file', async (e, { windowID, projectName, path }: {windowID: string, projectName: string, path: string}) => {
+ipcMain.on('create-file', async (e, { projectName, path }: {windowID: string, projectName: string, path: string}) => {
   const info = Project.resolveInternalPath(path);
   info.projectName = info.projectName || projectName;
 
-  const ret = await Project.Manager.createFile(info.projectName, info.path);
+  const [projectItem, ret] = await Project.Manager.createFile(info.projectName, info.path);
 
-  if (ret.success) {
-    const item = Project.Manager.detect(projectName, info.path);
-    console.log('create-file detect item', item, projectName, info.path);
-    if (item) {
-      const buf:?Project.Buffer = await openPage(e, { windowID, projectName: item.projectName, itemName: item.path });
-      e.sender.send('open-page', buf);
-    }
+  if (ret.success && projectItem != null) {
+    const parseResult = await projectItem.toBuffer();
+    e.sender.send('open-page', parseResult.buffer);
 
-    const rootItem = Project.Manager.find(projectName);
-    if (rootItem) {
-      const treeUpdateEvent = {
-        projectName: rootItem.projectName,
-        path: rootItem.path,
-        item: Object.assign({}, rootItem.toBufferItem(), { isOpened: true })
-      };
+    await projectItem.open();
 
-      e.sender.send('refresh-tree-view-item', treeUpdateEvent);
-    }
+    e.sender.send('refresh-tree-view', Project.Manager.getBufferItems());
   }
-
 
   e.sender.send('file-created', ret);
   e.returnValue = ret;

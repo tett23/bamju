@@ -203,19 +203,84 @@ ${projectName}:${itemName}
     return rootItem.detect(itemName);
   }
 
-  static async createFile(projectName: string, itemName: string): Promise<Message> {
+  static async createDirectory(projectName: string, itemName: string): Promise<[?ProjectItem, Message]> {
+    const checkResult = await Manager._isExistCheck(projectName, itemName);
+    if (!checkResult.success) {
+      return [null, checkResult];
+    }
+
+    const rootItem = Manager.detect(projectName, '/');
+    if (rootItem == null) {
+      return [null, {
+        success: false,
+        message: `root item not found. '${projectName}:${itemName}'`
+      }];
+    }
+
+    const absolutePath = path.join(path.sep, rootItem.absolutePath, itemName);
+
+    if (Config.config.mkdirP) {
+      try {
+        mkdirp.sync(absolutePath, 0o755);
+      } catch (e) {
+        return [null, {
+          success: false,
+          message: `directory create error. '${e.message}'`
+        }];
+      }
+
+      const basePath = path.join(absolutePath.substring(rootItem.absolutePath.length));
+      let item: ?ProjectItem = rootItem;
+      const pathItems = basePath.split(path.sep);
+      await rootItem.load({ recursive: false });
+      for (let i = 0; i < pathItems.length; i += 1) {
+        if (item == null) {
+          return [null, {
+            success: false,
+            message: 'directory create error'
+          }];
+        }
+
+        item = item.detect(pathItems[i]);
+        if (item == null) {
+          return [null, {
+            success: false,
+            message: 'directory create error'
+          }];
+        }
+
+        await item.load({ recursive: false });
+      }
+    } else {
+      try {
+        fs.mkdirSync(absolutePath, 0o755);
+      } catch (e) {
+        return [null, {
+          success: false,
+          message: `directory create error. '${e.message}'`
+        }];
+      }
+    }
+
+    return [rootItem.detect(itemName), {
+      success: true,
+      message: ''
+    }];
+  }
+
+  static async _isExistCheck(projectName: string, itemName: string): Promise<Message> {
+    if (itemName === '' || itemName === '/') {
+      return {
+        success: false,
+        message: `invalid filename ${itemName}`
+      };
+    }
+
     const project = Manager.find(projectName);
     if (project == null) {
       return {
         success: false,
         message: `repository '${projectName}' not found`
-      };
-    }
-
-    if (itemName === '' || itemName === '/') {
-      return {
-        success: false,
-        message: `invalid filename ${itemName}`
       };
     }
 
@@ -227,18 +292,13 @@ ${projectName}:${itemName}
       };
     }
 
-    const parentDir = path.dirname(absolutePath);
-    if (!fs.existsSync(parentDir)) {
-      if (Config.config.mkdirP) {
-        mkdirp.sync(parentDir, 0o755);
-      } else {
-        return {
-          success: false,
-          message: `parent directory doesen't exist. '${parentDir}'`
-        };
-      }
-    }
+    return {
+      success: true,
+      message: ''
+    };
+  }
 
+  static async createFile(projectName: string, itemName: string): Promise<[?ProjectItem, Message]> {
     const fileInfo = path.parse(itemName);
     let content:string;
     switch (fileInfo.ext) {
@@ -259,26 +319,55 @@ ${projectName}:${itemName}
       break;
     }
     default:
-      return {
+      return [null, {
         success: false,
         message: `extension error: '${fileInfo.ext}'`
-      };
+      }];
     }
 
-    return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(async () => {
-      const itemPath = path.join('/', absolutePath.substring(project.projectPath.length));
-      const parentPath = path.dirname(itemPath);
-      const parentItem = project.detect(parentPath);
-      if (parentItem) {
-        await parentItem.open();
+    const checkResult = await Manager._isExistCheck(projectName, itemName);
+    if (!checkResult.success) {
+      return [null, checkResult];
+    }
+
+    const parentPath = path.dirname(itemName);
+    let parentItem = Manager.detect(projectName, parentPath);
+    if (parentItem == null) {
+      const [_, createDirectoryResult] = await Manager.createDirectory(projectName, parentPath);
+      if (!createDirectoryResult.success) {
+        return [null, createDirectoryResult];
       }
 
-      return { success: true, message: '' };
+      parentItem = Manager.detect(projectName, parentPath);
+    }
+
+    if (parentItem == null) {
+      return [null, {
+        success: false,
+        message: `parent item not found '${internalPath(projectName, parentPath)}'`
+      }];
+    }
+
+    const absolutePath = path.join(parentItem.projectPath, itemName);
+
+    return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(async () => {
+      if (parentItem == null) {
+        return [null, {
+          success: false,
+          message: `parent item not found '${internalPath(projectName, parentPath)}'`
+        }];
+      }
+      await parentItem.open();
+
+      return [
+        parentItem.detect(itemName),
+        { success: true, message: '' }
+      ];
     }).catch((err) => {
-      return {
+      return [null, {
         success: false,
         message: `write file error: '${err.message}'`
-      };
+      }];
     });
   }
 
@@ -354,7 +443,12 @@ export class ProjectItem {
     this.isOpened = bufItem.isOpened;
   }
 
-  async load(lazyLoad: boolean = true): Promise<boolean> {
+  async load(options: Object = {}): Promise<boolean> {
+    const { lazyLoad, recursive } = Object.assign({
+      lazyLoad: true,
+      recursive: true
+    }, options);
+
     if (this.itemType !== ItemTypeDirectory && this.itemType !== ItemTypeProject) {
       this.isLoaded = true;
       return true;
@@ -363,7 +457,7 @@ export class ProjectItem {
     this.isLoaded = false;
 
     try {
-      this.items = await this.loadDirectory(lazyLoad);
+      this.items = await this.loadDirectory({ lazyLoad, recursive });
     } catch (e) {
       throw e;
     }
@@ -373,7 +467,12 @@ export class ProjectItem {
     return true;
   }
 
-  async loadDirectory(lazyLoad: boolean = true): Promise<ProjectItems> {
+  async loadDirectory(options: Object = {}): Promise<ProjectItems> {
+    const { lazyLoad, recursive } = Object.assign({
+      lazyLoad: true,
+      recursive: true
+    }, options);
+
     let files: Array<string>;
     const { projectName, projectPath } = this;
     try {
@@ -415,12 +514,13 @@ export class ProjectItem {
       }
 
       projectItem.isLoaded = false;
-      projectItem.items = [];
 
-      if (lazyLoad) {
-        projectItem.load(lazyLoad);
-      } else {
-        await projectItem.load(lazyLoad);
+      if (recursive) {
+        if (lazyLoad) {
+          projectItem.load({ lazyLoad });
+        } else {
+          await projectItem.load({ lazyLoad });
+        }
       }
 
       return projectItem;
@@ -432,7 +532,7 @@ export class ProjectItem {
   }
 
   async open(lazyLoad: boolean = true): Promise<boolean> {
-    await this.load(lazyLoad);
+    await this.load({ lazyLoad });
 
     this.isOpened = true;
     const p = this.parent();
@@ -452,6 +552,10 @@ export class ProjectItem {
   }
 
   detect(name: string): ?ProjectItem {
+    if (name === '') {
+      return this;
+    }
+
     if (name.match(/^\//)) {
       if (this.path === name) {
         return this;
@@ -583,6 +687,33 @@ export class ProjectItem {
     }
 
     return Manager.detect(this.projectName, path.dirname(this.path));
+  }
+
+  rootItem(): ProjectItem {
+    if (this.itemType === ItemTypeProject) {
+      return this;
+    }
+
+    let ret:?ProjectItem;
+    let item:?ProjectItem;
+    let count = 0;
+    while ((item = this.parent())) {
+      if (item) {
+        ret = item;
+        break;
+      }
+
+      if (count > 256) {
+        break;
+      }
+      count += 1;
+    }
+
+    if (ret == null) {
+      throw new Error('ProjectItem.rootItem');
+    }
+
+    return ret;
   }
 
   toBufferItem(): BufferItem {
