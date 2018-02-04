@@ -20,6 +20,11 @@ export const ItemTypeTSV = 'tsv';
 export const ItemTypeUndefined = 'undefined';
 export type ItemType = 'project' | 'directory' | 'markdown' | 'text' | 'csv' | 'tsv' | 'undefined';
 
+type Message = {
+  success: boolean,
+  message: string
+};
+
 export type FileItem = {
   name: string,
   path: string,
@@ -196,7 +201,7 @@ ${projectName}:${itemName}
     return project.detect(itemName);
   }
 
-  static async createFile(projectName: string, itemName: string) {
+  static async createFile(projectName: string, itemName: string): Promise<Message> {
     const project = Manager.find(projectName);
     if (project == null) {
       return {
