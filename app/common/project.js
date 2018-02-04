@@ -412,6 +412,10 @@ ${projectName}:${itemName}
   static async unwatch(): Promise<void> {
     await watcher.unregisterAll();
   }
+
+  static clear() {
+    _projects = [];
+  }
 }
 
 export type WatchCallback = () => void;
@@ -552,45 +556,71 @@ export class ProjectItem {
   }
 
   detect(name: string): ?ProjectItem {
-    if (name === '') {
+    if (name === '' || name === '.') {
       return this;
     }
 
     if (name.match(/^\//)) {
-      if (this.path === name) {
-        return this;
+      const rootItem = this.rootItem();
+      return rootItem.detect(name.substring(1));
+    }
+
+    let search: Array<string> = [name];
+    if (name.match(/\//)) {
+      const pp = path.join(this.path, name).replace(/^\//, '').replace(/\/$/, '');
+      search = path.normalize(pp).split('/');
+    }
+
+    let searchName: string;
+    let current:?ProjectItem = this;
+    while (search.length !== 0) { /* eslint no-continue: 0 */
+      searchName = search.shift();
+      if (current == null) {
+        break;
+      }
+
+      if (searchName === '' || searchName === '.') {
+        current = this;
+        continue;
+      }
+
+      if (current.name === searchName) {
+        current = this;
+        continue;
+      }
+
+      if (current.name === `${searchName}.md`) {
+        current = this;
+        continue;
+      }
+
+      if (current.name === `${searchName}.txt`) {
+        current = this;
+        continue;
+      }
+
+      if (current.name === `${searchName}.csv`) {
+        current = this;
+        continue;
+      }
+
+      if (current.name === `${searchName}.tsv`) {
+        current = this;
+        continue;
+      }
+
+      let tmp:?ProjectItem;
+      current.items.some((item) => { /* eslint no-loop-func: 0 */
+        tmp = item.detect(searchName);
+        return tmp != null;
+      });
+      current = tmp;
+      if (current == null) {
+        continue;
       }
     }
 
-    if (this.name === name) {
-      return this;
-    }
-
-    if (this.name === `${name}.md`) {
-      return this;
-    }
-
-    if (this.name === `${name}.txt`) {
-      return this;
-    }
-
-    if (this.name === `${name}.csv`) {
-      return this;
-    }
-
-    if (this.name === `${name}.tsv`) {
-      return this;
-    }
-
-    let ret:?ProjectItem;
-    this.items.forEach((item: ProjectItem) => {
-      const i:?ProjectItem = item.detect(name);
-
-      if (i !== undefined && i !== null) {
-        ret = i;
-      }
-    });
-
+    const ret = current;
 
     return ret;
   }
@@ -698,10 +728,11 @@ export class ProjectItem {
     let item:?ProjectItem;
     let count = 0;
     while ((item = this.parent())) {
-      if (item) {
-        ret = item;
+      if (item == null) {
         break;
       }
+
+      ret = item;
 
       if (count > 256) {
         break;
@@ -710,7 +741,7 @@ export class ProjectItem {
     }
 
     if (ret == null) {
-      throw new Error('ProjectItem.rootItem');
+      ret = this;
     }
 
     return ret;
@@ -778,8 +809,9 @@ async function readFile(absolutePath: string): Promise<string> {
 async function readDirectory(item: ProjectItem): Promise<string> {
   try {
     const files:Array<string> = await promisify(fs.readdir)(item.absolutePath);
+    console.log('readDir', files);
     const items:Array<string> = files.map((filename) => {
-      const p = path.join(item.path, filename);
+      const p = path.join(item.path, path.basename(filename));
       const text = path.basename(filename, path.extname(filename));
       const absPath = path.join(item.absolutePath, filename);
 
@@ -791,7 +823,7 @@ async function readDirectory(item: ProjectItem): Promise<string> {
     }).filter(Boolean); // nullを消したい
 
     const ret:string = `
-# ${item.projectName}:${item.path}
+# ${internalPath(item.projectName, item.path)}
 
 ${items.join('\n')}
   `;
