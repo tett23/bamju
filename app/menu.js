@@ -167,6 +167,8 @@ function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem
         label: 'Save All...',
         accelerator: 'CmdOrCtrl+Alt+S',
         click: () => {
+          console.log('save all');
+          WindowManager.sendSaveEventAll();
         },
         enabled: isEnableEditorMenu,
       },

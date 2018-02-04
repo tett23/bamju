@@ -66,6 +66,36 @@ export class WindowManager {
     }
   }
 
+  static removeWindow(windowID: string): boolean {
+    let idx = _appWindows.findIndex((w) => {
+      return w.windowID() === windowID;
+    });
+    if (idx !== -1) {
+      _appWindows.splice(idx);
+      return true;
+    }
+
+    idx = _editorWindows.findIndex((w) => {
+      return w.windowID() === windowID;
+    });
+    if (idx !== -1) {
+      _editorWindows.splice(idx);
+      return true;
+    }
+
+    return false;
+  }
+
+  static sendSaveEventAll() {
+    _editorWindows.forEach((w) => {
+      w.sendSaveEvent();
+    });
+  }
+
+  static sendSaveEvent(window: EditorWindow) {
+    window.sendSaveEvent();
+  }
+
   static focus(windowID: string): boolean {
     const window: ?Window = WindowManager._findWindow(windowID);
     if (window != null && process.platform === 'darwin') {
@@ -165,6 +195,7 @@ export class AppWindow implements Window {
     browserWindow.on('closed', () => {
       removeWindowConfig(this.conf.id);
       this.browserWindow = null;
+      WindowManager.removeWindow(this.windowID());
     });
 
     browserWindow.on('resize', () => {
@@ -268,6 +299,8 @@ export class EditorWindow implements Window {
 
     browserWindow.on('closed', () => {
       // FIXME: 閉じるダイアログが必要
+      this.browserWindow = null;
+      WindowManager.removeWindow(this.windowID());
     });
   }
 
@@ -294,7 +327,7 @@ export class EditorWindow implements Window {
   }
 
   sendSaveEvent() {
-    this.browserWindow.webContents.send('collect-save-information', {});
+    this.browserWindow.webContents.send('send-buffer-information');
   }
 }
 
