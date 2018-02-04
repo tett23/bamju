@@ -141,6 +141,12 @@ export class WindowManager {
     return _appWindows;
   }
 
+  static getEditorWindow(projectName: string, itemPath: string): ?EditorWindow {
+    return _editorWindows.find((w) => {
+      return w.projectItem.projectName === projectName && w.projectItem.path === itemPath;
+    });
+  }
+
   static async updateTreeView(tv: ProjectItems): Promise<void> {
     const p: Array<Promise<void>> = _appWindows.map(async (item: AppWindow): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
@@ -371,7 +377,12 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
     return;
   }
 
-  WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
+  const editorWindow = WindowManager.getEditorWindow(fileInfo.projectName, fileInfo.itemName);
+  if (editorWindow == null) {
+    WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
+  } else {
+    editorWindow.focus();
+  }
 });
 
 ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
