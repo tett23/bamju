@@ -461,6 +461,10 @@ export class ProjectItem {
     await this.load(lazyLoad);
 
     this.isOpened = true;
+    const p = this.parent();
+    if (p) {
+      await p.open();
+    }
 
     return true;
   }
