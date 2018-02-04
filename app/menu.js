@@ -61,6 +61,36 @@ export default class MenuBuilder {
     const subMenuEdit = {
       label: 'Edit',
       submenu: [
+        {
+          label: 'Open...',
+          accelerator: 'Command+O',
+          click: () => {
+          },
+          enabled: false,
+        },
+        { type: 'separator' },
+        {
+          label: 'Save',
+          accelerator: 'Command+S',
+          click: () => {
+          },
+          enabled: false,
+        },
+        {
+          label: 'Save As...',
+          accelerator: 'Command+Shift+S',
+          click: () => {
+          },
+          enabled: false,
+        },
+        {
+          label: 'Save All...',
+          accelerator: 'Command+Alt+S',
+          click: () => {
+          },
+          enabled: false,
+        },
+        { type: 'separator' },
         { label: 'Undo', accelerator: 'Command+Z', selector: 'undo:' },
         { label: 'Redo', accelerator: 'Shift+Command+Z', selector: 'redo:' },
         { type: 'separator' },
@@ -73,15 +103,36 @@ export default class MenuBuilder {
     const subMenuViewDev = {
       label: 'View',
       submenu: [
-        { label: 'Reload', accelerator: 'Command+R', click: () => { this.mainWindow.webContents.reload(); } },
-        { label: 'Toggle Full Screen', accelerator: 'Ctrl+Command+F', click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); } },
-        { label: 'Toggle Developer Tools', accelerator: 'Alt+Command+I', click: () => { this.mainWindow.toggleDevTools(); } }
+        {
+          label: 'Reload',
+          accelerator: 'Command+R',
+          click: () => { this.mainWindow.webContents.reload(); }
+        },
+        {
+          label: 'Toggle Full Screen',
+          accelerator: 'Ctrl+Command+F',
+          click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); }
+        },
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: 'Alt+Command+I',
+          click: () => { this.mainWindow.toggleDevTools(); }
+        }
       ]
     };
     const subMenuViewProd = {
       label: 'View',
       submenu: [
-        { label: 'Toggle Full Screen', accelerator: 'Ctrl+Command+F', click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); } }
+        {
+          label: 'Reload',
+          accelerator: 'Command+R',
+          click: () => { this.mainWindow.webContents.reload(); }
+        },
+        {
+          label: 'Toggle Full Screen',
+          accelerator: 'Ctrl+Command+F',
+          click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); }
+        }
       ]
     };
     const subMenuWindow = {
@@ -119,16 +170,28 @@ export default class MenuBuilder {
   buildDefaultTemplate() {
     const templateDefault = [{
       label: '&File',
-      submenu: [{
-        label: '&Open',
-        accelerator: 'Ctrl+O'
-      }, {
-        label: '&Close',
-        accelerator: 'Ctrl+W',
-        click: () => {
-          this.mainWindow.close();
+      submenu: [
+        {
+          label: '&Open',
+          enabled: false,
+          accelerator: 'Ctrl+O'
+        },
+        {
+          label: '&Save',
+          accelerator: 'Ctrl+S',
+          enabled: false,
+          onclick: () => {
+
+          }
+        },
+        {
+          label: '&Close',
+          accelerator: 'Ctrl+W',
+          click: () => {
+            this.mainWindow.close();
+          }
         }
-      }]
+      ]
     }, {
       label: '&View',
       submenu: (process.env.NODE_ENV === 'development') ? [{
