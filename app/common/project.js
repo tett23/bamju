@@ -325,6 +325,14 @@ ${projectName}:${itemName}
     });
   }
 
+  static loadBufferItems(items: Array<BufferItem>): Array<ProjectItem> {
+    _projects = items.map((item) => {
+      return new ProjectItem(item);
+    });
+
+    return _projects;
+  }
+
   static async watch(projectName: string, absolutePath: string, callback: WatchCallback): Promise<void> {
     // bufferとTreeViewの更新
 
@@ -343,7 +351,7 @@ ${projectName}:${itemName}
 
 export type WatchCallback = () => void;
 
-const _projects: Array<ProjectItem> = [];
+let _projects: Array<ProjectItem> = [];
 console.log('require projects _projects', _projects);
 
 export class ProjectItem {
