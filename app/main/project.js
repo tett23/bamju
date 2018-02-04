@@ -28,20 +28,16 @@ ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
 });
 
 ipcMain.on('add-project', async (e, { path }) => {
-  Project.Manager.addProject(path);
-  const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return Object.assign({}, item.toBufferItem(), { isOpened: true });
-  });
+  await Project.Manager.addProject(path);
+  const ret = Project.Manager.getBufferItems();
 
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;
 });
 
 ipcMain.on('remove-project', async (e, { path }) => {
-  Project.Manager.removeProject(path);
-  const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return Object.assign({}, item.toBufferItem(), { isOpened: true });
-  });
+  await Project.Manager.removeProject(path);
+  const ret = Project.Manager.getBufferItems();
 
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;
