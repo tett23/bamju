@@ -79,7 +79,7 @@ class projectsTreeView extends React.Component<Props> {
             onContextMenu={e => { return contextmenu(e, item); }}
           >
             <div>
-              {this.icon(item)}
+              {icon(item)}
               <span className={spanClass}>
                 {item.name}
               </span>
@@ -91,29 +91,6 @@ class projectsTreeView extends React.Component<Props> {
     });
 
     return ret;
-  }
-
-  icon(item: BufferItem) {
-    switch (item.itemType) {
-    case 'project':
-      return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
-    case 'directory':
-      if (item.isOpened) {
-        return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
-      }
-      return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
-
-    case 'markdown':
-      return <FontAwesome name="file-text" />;
-    case 'text':
-      return <FontAwesome name="file-text" />;
-    case 'csv':
-      return <FontAwesome name="file-text" />;
-    case 'tsv':
-      return <FontAwesome name="file-text" />;
-    default:
-      return <FontAwesome name="question-circle" />;
-    }
   }
 
   render() {
@@ -144,6 +121,28 @@ function toggleTreeView(e, item: BufferItem) {
   }
 }
 
+function icon(item: BufferItem) {
+  switch (item.itemType) {
+  case 'project':
+    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
+  case 'directory':
+    if (item.isOpened) {
+      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
+    }
+    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
+
+  case 'markdown':
+    return <FontAwesome name="file-text" />;
+  case 'text':
+    return <FontAwesome name="file-text" />;
+  case 'csv':
+    return <FontAwesome name="file-text" />;
+  case 'tsv':
+    return <FontAwesome name="file-text" />;
+  default:
+    return <FontAwesome name="question-circle" />;
+  }
+}
 
 function addProject(e) {
   e.preventDefault();
