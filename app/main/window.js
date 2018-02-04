@@ -219,43 +219,6 @@ export class AppWindow implements Window {
   }
 }
 
-ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}) => {
-  console.log('open-new-window', projectName, itemName);
-
-  let conf:?WindowConfig = findWindowConfig(windowID);
-  if (conf === null || conf === undefined) {
-    conf = Object.assign({}, Config.windows[0]);
-  }
-
-  conf.id = createWindowID();
-  conf.rectangle.x += 50;
-  conf.rectangle.y += 50;
-  conf.tabs = [{
-    buffer: {
-      projectName,
-      path: itemName
-    }
-  }];
-
-  WindowManager.createAppWindow(conf);
-});
-
-ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
-  console.log('open-by-bamju-editor', fileInfo);
-
-  const projectItem = ProjectManager.detect(fileInfo.projectName, fileInfo.itemName);
-  if (projectItem == null) {
-    e.send('show-information', {
-      type: 'error',
-      message: `file not found. projectName${internalPath(fileInfo.projectName, fileInfo.itemName)}`
-    });
-
-    return;
-  }
-
-  WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
-});
-
 export class EditorWindow implements Window {
   browserWindow: BrowserWindow;
   projectItem: ProjectItem;
@@ -333,6 +296,43 @@ export class EditorWindow implements Window {
     this.browserWindow.webContents.send('collect-save-information', {});
   }
 }
+
+ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}) => {
+  console.log('open-new-window', projectName, itemName);
+
+  let conf:?WindowConfig = findWindowConfig(windowID);
+  if (conf === null || conf === undefined) {
+    conf = Object.assign({}, Config.windows[0]);
+  }
+
+  conf.id = createWindowID();
+  conf.rectangle.x += 50;
+  conf.rectangle.y += 50;
+  conf.tabs = [{
+    buffer: {
+      projectName,
+      path: itemName
+    }
+  }];
+
+  WindowManager.createAppWindow(conf);
+});
+
+ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
+  console.log('open-by-bamju-editor', fileInfo);
+
+  const projectItem = ProjectManager.detect(fileInfo.projectName, fileInfo.itemName);
+  if (projectItem == null) {
+    e.send('show-information', {
+      type: 'error',
+      message: `file not found. projectName${internalPath(fileInfo.projectName, fileInfo.itemName)}`
+    });
+
+    return;
+  }
+
+  WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
+});
 
 function createWindowID(): string {
   const timestamp:number = new Date().getTime();
