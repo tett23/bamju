@@ -23,7 +23,7 @@
     "consistent-return": "off",
     "comma-dangle": "off",
     "no-underscore-dangle": "off",
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-unused-vars": ["error", { "varsIgnorePattern": "_+", "argsIgnorePattern": "_+" }],
     "no-await-in-loop": "off",
     "no-cond-assign": ["error", "except-parens"],
     "flowtype-errors/show-errors": "error",
