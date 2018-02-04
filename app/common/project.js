@@ -132,7 +132,9 @@ export class Manager {
 
     await Config.update({ projects: newProjects });
 
-    await this.loadProjects();
+    const projectItem = new ProjectItem(createBufferRootItem(name, absolutePath));
+    _projects.push(projectItem);
+    projectItem.load();
   }
 
   static async removeProject(absolutePath: string) {
@@ -142,7 +144,14 @@ export class Manager {
 
     await Config.update({ projects: newProjects });
 
-    await this.loadProjects();
+    const idx = _projects.findIndex((item) => {
+      return item.absolutePath === absolutePath;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    _projects.splice(idx);
   }
 
   static getProjectItem(projectName: string, itemName: string): ?ProjectItem {
@@ -391,6 +400,8 @@ export class ProjectItem {
       this.isLoaded = true;
       return true;
     }
+
+    this.isLoaded = false;
 
     try {
       this.items = await this.loadDirectory(lazyLoad);
