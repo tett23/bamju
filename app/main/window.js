@@ -178,6 +178,10 @@ export class AppWindow implements Window {
       updateRectangle();
     });
 
+    browserWindow.on('focus', () => {
+      this.focus();
+    });
+
     const updateRectangle = () => {
       const rectangle = browserWindow.getBounds();
       this.conf.rectangle = {
@@ -299,9 +303,6 @@ export class EditorWindow implements Window {
     });
 
     browserWindow.on('focus', () => {
-    // FIXME: ふたつのmenuを運用するか、ひとつにまとめるか決めないといけない
-      // const menuBuilder = new EditorMenuBuilder(this);
-      // menuBuilder.buildMenu();
       this.focus();
     });
 

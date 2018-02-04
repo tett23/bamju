@@ -55,7 +55,7 @@ function buildDarwin(menuType: MenuType, browserWindow: BrowserWindow): Array<Me
   const ret:Array<MenuItem> = [];
   ret.push(subMenuAbout());
   ret.push(subMenuFile(browserWindow));
-  ret.push(subMenuEdit(browserWindow));
+  ret.push(subMenuEdit(menuType, browserWindow));
   ret.push(subMenuView(browserWindow));
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
     ret.push(subMenuDebug(browserWindow));
@@ -70,7 +70,7 @@ function buildDefault(menuType: MenuType, browserWindow: BrowserWindow): Array<M
   const ret:Array<MenuItem> = [];
 
   ret.push(subMenuFile(browserWindow));
-  ret.push(subMenuEdit(browserWindow));
+  ret.push(subMenuEdit(menuType, browserWindow));
   ret.push(subMenuView(browserWindow));
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
     ret.push(subMenuDebug(browserWindow));
@@ -130,7 +130,9 @@ function subMenuFile(browserWindow: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuEdit(_: BrowserWindow): MenuItem {
+function subMenuEdit(menuType: MenuType, _: BrowserWindow): MenuItem {
+  const isEnableEditorMenu = menuType === MenuTypeEditor;
+
   const template = {
     label: 'Edit',
     submenu: [
@@ -139,7 +141,7 @@ function subMenuEdit(_: BrowserWindow): MenuItem {
         accelerator: 'CmdOrCtrl+O',
         click: () => {
         },
-        enabled: false,
+        enabled: isEnableEditorMenu,
       },
       { type: 'separator' },
       {
@@ -147,21 +149,21 @@ function subMenuEdit(_: BrowserWindow): MenuItem {
         accelerator: 'CmdOrCtrl+S',
         click: () => {
         },
-        enabled: false,
+        enabled: isEnableEditorMenu,
       },
       {
         label: 'Save As...',
         accelerator: 'CmdOrCtrl+Shift+S',
         click: () => {
         },
-        enabled: false,
+        enabled: isEnableEditorMenu,
       },
       {
         label: 'Save All...',
         accelerator: 'CmdOrCtrl+Alt+S',
         click: () => {
         },
-        enabled: false,
+        enabled: isEnableEditorMenu,
       },
       { type: 'separator' },
       { role: 'undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
