@@ -3,22 +3,29 @@
 
 import { ipcMain, BrowserWindow } from 'electron';
 import MenuBuilder from '../menu';
-import EditorMenuBuilder from '../editor_menu';
 import {
   Manager as ProjectManager,
   internalPath,
-  type ProjectItem
+  ProjectItem,
+  type ProjectItems
 } from '../common/project';
-
-// const { Projects } = require('../common/project');
 
 const {
   Config, Window: WindowConfig, findWindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
 } = require('../common/bamju_config');
 
+const _windows:Array<AppWindow> = [];
+const _editorWindows: Array<EditorWindow> = [];
+
+// interface Window {
+//   windowID: string;
+//
+//   focus();
+// }
+
 export class WindowManager {
   static create(conf: WindowConfig) {
-    const w:Window = new Window(conf);
+    const w:AppWindow = new AppWindow(conf);
 
     ProjectManager.loadProjects(() => {
       WindowManager.updateTreeView(ProjectManager.projects());
@@ -27,12 +34,23 @@ export class WindowManager {
     _windows.push(w);
   }
 
-  static getWindows(): Array<Window> {
+  static createEditorWindow(projectItem: ProjectItem, parentWindowID: ?string) {
+    const w = new EditorWindow(projectItem, parentWindowID);
+
+    _editorWindows.push(w);
+  }
+
+  // static focusWindow(windowID: string): boolean {
+  //   _windows.find((w) => {
+  //   });
+  // }
+
+  static getWindows(): Array<AppWindow> {
     return _windows;
   }
 
   static async updateTreeView(tv: ProjectItems): Promise<void> {
-    const p: Array<Promise<void>> = _windows.map(async (item: Window): Promise<void> => {
+    const p: Array<Promise<void>> = _windows.map(async (item: AppWindow): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
       await item.updateTreeView(tv);
       console.log('Manager updateTreeView after updateTreeView await');
@@ -45,9 +63,7 @@ export class WindowManager {
   }
 }
 
-const _windows:Array<Window> = [];
-
-export class Window {
+export class AppWindow {
   browserWindow: BrowserWindow;
   conf: WindowConfig;
 
@@ -111,7 +127,7 @@ export class Window {
     };
 
     const menuBuilder = new MenuBuilder(browserWindow);
-    menuBuilder.buildMenu();
+    const menu = menuBuilder.buildMenu();
 
     this.browserWindow = browserWindow;
   }
@@ -159,7 +175,7 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
     return;
   }
 
-  EditorWindow.create(projectItem, fileInfo.parentWindowID);
+  WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
 });
 
 export class EditorWindow {
@@ -197,9 +213,12 @@ export class EditorWindow {
       this.initializeRenderer();
     });
 
+    browserWindow.on('focus', () => {
     // FIXME: ふたつのmenuを運用するか、ひとつにまとめるか決めないといけない
-    // const menuBuilder = new EditorMenuBuilder(browserWindow);
-    // menuBuilder.buildMenu();
+      // const menuBuilder = new EditorMenuBuilder(this);
+      // menuBuilder.buildMenu();
+      // WindowManager.focusEditorWindow();
+    });
 
     browserWindow.on('closed', () => {
       // FIXME: 閉じるダイアログが必要
