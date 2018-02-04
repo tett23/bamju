@@ -1,9 +1,10 @@
 // @flow
 import { app, Menu, shell, BrowserWindow } from 'electron';
 
+export const MenuTypeInit = 'init';
 export const MenuTypeApp = 'app';
 export const MenuTypeEditor = 'editor';
-export type MenuType = 'app' | 'editor';
+export type MenuType = 'init' | 'app' | 'editor';
 
 export class MenuBuilder {
   _mainWindow: BrowserWindow;
