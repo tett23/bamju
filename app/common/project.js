@@ -275,6 +275,19 @@ ${projectName}:${itemName}
     });
   }
 
+  static async saveBuffer(buffer: Buffer): Promise<Message> {
+    const ret = await promisify(fs.writeFile)(buffer.absolutePath, buffer.body).then(async () => {
+      return { success: true, message: 'saved' };
+    }).catch((err) => {
+      return {
+        success: false,
+        message: `write file error: '${err.message}'`
+      };
+    });
+
+    return ret;
+  }
+
   static async openTree(projectName: string, itemPath: string) {
     const project = Manager.find(projectName);
     if (project == null) {

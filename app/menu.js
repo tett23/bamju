@@ -7,6 +7,10 @@ import {
   BrowserWindow
 } from 'electron';
 
+import {
+  WindowManager
+} from './main/window';
+
 export const MenuTypeInit = 'init';
 export const MenuTypeApp = 'app';
 export const MenuTypeEditor = 'editor';
@@ -130,7 +134,7 @@ function subMenuFile(browserWindow: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuEdit(menuType: MenuType, _: BrowserWindow): MenuItem {
+function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem {
   const isEnableEditorMenu = menuType === MenuTypeEditor;
 
   const template = {
@@ -148,6 +152,7 @@ function subMenuEdit(menuType: MenuType, _: BrowserWindow): MenuItem {
         label: 'Save',
         accelerator: 'CmdOrCtrl+S',
         click: () => {
+          browserWindow.webContents.send('send-buffer-information');
         },
         enabled: isEnableEditorMenu,
       },

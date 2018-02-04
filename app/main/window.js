@@ -17,7 +17,8 @@ import {
   Manager as ProjectManager,
   internalPath,
   ProjectItem,
-  type ProjectItems
+  type ProjectItems,
+  type Buffer,
 } from '../common/project';
 
 const {
@@ -332,6 +333,15 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
   }
 
   WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
+});
+
+ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
+  console.log('save-buffer', buffer);
+
+  const result = await ProjectManager.saveBuffer(buffer);
+
+  e.sender.send('buffer-saved', result);
+  e.returnValue = result;
 });
 
 function createWindowID(): string {

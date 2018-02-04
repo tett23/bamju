@@ -31,3 +31,9 @@ if (root != null) {
 ipcRenderer.on('initialize', (event, buffer: Buffer) => {
   store.dispatch(openBuffer(buffer));
 });
+
+ipcRenderer.on('send-buffer-information', (_) => {
+  const state = store.getState();
+
+  ipcRenderer.send('save-buffer', state.editor.buffer);
+});

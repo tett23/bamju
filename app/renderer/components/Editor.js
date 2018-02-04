@@ -11,15 +11,21 @@ import {
   ItemTypeMarkdown,
   ItemTypeText,
 } from '../../common/project';
+import {
+  updateEditorContent
+} from '../actions/editor';
 
 type Props = {
-
+  contentUpdated: (string) => void
 } & EditorState;
 
 class editor extends React.Component<Props> {
   editor: ?AceEditor;
 
   handleOnChange() {
+    if (this.editor) {
+      this.props.contentUpdated(this.editor.getValue());
+    }
   }
 
   handleOnLoad(editorElement) {
@@ -74,7 +80,11 @@ const mapStateToProps = (state: {editor: EditorState}): EditorState => {
 const mapDispatchToProps = (dispatch) => {
   console.log('Editor mapDispatchToProps', dispatch);
 
-  return {};
+  return {
+    contentUpdated: (text: string) => {
+      dispatch(updateEditorContent(text));
+    }
+  };
 };
 
 
