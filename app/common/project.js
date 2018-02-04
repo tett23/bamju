@@ -172,7 +172,7 @@ export class Manager {
   static async notFoundBuffer(projectName: string, itemName: string): Promise<ParseResult> {
     const projectItem:ProjectItem = new ProjectItem({
       absolutePath: '',
-      path: '',
+      path: itemName,
       projectName,
       itemName,
       projectPath: '',
