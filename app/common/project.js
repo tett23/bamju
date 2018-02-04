@@ -154,19 +154,8 @@ export class Manager {
     _projects.splice(idx);
   }
 
-  static getProjectItem(projectName: string, itemName: string): ?ProjectItem {
-    const p:?ProjectItem = this.find(projectName);
-    if (p === undefined || p === null) {
-      return null;
-    }
-
-    const ret:?ProjectItem = p.detect(itemName);
-
-    return ret;
-  }
-
   static async getBuffer(projectName: string, itemName: string): Promise<ParseResult> {
-    const item:?ProjectItem = Manager.getProjectItem(projectName, itemName);
+    const item:?ProjectItem = Manager.detect(projectName, itemName);
     if (item === undefined || item === null) {
       const ret:ParseResult = await Manager.notFoundBuffer(projectName, itemName);
       return ret;
@@ -206,16 +195,12 @@ ${projectName}:${itemName}
   }
 
   static detect(projectName: string, itemName: string): ?ProjectItem {
-    const projects:ProjectItems = Manager.projects();
-    const project:?ProjectItem = projects.find((p: ProjectItem): boolean => {
-      return p.name === projectName;
-    });
-
-    if (project === null || project === undefined) {
+    const rootItem = this.find(projectName);
+    if (rootItem === undefined || rootItem === null) {
       return null;
     }
 
-    return project.detect(itemName);
+    return rootItem.detect(itemName);
   }
 
   static async createFile(projectName: string, itemName: string): Promise<Message> {
