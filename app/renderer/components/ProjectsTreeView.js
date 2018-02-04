@@ -211,13 +211,6 @@ function contextmenu(e, item: BufferItem) {
       }
     }));
   }
-  menu.append(new MenuItem({
-    label: 'reload',
-    click: () => {
-      ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
-    },
-    enabled: item.itemType === ItemTypeDirectory || item.itemType === ItemTypeProject
-  }));
 
   menu.popup(remote.getCurrentWindow());
 }
