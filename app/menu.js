@@ -1,6 +1,7 @@
 // @flow
 import {
   app,
+  Menu,
   MenuItem,
   shell,
   BrowserWindow
@@ -16,20 +17,43 @@ export const PlatformTypeDefault = 'default';
 export type PlatformType = 'darwin' | 'default';
 export const platformType = process.platform === 'darwin' ? PlatformTypeDarwin : PlatformTypeDefault;
 
-export function buildMenu(menuType: MenuType, browserWindow: BrowserWindow): Array<MenuItem> {
+export function buildMenu(menuType: MenuType, browserWindow: ?BrowserWindow): Menu {
+  if (menuType !== MenuTypeInit && browserWindow == null) {
+    throw (new Error(''));
+  }
+
   let menuItems:Array<MenuItem>;
-  if (process.platform === 'darwin') {
+  if (menuType === MenuTypeInit) {
+    menuItems = initMenu();
+  } else if (process.platform === 'darwin') {
     menuItems = buildDarwin(menuType, browserWindow);
   } else {
     menuItems = buildDefault(menuType, browserWindow);
   }
 
-  return menuItems;
+
+  const ret = new Menu();
+  menuItems.forEach((item) => {
+    ret.append(item);
+  });
+
+  return ret;
+}
+
+function initMenu(): Array<MenuItem> {
+  const ret:Array<MenuItem> = [];
+  if (platformType === PlatformTypeDarwin) {
+    ret.push(subMenuAbout());
+  }
+
+  ret.push(subMenuHelp());
+
+  return ret;
 }
 
 function buildDarwin(menuType: MenuType, browserWindow: BrowserWindow): Array<MenuItem> {
   const ret:Array<MenuItem> = [];
-  ret.push(subMenuAbout(browserWindow));
+  ret.push(subMenuAbout());
   ret.push(subMenuFile(browserWindow));
   ret.push(subMenuEdit(browserWindow));
   ret.push(subMenuView(browserWindow));
@@ -37,25 +61,26 @@ function buildDarwin(menuType: MenuType, browserWindow: BrowserWindow): Array<Me
     ret.push(subMenuDebug(browserWindow));
   }
   ret.push(subMenuWindow(browserWindow));
-  ret.push(subMenuHelp(browserWindow));
+  ret.push(subMenuHelp());
 
   return ret;
 }
 
 function buildDefault(menuType: MenuType, browserWindow: BrowserWindow): Array<MenuItem> {
   const ret:Array<MenuItem> = [];
+
   ret.push(subMenuFile(browserWindow));
   ret.push(subMenuEdit(browserWindow));
   ret.push(subMenuView(browserWindow));
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
     ret.push(subMenuDebug(browserWindow));
   }
-  ret.push(subMenuHelp(browserWindow));
+  ret.push(subMenuHelp());
 
   return ret;
 }
 
-function subMenuAbout(_: BrowserWindow): MenuItem {
+function subMenuAbout(): MenuItem {
   const template = {
     label: 'Electron',
     submenu: [
@@ -194,7 +219,7 @@ function subMenuDebug(browserWindow: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuHelp(_: BrowserWindow): MenuItem {
+function subMenuHelp(): MenuItem {
   const template = {
     label: 'Help',
     submenu: [{

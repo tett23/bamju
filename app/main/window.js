@@ -1,10 +1,15 @@
 /* eslint no-underscore-dangle: 0, no-param-reassign: 0, class-methods-use-this: 0 */
 // @flow
 
-import { ipcMain, BrowserWindow } from 'electron';
 import {
-  MenuBuilder,
+  ipcMain,
+  BrowserWindow,
+  Menu
+} from 'electron';
+import {
+  buildMenu,
   type MenuType,
+  MenuTypeInit,
   MenuTypeApp,
   MenuTypeEditor
 } from '../menu';
@@ -30,11 +35,11 @@ interface Window {
 }
 
 export class WindowManager {
-  static _menu; // darwinのみで使用される
-
   static init() {
-    const menuBuilder = new MenuBuilder(null);
-    WindowManager._menu = menuBuilder.buildMenu();
+    if (process.platform === 'darwin') {
+      const menuItems = buildMenu(MenuTypeInit, null);
+      Menu.setApplicationMenu(menuItems);
+    }
   }
 
   static createAppWindow(conf: WindowConfig) {
@@ -59,7 +64,9 @@ export class WindowManager {
     });
 
     const currentWindow = _appWindows[0];
-    currentWindow.focus();
+    if (currentWindow != null) {
+      currentWindow.focus();
+    }
   }
 
   static focus(windowID: string): boolean {
@@ -72,9 +79,9 @@ export class WindowManager {
   }
 
   static _updateMenu(window: Window) {
-    const menuType: MenuType = window.getType();
-
-    WindowManager._menu.updateMenu(menuType, window.getBrowserWindow());
+    // const menuType: MenuType = window.getType();
+    //
+    // WindowManager._menu.updateMenu(menuType, window.getBrowserWindow());
   }
 
   static _findWindow(windowID: string): ?Window {
@@ -140,8 +147,8 @@ export class AppWindow implements Window {
       addWindowConfig(this.conf);
 
       if (process.platform !== 'darwin') {
-        const menuBuilder = new MenuBuilder(browserWindow);
-        menuBuilder.buildMenu();
+        const menuItems = buildMenu(MenuTypeApp, browserWindow);
+        browserWindow.setMenu(menuItems);
       }
 
       browserWindow.show();
@@ -276,8 +283,8 @@ export class EditorWindow implements Window {
       }
 
       if (process.platform !== 'darwin') {
-        const menuBuilder = new MenuBuilder(browserWindow);
-        menuBuilder.buildMenu();
+        const menuItems = buildMenu(MenuTypeEditor, browserWindow);
+        browserWindow.setMenu(menuItems);
       }
 
       browserWindow.show();
