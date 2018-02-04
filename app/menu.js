@@ -155,7 +155,7 @@ function subMenuEdit(menuType: MenuType, window: Window): MenuItem {
         label: 'Save',
         accelerator: 'CmdOrCtrl+S',
         click: () => {
-          window.getBrowserWindow().webContents.send('send-buffer-information');
+          WindowManager.sendSaveEvent(window.windowID());
         },
         enabled: isEnableEditorMenu,
       },

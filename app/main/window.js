@@ -92,8 +92,14 @@ export class WindowManager {
     });
   }
 
-  static sendSaveEvent(window: EditorWindow) {
-    window.sendSaveEvent();
+  static sendSaveEvent(windowID: string) {
+    const window = _editorWindows.find((w) => {
+      return w.windowID() === windowID;
+    });
+
+    if (window) {
+      window.sendSaveEvent();
+    }
   }
 
   static focus(windowID: string): boolean {
