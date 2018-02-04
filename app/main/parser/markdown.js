@@ -207,20 +207,9 @@ class Markdown implements Parser<MarkdownOption> {
     const p:?ProjectItem = Manager.detect(repo, name);
     return p != null;
   }
-
-  static absolutePath(repo: string, name: string): string {
-    const item:?ProjectItem = Manager.detect(repo, name);
-    if (item === null || item === undefined) {
-      return '';
-    }
-
-    return item.absolutePath;
-  }
 }
 
 function linkString(repo: string, name: string, text: string, dirname: string, isExist: boolean): string {
-  const absolutePath:string = Markdown.absolutePath(repo, name);
-
   let availableClass:string;
   let onClickString:string;
   if (isExist) {
@@ -239,7 +228,7 @@ function linkString(repo: string, name: string, text: string, dirname: string, i
     onClickString = `wikiLinkOnClickUnAvailable('${repo}', '${formValue}')`;
   }
 
-  return `<span class="wikiLink ${availableClass}" data-absolute-path="${absolutePath}" onClick="${onClickString}">${text}</span>`;
+  return `<span class="wikiLink ${availableClass}" onClick="${onClickString}">${text}</span>`;
 }
 
 function renderInlineLink(html: string): string {
