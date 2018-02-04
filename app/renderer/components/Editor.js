@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 import { connect } from 'react-redux';
+import AceEditor from 'react-ace';
 import 'brace/mode/markdown';
 import 'brace/mode/text';
 import 'brace/theme/monokai';
-import AceEditor from 'react-ace';
 import type { EditorState } from '../reducers/editor';
 import {
   ItemTypeMarkdown,
