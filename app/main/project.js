@@ -17,9 +17,7 @@ ipcMain.on('open-page', async (e, { windowID, projectName, itemName }) => {
 });
 
 ipcMain.on('refresh-tree-view', async (e) => {
-  const ret:Array<Project.BufferItem> = (await Project.Manager.loadProjects()).map((item) => {
-    return Object.assign({}, item.toBufferItem(), { isOpened: true });
-  });
+  const ret = Project.Manager.getBufferItems();
 
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;

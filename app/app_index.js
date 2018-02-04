@@ -34,8 +34,6 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   (async () => {
-    await Project.Manager.init();
-
     window.windowID = conf.id;
 
     const projectName:string = conf.tabs[0].buffer.projectName || '';

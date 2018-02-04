@@ -60,12 +60,10 @@ export class Manager {
   }
 
   static async loadProjects(watchCallback: Function = () => {}): Promise<ProjectItems> {
-    _projects.splice(0);
-
     await watcher.unregisterAll();
 
     const projectNames:Array<string> = Object.keys(Config.projects);
-    await Promise.all(projectNames.map(async (projectName: string): Promise<ProjectItem> => {
+    _projects = await Promise.all(projectNames.map(async (projectName: string): Promise<ProjectItem> => {
       const ret:ProjectItem = await Manager.loadProject(projectName, watchCallback);
 
       return ret;
