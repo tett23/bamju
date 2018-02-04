@@ -29,6 +29,11 @@
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,
+    "flowtype/no-weak-types": [2, {
+        "any": true,
+        "Object": false,
+        "Function": true
+    }],
     "generator-star-spacing": "off",
     "import/no-unresolved": "error",
     "import/no-extraneous-dependencies": "off",
