@@ -52,7 +52,30 @@ export type ParseResults = Array<ParseResult>;
 
 export class Manager {
   static init(bufferItems: Array<BufferItem>) {
-    Manager.loadBufferItems(bufferItems);
+    const initItems = Object.keys(Config.projects).map((name): BufferItem => {
+      let buffer = bufferItems.find((bufItem) => {
+        return bufItem.projectName === name;
+      });
+
+      if (buffer == null) {
+        const absolutePath = Config.projects[name];
+        buffer = {
+          name,
+          path: '/',
+          projectName: name,
+          absolutePath,
+          itemType: ItemTypeProject,
+          projectPath: absolutePath,
+          isLoaded: false,
+          isOpened: false,
+          items: []
+        };
+      }
+
+      return buffer;
+    });
+
+    Manager.loadBufferItems(initItems);
   }
 
   static projects(): ProjectItems {
