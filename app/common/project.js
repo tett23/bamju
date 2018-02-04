@@ -577,7 +577,7 @@ export class ProjectItem {
   async openDirectory(): Promise<ParseResult> {
     let ret:ParseResult;
 
-    const n = Object.assign(this.toBufferItem(), {
+    const n = Object.assign({}, this.toBufferItem(), {
       path: path.join(this.path, 'index.md'),
       absolutePath: path.join(this.absolutePath, 'index.md')
     });
