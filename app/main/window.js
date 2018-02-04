@@ -28,7 +28,7 @@ const {
 const _appWindows:Array<AppWindow> = [];
 const _editorWindows: Array<EditorWindow> = [];
 
-interface Window {
+export interface Window {
   windowID(): string;
   focus(): void;
   getBrowserWindow(): BrowserWindow;
@@ -108,7 +108,7 @@ export class WindowManager {
   static _updateMenu(window: Window) {
     const menuType: MenuType = window.getType();
 
-    const newMenu = buildMenu(menuType, window.getBrowserWindow());
+    const newMenu = buildMenu(menuType, window);
     Menu.setApplicationMenu(newMenu);
   }
 
@@ -175,7 +175,7 @@ export class AppWindow implements Window {
       addWindowConfig(this.conf);
 
       if (process.platform !== 'darwin') {
-        const menuItems = buildMenu(MenuTypeApp, browserWindow);
+        const menuItems = buildMenu(MenuTypeApp, this);
         browserWindow.setMenu(menuItems);
       }
 
@@ -279,7 +279,7 @@ export class EditorWindow implements Window {
       }
 
       if (process.platform !== 'darwin') {
-        const menuItems = buildMenu(MenuTypeEditor, browserWindow);
+        const menuItems = buildMenu(MenuTypeEditor, this);
         browserWindow.setMenu(menuItems);
       }
 

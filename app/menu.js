@@ -4,11 +4,11 @@ import {
   Menu,
   MenuItem,
   shell,
-  BrowserWindow
 } from 'electron';
 
 import {
-  WindowManager
+  WindowManager,
+  Window
 } from './main/window';
 
 export const MenuTypeInit = 'init';
@@ -21,20 +21,23 @@ export const PlatformTypeDefault = 'default';
 export type PlatformType = 'darwin' | 'default';
 export const platformType = process.platform === 'darwin' ? PlatformTypeDarwin : PlatformTypeDefault;
 
-export function buildMenu(menuType: MenuType, browserWindow: ?BrowserWindow): Menu {
-  if (menuType !== MenuTypeInit && browserWindow == null) {
-    throw (new Error(''));
+export function buildMenu(menuType: MenuType, window: ?Window): Menu {
+  if (menuType !== MenuTypeInit && window == null) {
+    throw (new Error());
   }
 
   let menuItems:Array<MenuItem>;
   if (menuType === MenuTypeInit) {
     menuItems = initMenu();
-  } else if (process.platform === 'darwin') {
-    menuItems = buildDarwin(menuType, browserWindow);
+  } else if (window != null) {
+    if (process.platform === 'darwin') {
+      menuItems = buildDarwin(menuType, window);
+    } else {
+      menuItems = buildDefault(menuType, window);
+    }
   } else {
-    menuItems = buildDefault(menuType, browserWindow);
+    throw new Error();
   }
-
 
   const ret = new Menu();
   menuItems.forEach((item) => {
@@ -55,29 +58,29 @@ function initMenu(): Array<MenuItem> {
   return ret;
 }
 
-function buildDarwin(menuType: MenuType, browserWindow: BrowserWindow): Array<MenuItem> {
+function buildDarwin(menuType: MenuType, window: Window): Array<MenuItem> {
   const ret:Array<MenuItem> = [];
   ret.push(subMenuAbout());
-  ret.push(subMenuFile(browserWindow));
-  ret.push(subMenuEdit(menuType, browserWindow));
-  ret.push(subMenuView(browserWindow));
+  ret.push(subMenuFile(window));
+  ret.push(subMenuEdit(menuType, window));
+  ret.push(subMenuView(window));
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-    ret.push(subMenuDebug(browserWindow));
+    ret.push(subMenuDebug(window));
   }
-  ret.push(subMenuWindow(browserWindow));
+  ret.push(subMenuWindow(window));
   ret.push(subMenuHelp());
 
   return ret;
 }
 
-function buildDefault(menuType: MenuType, browserWindow: BrowserWindow): Array<MenuItem> {
+function buildDefault(menuType: MenuType, window: Window): Array<MenuItem> {
   const ret:Array<MenuItem> = [];
 
-  ret.push(subMenuFile(browserWindow));
-  ret.push(subMenuEdit(menuType, browserWindow));
-  ret.push(subMenuView(browserWindow));
+  ret.push(subMenuFile(window));
+  ret.push(subMenuEdit(menuType, window));
+  ret.push(subMenuView(window));
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-    ret.push(subMenuDebug(browserWindow));
+    ret.push(subMenuDebug(window));
   }
   ret.push(subMenuHelp());
 
@@ -103,7 +106,7 @@ function subMenuAbout(): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuWindow(_: BrowserWindow): MenuItem {
+function subMenuWindow(_: Window): MenuItem {
   const template = {
     label: 'Window',
     submenu: [
@@ -116,7 +119,7 @@ function subMenuWindow(_: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuFile(browserWindow: BrowserWindow): MenuItem {
+function subMenuFile(window: Window): MenuItem {
   const template = {
     label: 'File',
     submenu: [
@@ -124,7 +127,7 @@ function subMenuFile(browserWindow: BrowserWindow): MenuItem {
         label: 'Close',
         accelerator: 'CmdOrCtrl+W',
         click: () => {
-          browserWindow.close();
+          window.getBrowserWindow().close();
         }
       },
       { label: 'Close All', accelerator: 'CmdOrCtrl+Shift+W', selector: 'performClose:' },
@@ -134,7 +137,7 @@ function subMenuFile(browserWindow: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem {
+function subMenuEdit(menuType: MenuType, window: Window): MenuItem {
   const isEnableEditorMenu = menuType === MenuTypeEditor;
 
   const template = {
@@ -152,7 +155,7 @@ function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem
         label: 'Save',
         accelerator: 'CmdOrCtrl+S',
         click: () => {
-          browserWindow.webContents.send('send-buffer-information');
+          window.getBrowserWindow().webContents.send('send-buffer-information');
         },
         enabled: isEnableEditorMenu,
       },
@@ -167,7 +170,6 @@ function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem
         label: 'Save All...',
         accelerator: 'CmdOrCtrl+Alt+S',
         click: () => {
-          console.log('save all');
           WindowManager.sendSaveEventAll();
         },
         enabled: isEnableEditorMenu,
@@ -186,7 +188,7 @@ function subMenuEdit(menuType: MenuType, browserWindow: BrowserWindow): MenuItem
   return new MenuItem(template);
 }
 
-function subMenuView(browserWindow: BrowserWindow): MenuItem {
+function subMenuView(window: Window): MenuItem {
   const toggleFullScreenKey = platformType === PlatformTypeDarwin ? 'Ctrl+Command+F' : 'F11';
 
   const template = {
@@ -197,7 +199,7 @@ function subMenuView(browserWindow: BrowserWindow): MenuItem {
         role: 'togglefullscreen',
         accelerator: toggleFullScreenKey,
         click: () => {
-          browserWindow.setFullScreen(!browserWindow.isFullScreen());
+          window.getBrowserWindow().setFullScreen(!window.getBrowserWindow().isFullScreen());
         }
       },
     ]
@@ -206,20 +208,20 @@ function subMenuView(browserWindow: BrowserWindow): MenuItem {
   return new MenuItem(template);
 }
 
-function subMenuDebug(browserWindow: BrowserWindow): MenuItem {
+function subMenuDebug(window: Window): MenuItem {
   const template = {
     label: 'Debug',
     submenu: [
       {
         label: 'Reload',
         accelerator: 'CmdOrCtrl+R',
-        click: () => { browserWindow.webContents.reload(); }
+        click: () => { window.getBrowserWindow().webContents.reload(); }
       },
       {
         role: 'toggledevtools',
         accelerator: 'Alt+CmdOrCtrl+I',
         click: () => {
-          browserWindow.toggleDevTools();
+          window.getBrowserWindow().toggleDevTools();
         }
       }
     ]
