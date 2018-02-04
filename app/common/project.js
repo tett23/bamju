@@ -266,7 +266,12 @@ ${projectName}:${itemName}
     }
 
     return promisify(fs.writeFile)(absolutePath, content, { mode: 0o644 }).then(async () => {
-      await Manager.openTree(projectName, itemName);
+      const itemPath = path.join('/', absolutePath.substring(project.projectPath.length));
+      const parentPath = path.dirname(itemPath);
+      const parentItem = project.detect(parentPath);
+      if (parentItem) {
+        await parentItem.open();
+      }
 
       return { success: true, message: '' };
     }).catch((err) => {
@@ -288,37 +293,6 @@ ${projectName}:${itemName}
     });
 
     return ret;
-  }
-
-  static async openTree(projectName: string, itemPath: string) {
-    const project = Manager.find(projectName);
-    if (project == null) {
-      return;
-    }
-
-    await project.load();
-    project.isOpened = true;
-    const open = async (parent: ProjectItem, searchPath: string) => {
-      await Promise.all(parent.items.map(async (_, i) => {
-        if (searchPath.startsWith(parent.items[i].path)) {
-          await parent.items[i].load();
-          parent.items[i].isOpened = true; /* eslint no-param-reassign: 0 */
-
-          await open(parent.items[i], searchPath);
-        }
-      }));
-    };
-    await open(project, itemPath);
-
-    // FIXME
-    _projects.some((_, i) => {
-      if (_projects[i].projectName === projectName) {
-        _projects[i] = project;
-        return true;
-      }
-
-      return false;
-    });
   }
 
   static getBufferItems(): Array<BufferItem> {
