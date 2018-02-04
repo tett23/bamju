@@ -79,9 +79,10 @@ export class WindowManager {
   }
 
   static _updateMenu(window: Window) {
-    // const menuType: MenuType = window.getType();
-    //
-    // WindowManager._menu.updateMenu(menuType, window.getBrowserWindow());
+    const menuType: MenuType = window.getType();
+
+    const newMenu = buildMenu(menuType, window.getBrowserWindow());
+    Menu.setApplicationMenu(newMenu);
   }
 
   static _findWindow(windowID: string): ?Window {
