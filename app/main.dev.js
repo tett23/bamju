@@ -54,12 +54,11 @@ app.on('ready', async () => {
   }
   console.log('event app ready');
 
-  await Config.init();
   Manager.init(); // こっちは非同期でいい
+  WindowManager.init(); // これは同期
+  await Config.init();
 
-  Config.windows.forEach((win: Window) => {
-    WindowManager.create(win);
-  });
+  WindowManager.loadWindows(Config.windows);
 });
 
 app.on('before-quit', () => {
@@ -68,6 +67,6 @@ app.on('before-quit', () => {
 
 app.on('activate', async () => {
   if (WindowManager.getWindows().length === 0) {
-    WindowManager.create(defaultConfig.windows[0]);
+    WindowManager.createAppWindow(defaultConfig.windows[0]);
   }
 });

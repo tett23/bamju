@@ -1,11 +1,17 @@
 // @flow
 import { app, Menu, shell, BrowserWindow } from 'electron';
 
-export default class MenuBuilder {
-  mainWindow: BrowserWindow;
+export const MenuTypeApp = 'app';
+export const MenuTypeEditor = 'editor';
+export type MenuType = 'app' | 'editor';
 
-  constructor(mainWindow: BrowserWindow) {
-    this.mainWindow = mainWindow;
+export class MenuBuilder {
+  _mainWindow: BrowserWindow;
+  _menuType: MenuType;
+
+  constructor(menuType: MenuType, mainWindow: BrowserWindow) {
+    this._mainWindow = mainWindow;
+    this._menuType = menuType;
   }
 
   buildMenu() {
@@ -22,24 +28,33 @@ export default class MenuBuilder {
     }
 
     const menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
+    if (process.platform === 'darwin') {
+      Menu.setApplicationMenu(menu);
+    } else {
+      this._mainWindow.setMenu(menu);
+    }
 
     return menu;
   }
 
+  updateMenu(menuType: MenuType, mainWindow: BrowserWindow) {
+    this._mainWindow = mainWindow;
+    this._menuType = menuType;
+  }
+
   setupDevelopmentEnvironment() {
-    this.mainWindow.openDevTools();
-    this.mainWindow.webContents.on('context-menu', (e, props) => {
+    this._mainWindow.openDevTools();
+    this._mainWindow.webContents.on('context-menu', (e, props) => {
       const { x, y } = props;
 
       Menu
         .buildFromTemplate([{
           label: 'Inspect element',
           click: () => {
-            this.mainWindow.inspectElement(x, y);
+            this._mainWindow.inspectElement(x, y);
           }
         }])
-        .popup(this.mainWindow);
+        .popup(this._mainWindow);
     });
   }
 
@@ -106,17 +121,17 @@ export default class MenuBuilder {
         {
           label: 'Reload',
           accelerator: 'Command+R',
-          click: () => { this.mainWindow.webContents.reload(); }
+          click: () => { this._mainWindow.webContents.reload(); }
         },
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
-          click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); }
+          click: () => { this._mainWindow.setFullScreen(!this._mainWindow.isFullScreen()); }
         },
         {
           label: 'Toggle Developer Tools',
           accelerator: 'Alt+Command+I',
-          click: () => { this.mainWindow.toggleDevTools(); }
+          click: () => { this._mainWindow.toggleDevTools(); }
         }
       ]
     };
@@ -126,12 +141,12 @@ export default class MenuBuilder {
         {
           label: 'Reload',
           accelerator: 'Command+R',
-          click: () => { this.mainWindow.webContents.reload(); }
+          click: () => { this._mainWindow.webContents.reload(); }
         },
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
-          click: () => { this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen()); }
+          click: () => { this._mainWindow.setFullScreen(!this._mainWindow.isFullScreen()); }
         }
       ]
     };
@@ -188,7 +203,7 @@ export default class MenuBuilder {
           label: '&Close',
           accelerator: 'Ctrl+W',
           click: () => {
-            this.mainWindow.close();
+            this._mainWindow.close();
           }
         }
       ]
@@ -198,25 +213,25 @@ export default class MenuBuilder {
         label: '&Reload',
         accelerator: 'Ctrl+R',
         click: () => {
-          this.mainWindow.webContents.reload();
+          this._mainWindow.webContents.reload();
         }
       }, {
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click: () => {
-          this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+          this._mainWindow.setFullScreen(!this._mainWindow.isFullScreen());
         }
       }, {
         label: 'Toggle &Developer Tools',
         accelerator: 'Alt+Ctrl+I',
         click: () => {
-          this.mainWindow.toggleDevTools();
+          this._mainWindow.toggleDevTools();
         }
       }] : [{
         label: 'Toggle &Full Screen',
         accelerator: 'F11',
         click: () => {
-          this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+          this._mainWindow.setFullScreen(!this._mainWindow.isFullScreen());
         }
       }]
     }, {
@@ -247,3 +262,5 @@ export default class MenuBuilder {
     return templateDefault;
   }
 }
+
+export default MenuBuilder;

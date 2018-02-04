@@ -1,8 +1,13 @@
-/* eslint no-underscore-dangle: 0, no-param-reassign: 0 */
+/* eslint no-underscore-dangle: 0, no-param-reassign: 0, class-methods-use-this: 0 */
 // @flow
 
 import { ipcMain, BrowserWindow } from 'electron';
-import MenuBuilder from '../menu';
+import {
+  MenuBuilder,
+  type MenuType,
+  MenuTypeApp,
+  MenuTypeEditor
+} from '../menu';
 import {
   Manager as ProjectManager,
   internalPath,
@@ -14,24 +19,32 @@ const {
   Config, Window: WindowConfig, findWindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
 } = require('../common/bamju_config');
 
-const _windows:Array<AppWindow> = [];
+const _appWindows:Array<AppWindow> = [];
 const _editorWindows: Array<EditorWindow> = [];
 
-// interface Window {
-//   windowID: string;
-//
-//   focus();
-// }
+interface Window {
+  windowID(): string;
+  focus(): void;
+  getBrowserWindow(): BrowserWindow;
+  getType(): MenuType
+}
 
 export class WindowManager {
-  static create(conf: WindowConfig) {
+  static _menu; // darwinのみで使用される
+
+  static init() {
+    const menuBuilder = new MenuBuilder(null);
+    WindowManager._menu = menuBuilder.buildMenu();
+  }
+
+  static createAppWindow(conf: WindowConfig) {
     const w:AppWindow = new AppWindow(conf);
 
     ProjectManager.loadProjects(() => {
       WindowManager.updateTreeView(ProjectManager.projects());
     });
 
-    _windows.push(w);
+    _appWindows.push(w);
   }
 
   static createEditorWindow(projectItem: ProjectItem, parentWindowID: ?string) {
@@ -40,17 +53,55 @@ export class WindowManager {
     _editorWindows.push(w);
   }
 
-  // static focusWindow(windowID: string): boolean {
-  //   _windows.find((w) => {
-  //   });
-  // }
+  static loadWindows(config: Array<WindowConfig>) {
+    config.forEach((c) => {
+      WindowManager.createAppWindow(c);
+    });
+
+    const currentWindow = _appWindows[0];
+    currentWindow.focus();
+  }
+
+  static focus(windowID: string): boolean {
+    const window: ?Window = WindowManager._findWindow(windowID);
+    if (window != null && process.platform === 'darwin') {
+      WindowManager._updateMenu(window);
+    }
+
+    return false;
+  }
+
+  static _updateMenu(window: Window) {
+    const menuType: MenuType = window.getType();
+
+    WindowManager._menu.updateMenu(menuType, window.getBrowserWindow());
+  }
+
+  static _findWindow(windowID: string): ?Window {
+    let window:?Window;
+    window = _appWindows.find((w) => {
+      return w.windowID() === windowID;
+    });
+    if (window) {
+      return window;
+    }
+
+    window = _editorWindows.find((w) => {
+      return w.windowID() === windowID;
+    });
+    if (window) {
+      return window;
+    }
+
+    return null;
+  }
 
   static getWindows(): Array<AppWindow> {
-    return _windows;
+    return _appWindows;
   }
 
   static async updateTreeView(tv: ProjectItems): Promise<void> {
-    const p: Array<Promise<void>> = _windows.map(async (item: AppWindow): Promise<void> => {
+    const p: Array<Promise<void>> = _appWindows.map(async (item: AppWindow): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
       await item.updateTreeView(tv);
       console.log('Manager updateTreeView after updateTreeView await');
@@ -63,7 +114,7 @@ export class WindowManager {
   }
 }
 
-export class AppWindow {
+export class AppWindow implements Window {
   browserWindow: BrowserWindow;
   conf: WindowConfig;
 
@@ -87,6 +138,11 @@ export class AppWindow {
       }
 
       addWindowConfig(this.conf);
+
+      if (process.platform !== 'darwin') {
+        const menuBuilder = new MenuBuilder(browserWindow);
+        menuBuilder.buildMenu();
+      }
 
       browserWindow.show();
       browserWindow.focus();
@@ -126,10 +182,24 @@ export class AppWindow {
       replaceWindowConfig(this.conf);
     };
 
-    const menuBuilder = new MenuBuilder(browserWindow);
-    const menu = menuBuilder.buildMenu();
-
     this.browserWindow = browserWindow;
+  }
+
+  windowID(): string {
+    return this.conf.id;
+  }
+
+  focus() {
+    WindowManager.focus(this.windowID());
+    this.browserWindow.focus();
+  }
+
+  getBrowserWindow(): BrowserWindow {
+    return this.browserWindow;
+  }
+
+  getType(): MenuType {
+    return MenuTypeApp;
   }
 
   async initializeRenderer() {
@@ -159,7 +229,7 @@ ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {wi
     }
   }];
 
-  WindowManager.create(conf);
+  WindowManager.createAppWindow(conf);
 });
 
 ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
@@ -178,10 +248,11 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
   WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
 });
 
-export class EditorWindow {
+export class EditorWindow implements Window {
   browserWindow: BrowserWindow;
   projectItem: ProjectItem;
   parentWindowID: ?string;
+  _windowID: string;
 
   static create(projectItem: ProjectItem, parentWindowID: ?string) {
     new EditorWindow(projectItem, parentWindowID); /* eslint no-new: 0 */
@@ -190,6 +261,7 @@ export class EditorWindow {
   constructor(projectItem: ProjectItem, parentWindowID: ?string) {
     this.projectItem = projectItem;
     this.parentWindowID = parentWindowID;
+    this._windowID = createWindowID();
     const browserWindow = new BrowserWindow({
       show: false,
       title: `${projectItem.internalPath()}`,
@@ -201,6 +273,11 @@ export class EditorWindow {
     browserWindow.webContents.on('did-finish-load', () => {
       if (!browserWindow) {
         throw new Error('"browserWindow" is not defined');
+      }
+
+      if (process.platform !== 'darwin') {
+        const menuBuilder = new MenuBuilder(browserWindow);
+        menuBuilder.buildMenu();
       }
 
       browserWindow.show();
@@ -217,12 +294,29 @@ export class EditorWindow {
     // FIXME: ふたつのmenuを運用するか、ひとつにまとめるか決めないといけない
       // const menuBuilder = new EditorMenuBuilder(this);
       // menuBuilder.buildMenu();
-      // WindowManager.focusEditorWindow();
+      this.focus();
     });
 
     browserWindow.on('closed', () => {
       // FIXME: 閉じるダイアログが必要
     });
+  }
+
+  windowID(): string {
+    return this._windowID;
+  }
+
+  focus() {
+    WindowManager.focus(this._windowID);
+    this.browserWindow.focus();
+  }
+
+  getBrowserWindow(): BrowserWindow {
+    return this.browserWindow;
+  }
+
+  getType(): MenuType {
+    return MenuTypeEditor;
   }
 
   async initializeRenderer() {
