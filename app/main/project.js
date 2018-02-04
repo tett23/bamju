@@ -47,14 +47,36 @@ ipcMain.on('remove-project', async (e, { path }) => {
   e.returnValue = ret;
 });
 
-ipcMain.on('reload-tree', async (e, { projectName, path }) => {
+ipcMain.on('close-tree-view-item', async (e, { projectName, path }) => {
+  const item:?Project.ProjectItem = Project.Manager.detect(projectName, path);
+  if (item == null) {
+    return;
+  }
+
+  item.items = [];
+  item.isLoaded = false;
+  item.isOpened = false;
+
+  const ret = {
+    projectName,
+    path,
+    item: Object.assign({}, item.toBufferItem(), { isOpened: true })
+  };
+
+  e.sender.send('refresh-tree-view-item', ret);
+  e.returnValue = ret;
+});
+
+ipcMain.on('open-tree-view-item', async (e, { projectName, path }) => {
   const item:?Project.ProjectItem = Project.Manager.detect(projectName, path);
   if (item == null) {
     return;
   }
   await item.load();
 
-  const ret: {projectName: string, path: string, item: Project.BufferItem} = {
+  item.isOpened = true;
+
+  const ret = {
     projectName,
     path,
     item: Object.assign({}, item.toBufferItem(), { isOpened: true })

@@ -7,9 +7,7 @@ import { deepCopy, deepMerge } from '../../common/util';
 import {
   REFRESH_TREE_VIEW,
   REFRESH_TREE_VIEW_ITEM,
-  CLOSE_TREE_VIEW_ITEM,
   refreshTreeView,
-  closeTreeViewItem,
   openTreeViewItem
 } from '../actions/tree_view';
 import {
@@ -83,20 +81,6 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
   case REFRESH_TREE_VIEW_ITEM: {
     const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, action.item);
 
-    return Object.assign({}, state, { projects: newProjects });
-  }
-  case CLOSE_TREE_VIEW_ITEM: {
-    const find:?BufferItem = findBufferItem(state.projects, action.projectName, action.path);
-    if (find === null || find === undefined) {
-      return state;
-    }
-
-    const update:BufferItem = deepMerge(find, {
-      isOpened: false,
-      items: []
-    });
-
-    const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, update);
     return Object.assign({}, state, { projects: newProjects });
   }
   default:
@@ -185,7 +169,6 @@ type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openPageByBuffer>
 | $ReturnType<typeof refreshTreeView>
-| $ReturnType<typeof closeTreeViewItem>
 | $ReturnType<typeof openTreeViewItem>
 | $ReturnType<typeof openNewFileDialog>
 | $ReturnType<typeof closeDialog>

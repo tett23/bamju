@@ -13,15 +13,14 @@ import {
   ItemTypeProject
 } from '../../common/project';
 import styles from './ProjectsTreeView.css';
-import { refreshTreeView, closeTreeViewItem } from '../actions/tree_view';
+import { refreshTreeView } from '../actions/tree_view';
 
 const {
   Menu, MenuItem, dialog
 } = remote.require('electron');
 
 type Props = {
-  projects: Array<BufferItem>,
-  closeTreeViewItem: (string, string) => void
+  projects: Array<BufferItem>
 };
 
 class projectsTreeView extends React.Component<Props> {
@@ -55,19 +54,6 @@ class projectsTreeView extends React.Component<Props> {
     case 'tsv':
       return openFile(item);
     default:
-    }
-  }
-
-  async toggleTreeView(e, item: BufferItem) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    console.log('projectsTreeView.toggleTreeView item', item);
-    console.log('projectsTreeView.toggleTreeView props', this.props);
-    if (item.isOpened) {
-      this.props.closeTreeViewItem(item.projectName, item.path);
-    } else {
-      ipcRenderer.send('reload-tree', { projectName: item.projectName, path: item.path });
     }
   }
 
@@ -110,12 +96,12 @@ class projectsTreeView extends React.Component<Props> {
   icon(item: BufferItem) {
     switch (item.itemType) {
     case 'project':
-      return <FontAwesome name="database" onClick={e => { return this.toggleTreeView(e, item); }} />;
+      return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
     case 'directory':
       if (item.isOpened) {
-        return <FontAwesome name="folder-open" onClick={e => { return this.toggleTreeView(e, item); }} />;
+        return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
       }
-      return <FontAwesome name="folder" onClick={e => { return this.toggleTreeView(e, item); }} />;
+      return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
 
     case 'markdown':
       return <FontAwesome name="file-text" />;
@@ -146,6 +132,18 @@ class projectsTreeView extends React.Component<Props> {
     );
   }
 }
+
+function toggleTreeView(e, item: BufferItem) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (item.isOpened) {
+    ipcRenderer.send('close-tree-view-item', { projectName: item.projectName, path: item.path });
+  } else {
+    ipcRenderer.send('open-tree-view-item', { projectName: item.projectName, path: item.path });
+  }
+}
+
 
 function addProject(e) {
   e.preventDefault();
@@ -262,10 +260,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     refreshTreeView: (projects: Array<BufferItem>) => {
       dispatch(refreshTreeView(projects));
-    },
-    closeTreeViewItem: (projectName: string, path: string) => {
-      dispatch(closeTreeViewItem(projectName, path));
-    },
+    }
   };
 };
 
