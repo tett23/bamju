@@ -55,7 +55,7 @@ app.on('ready', async () => {
   console.log('event app ready');
 
   await Config.init();
-  Manager.init();
+  Manager.init(); // こっちは非同期でいい
 
   Config.windows.forEach((win: Window) => {
     WindowManager.create(win);
