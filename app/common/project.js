@@ -52,7 +52,7 @@ export type ParseResults = Array<ParseResult>;
 
 function createBufferRootItem(projectName: string, absolutePath: string): BufferItem {
   return {
-    name: projectName,
+    name: '/',
     path: '/',
     projectName,
     absolutePath,
@@ -166,7 +166,7 @@ export class Manager {
   }
 
   static find(projectName: string): ?ProjectItem {
-    return _projects.find((p: ProjectItem): boolean => { return p.name === projectName; });
+    return _projects.find((p: ProjectItem): boolean => { return p.projectName === projectName; });
   }
 
   static async notFoundBuffer(projectName: string, itemName: string): Promise<ParseResult> {
@@ -412,6 +412,10 @@ ${projectName}:${itemName}
   static async unwatch(): Promise<void> {
     await watcher.unregisterAll();
   }
+
+  static clear() {
+    _projects = [];
+  }
 }
 
 export type WatchCallback = () => void;
@@ -551,48 +555,19 @@ export class ProjectItem {
     });
   }
 
+  // arrayを返すようにしたい
   detect(name: string): ?ProjectItem {
-    if (name === '') {
-      return this;
-    }
-
+    const search = path.normalize(name);
+    let current:ProjectItem;
     if (name.match(/^\//)) {
-      if (this.path === name) {
-        return this;
-      }
+      current = this.rootItem();
+    } else if (name.match(/^\./)) {
+      current = this;
+    } else {
+      current = this.rootItem();
     }
 
-    if (this.name === name) {
-      return this;
-    }
-
-    if (this.name === `${name}.md`) {
-      return this;
-    }
-
-    if (this.name === `${name}.txt`) {
-      return this;
-    }
-
-    if (this.name === `${name}.csv`) {
-      return this;
-    }
-
-    if (this.name === `${name}.tsv`) {
-      return this;
-    }
-
-    let ret:?ProjectItem;
-    this.items.forEach((item: ProjectItem) => {
-      const i:?ProjectItem = item.detect(name);
-
-      if (i !== undefined && i !== null) {
-        ret = i;
-      }
-    });
-
-
-    return ret;
+    return detectInner(search, current);
   }
 
   async content(): Promise<string> {
@@ -683,34 +658,23 @@ export class ProjectItem {
 
   parent(): ?ProjectItem {
     if (this.path === '/') {
-      return null;
-    }
-
-    return Manager.detect(this.projectName, path.dirname(this.path));
-  }
-
-  rootItem(): ProjectItem {
-    if (this.itemType === ItemTypeProject) {
       return this;
     }
 
-    let ret:?ProjectItem;
-    let item:?ProjectItem;
-    let count = 0;
-    while ((item = this.parent())) {
-      if (item) {
-        ret = item;
-        break;
-      }
+    console.log('parent', this);
+    const parentPath = path.normalize([this.path, '/..'].join('/'));
+    return Manager.detect(this.projectName, parentPath);
+  }
 
-      if (count > 256) {
-        break;
-      }
-      count += 1;
+  rootItem(): ProjectItem {
+    if (this.itemType === ItemTypeProject || this.path === '/') {
+      return this;
     }
 
+    const ret = Manager.detect(this.projectName, '/');
+
     if (ret == null) {
-      throw new Error('ProjectItem.rootItem');
+      throw new Error(`ProjectItem.rootItem rootItem not found. projectName=${this.projectName}`);
     }
 
     return ret;
@@ -778,8 +742,9 @@ async function readFile(absolutePath: string): Promise<string> {
 async function readDirectory(item: ProjectItem): Promise<string> {
   try {
     const files:Array<string> = await promisify(fs.readdir)(item.absolutePath);
+    console.log('readDir', files);
     const items:Array<string> = files.map((filename) => {
-      const p = path.join(item.path, filename);
+      const p = path.join(item.path, path.basename(filename));
       const text = path.basename(filename, path.extname(filename));
       const absPath = path.join(item.absolutePath, filename);
 
@@ -791,7 +756,7 @@ async function readDirectory(item: ProjectItem): Promise<string> {
     }).filter(Boolean); // nullを消したい
 
     const ret:string = `
-# ${item.projectName}:${item.path}
+# ${internalPath(item.projectName, item.path)}
 
 ${items.join('\n')}
   `;
@@ -857,4 +822,64 @@ export function resolveInternalPath(p: string): {projectName: ?string, path: str
 }
 export function internalPath(projectName: string, itemPath: string): string {
   return `${projectName}:${itemPath}`;
+}
+
+function detectInner(pathString: string, projectItem: ProjectItem): ?ProjectItem {
+  if (pathString === '..') {
+    const parent = projectItem.parent();
+    if (parent == null) {
+      return null;
+    }
+
+    return parent;
+  }
+
+  if (matchItemName(pathString, projectItem.path)) {
+    return projectItem;
+  }
+
+  let ret:?ProjectItem;
+  projectItem.items.some((item) => {
+    if (matchItemName(pathString, item.path)) {
+      ret = item;
+      return true;
+    }
+
+    ret = detectInner(pathString, item);
+    if (ret != null) {
+      return true;
+    }
+
+    return false;
+  });
+
+  return ret;
+}
+
+function matchItemName(searchName: string, itemName: string): boolean {
+  if (searchName === '' || searchName === '.') {
+    return true;
+  }
+
+  if (itemName.match(searchName)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.md`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.txt`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.csv`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.tsv`)) {
+    return true;
+  }
+
+  return false;
 }
