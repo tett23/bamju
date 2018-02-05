@@ -176,7 +176,7 @@ export class MetaData {
   }
 
   detect(path: string): ?MetaData {
-    return true;
+    return null;
   }
 }
 

@@ -65,8 +65,26 @@ describe('RepositoryManager', () => {
     // TODO
   });
 
-  describe('find', () => {
-    // TODO
+  describe('detect', () => {
+    beforeEach(() => {
+      const dummy = createBufferTree('test', { foo: {} });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('ファイルの検索ができる', () => {
+      const metaData = RepositoryManager.detect('test', '/foo');
+
+      expect(metaData).toBe(expect.anything());
+    });
+
+    it('repositoryが存在しない場合、nullが返る', () => {
+      const metaData = RepositoryManager.detect('not found', '/hoge.md');
+
+      expect(metaData).not.toBe(expect.anything());
+    });
   });
 
   describe('addFile', () => {
@@ -284,6 +302,7 @@ describe('MetaData', () => {
       expect(item.detect('../relative path test').path).toBe('/foo/relative path test');
     });
 
+    // TODO
     // it('濁点とかを含んでいても検索できる(mac-utf8)', () => {
     //   expect(RepositoryManager.detect('test', '該当しないファイル名ガ')).toBeTruthy();
     // });
