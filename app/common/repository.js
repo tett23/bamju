@@ -58,6 +58,15 @@ export class RepositoryManager {
     return _repositories;
   }
 
+  static detect(repositoryName: string, itemName: string): ?MetaData {
+    const rootItem = RepositoryManager.find(repositoryName);
+    if (rootItem == null) {
+      return null;
+    }
+
+    return rootItem.detect(itemName);
+  }
+
   static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
     const rootItem = RepositoryManager.find(repositoryName);
     if (rootItem == null) {
