@@ -9,26 +9,12 @@ import {
 } from './util';
 import {
   MetaData,
-  type MetaDataID,
-  type ItemType,
   createMetaDataID,
   ItemTypeRepository,
 } from './metadata';
-
-
-export type Buffer = {
-  id: MetaDataID,
-  name: string,
-  path: string,
-  repositoryName: string,
-  repositoryPath: string,
-  absolutePath: string,
-  itemType: ItemType,
-  parent: ?Buffer,
-  children: Array<Buffer>,
-  isLoaded: boolean,
-  isOpened: boolean
-};
+import {
+  type Buffer,
+} from './buffer';
 
 type RepositoryConfig = Array<{
   repositoryName: string,
