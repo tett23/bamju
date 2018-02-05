@@ -14,6 +14,7 @@ export type Buffer = {
   name: string,
   path: string,
   repositoryName: string,
+  repositoryPath: string,
   absolutePath: string,
   itemType: ItemType,
   parent: ?Buffer,
@@ -68,6 +69,13 @@ export class RepositoryManager {
   }
 
   static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
+    if (!path.isAbsolute(filePath)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: '',
+      }];
+    }
+
     const rootItem = RepositoryManager.find(repositoryName);
     if (rootItem == null) {
       return [null, {
@@ -76,7 +84,16 @@ export class RepositoryManager {
       }];
     }
 
-    return await rootItem.addFile(filePath);
+    if (rootItem.detect(filePath) == null) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: ''
+      }];
+    }
+
+    const ret = await rootItem.addFile(path.basename(filePath));
+
+    return ret;
   }
 
   static find(repositoryName: string): ?MetaData {
@@ -92,9 +109,9 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
     name: '/',
     path: '/',
     repositoryName,
+    repositoryPath: absolutePath,
     absolutePath,
     itemType: ItemTypeRepository,
-    projectPath: absolutePath,
     isLoaded: false,
     isOpened: false,
     children: [],
@@ -120,6 +137,7 @@ export class MetaData {
   name: string;
   path: string;
   repositoryName: string;
+  repositoryPath: string;
   absolutePath: string;
   itemType: ItemType;
   parent: ?Buffer;
@@ -135,6 +153,7 @@ export class MetaData {
     this.name = buffer.name;
     this.path = buffer.path;
     this.repositoryName = buffer.repositoryName;
+    this.repositoryPath = buffer.repositoryPath;
     this.absolutePath = buffer.absolutePath;
     this.itemType = buffer.itemType;
     this.parent = parent;
@@ -145,29 +164,47 @@ export class MetaData {
     this.isOpened = buffer.isOpened;
   }
 
-  async addFile(itemPath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(itemPath)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: '',
-      }];
-    }
-
-    if (!isValidItemType(itemPath)) {
+  async addFile(itemName: string): Promise<[?MetaData, Message]> {
+    if (!isValidItemName(itemName)) {
       return [null, {
         type: MessageTypeFailed,
         message: ''
       }];
     }
 
-    if (this.detect(itemPath) == null) {
+    if (!isValidItemType(itemName)) {
       return [null, {
         type: MessageTypeFailed,
         message: ''
       }];
     }
 
-    return [this.detect(itemPath), {
+    const isExist = this.children.some((item) => {
+      return item.name === itemName;
+    });
+    if (isExist) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: ''
+      }];
+    }
+
+    const ret = new MetaData({
+      id: createID(),
+      name: itemName,
+      path: path.join(this.path, itemName),
+      repositoryName: this.repositoryName,
+      repositoryPath: this.repositoryPath,
+      absolutePath: path.join(this.absolutePath, itemName),
+      itemType: detectItemType(itemName),
+      parent: this,
+      children: [],
+      isLoaded: false,
+      isOpened: false,
+    });
+    this.children.push(ret);
+
+    return [ret, {
       type: MessageTypeSucceeded,
       message: '',
     }];
@@ -227,6 +264,14 @@ function isValidItemType(filename: string): boolean {
   case ItemTypeHTML: return true;
   default: return false;
   }
+}
+
+function isValidItemName(name: string): boolean {
+  if (name.match(path.sep)) {
+    return false;
+  }
+
+  return true;
 }
 
 function detectInner(pathString: string, metaData: MetaData): ?MetaData {

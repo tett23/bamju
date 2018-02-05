@@ -112,7 +112,7 @@ describe('RepositoryManager', () => {
         repositoryName: 'test',
         absolutePath: '/tmp/bamju-test-test/hoge.md',
         itemType: ItemTypeMarkdown,
-        projectPath: '/tmp/bamju-test-test',
+        repositoryPath: '/tmp/bamju-test-test',
         parent: {
           path: '/'
         }
@@ -121,6 +121,40 @@ describe('RepositoryManager', () => {
 
     it('repositoryが存在しない場合、Failedのメッセージが返る', async () => {
       const [_, result] = await RepositoryManager.addFile('not found', '/hoge.md');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('mkdirPが有効な場合、親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
+      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      expect(metaData).toMatchObject({
+        path: '/foo/bar/baz.md',
+        parent: {
+          path: '/foo/bar',
+          parent: {
+            path: '/foo/bar',
+            parent: {
+              path: '/foo',
+              parent: {
+                path: '/',
+                parent: null
+              }
+            }
+          }
+        }
+      });
+    });
+
+    it('mkdirPが有効でない場合、親のディレクトリがないといFailedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('絶対パスでない場合、Failedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addFile('test', 'hoge.md');
 
       await expect(result.type).toBe(MessageTypeFailed);
     });
@@ -339,9 +373,17 @@ describe('MetaData', () => {
   });
 
   describe('addFile', () => {
+    beforeEach(() => {
+      const dummy = createBufferTree('test', {});
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
     it('ファイルの追加ができる', async () => {
       const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
+      const [metaData, result] = await rootItem.addFile('hoge.md');
 
       await expect(result.type).toBe(MessageTypeSucceeded);
       await expect(metaData).toMatchObject({
@@ -350,53 +392,67 @@ describe('MetaData', () => {
         repositoryName: 'test',
         absolutePath: '/tmp/bamju-test-test/hoge.md',
         itemType: ItemTypeMarkdown,
-        projectPath: '/tmp/bamju-test-test',
-        parent: {
-          path: '/'
-        }
+        repositoryPath: '/tmp/bamju-test-test',
+        parent: null
       });
-    });
-
-    it('mkdirPが有効な場合、親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
-      const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
-
-      await expect($result);
-    });
-
-    it('mkdirPが有効でない場合、親のディレクトリがないといFailedのメッセージが返る', async () => {
-      const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
-
-      await expect(result.type).toBe(MessageTypeFailed);
-    });
-
-    it('絶対パスでない場合、Failedのメッセージが返る', async () => {
-      const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
-
-      await expect(result.type).toBe(MessageTypeFailed);
     });
 
     it('有効な拡張子の場合はSucceededが返る', async () => {
       const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
+      const [_, result] = await rootItem.addFile('hoge.md');
 
-      await expect($result);
+      await expect(result.type).toBe(MessageTypeSucceeded);
     });
 
     it('無効な拡張子の場合Failedのメッセージが返る', async () => {
       const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
+      const [_, result] = await rootItem.addFile('foo.bar');
 
       await expect(result.type).toBe(MessageTypeFailed);
     });
 
+    it('ItemTypeの判定をしてファイルの作成ができる', async () => {
+      const rootItem = await RepositoryManager.find('test');
+
+      let [metaData, result] = await rootItem.addFile('hoge.md');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData.itemType).toBe(ItemTypeMarkdown);
+
+      [metaData, result] = await rootItem.addFile('hoge.txt');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData.itemType).toBe(ItemTypeText);
+
+      [metaData, result] = await rootItem.addFile('hoge.csv');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData.itemType).toBe(ItemTypeCSV);
+
+      [metaData, result] = await rootItem.addFile('hoge.tsv');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData.itemType).toBe(ItemTypeTSV);
+
+      [metaData, result] = await rootItem.addFile('hoge.html');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData.itemType).toBe(ItemTypeHTML);
+    });
+
     it('同名のファイルが存在していた場合、Failedのメッセージが返る', async () => {
       const rootItem = await RepositoryManager.find('test');
-      const [metaData, result] = await rootItem.addFile('/hoge.md');
+      let [_, result] = await rootItem.addFile('synonym.md');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      [_, result] = await rootItem.addFile('synonym.md');
 
       await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('path.sepを含むファイルを作ろうとするとFailedのメッセージが返る', async () => {
+      const rootItem = await RepositoryManager.find('test');
+      const testFileName = ['/foo/bar', 'a/b'];
+      for (let i = 0; i < testFileName.length; i += 1) {
+        const [_, result] = await rootItem.addFile(testFileName[i]);
+        await expect(result.type).toBe(MessageTypeFailed);
+      }
     });
   });
 
