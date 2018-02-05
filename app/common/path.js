@@ -35,6 +35,10 @@ function normalize(str: string): string {
   return path.normalize(str);
 }
 
+function dirname(str: string): string {
+  return path.dirname(str);
+}
+
 export default {
   sep,
   join,
@@ -42,5 +46,6 @@ export default {
   split,
   extname,
   isAbsolute,
-  normalize
+  normalize,
+  dirname
 };

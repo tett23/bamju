@@ -1,7 +1,5 @@
 /* eslint no-undef: 0 */
 
-import path from '../../app/common/path';
-
 import {
   RepositoryManager,
   ItemTypeMarkdown,
@@ -93,6 +91,10 @@ describe('RepositoryManager', () => {
     });
   });
 
+  describe('isExist', () => {
+    // TODO
+  });
+
   describe('addFile', () => {
     beforeEach(() => {
       const dummy = createBufferTree('test', {});
@@ -113,10 +115,15 @@ describe('RepositoryManager', () => {
         absolutePath: '/tmp/bamju-test-test/hoge.md',
         itemType: ItemTypeMarkdown,
         repositoryPath: '/tmp/bamju-test-test',
-        parent: {
-          path: '/'
-        }
       });
+    });
+
+    it('同名のファイルを作ろうとするとFailedのメッセージが返る', async () => {
+      let [_, result] = await RepositoryManager.addFile('test', '/hoge.md');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      [_, result] = await RepositoryManager.addFile('not found', '/hoge.md');
+      await expect(result.type).toBe(MessageTypeFailed);
     });
 
     it('repositoryが存在しない場合、Failedのメッセージが返る', async () => {
@@ -125,30 +132,25 @@ describe('RepositoryManager', () => {
       await expect(result.type).toBe(MessageTypeFailed);
     });
 
-    it('mkdirPが有効な場合、親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
-      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md');
+    it('recursiveが有効な場合、親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
+      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: true });
 
       await expect(result.type).toBe(MessageTypeSucceeded);
       expect(metaData).toMatchObject({
         path: '/foo/bar/baz.md',
-        parent: {
-          path: '/foo/bar',
-          parent: {
-            path: '/foo/bar',
-            parent: {
-              path: '/foo',
-              parent: {
-                path: '/',
-                parent: null
-              }
-            }
-          }
-        }
       });
     });
 
-    it('mkdirPが有効でない場合、親のディレクトリがないといFailedのメッセージが返る', async () => {
-      const [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md');
+    it('recursiveが有効な場合、同名のディレクトリ作成してもエラーにならない', async () => {
+      let [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: true });
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      [_, result] = await RepositoryManager.addFile('test', '/foo/bar/aaa.md', { recursive: true });
+      await expect(result.type).toBe(MessageTypeSucceeded);
+    });
+
+    it('recursiveが有効でない場合、親のディレクトリがないといFailedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: false });
 
       await expect(result.type).toBe(MessageTypeFailed);
     });
@@ -158,6 +160,30 @@ describe('RepositoryManager', () => {
 
       await expect(result.type).toBe(MessageTypeFailed);
     });
+
+    it('.を含むパスを解釈できる', async () => {
+      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/./baz.md', { recursive: true });
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      expect(metaData).toMatchObject({
+        path: '/foo/baz.md',
+      });
+    });
+
+    it('..を含むパスを解釈できる', async () => {
+      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/../baz.md', { recursive: true });
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      expect(metaData).toMatchObject({
+        path: '/foo/baz.md',
+      });
+    });
+  });
+
+  describe('addDirectory', () => {
+    // TODO
   });
 });
 
@@ -393,7 +419,6 @@ describe('MetaData', () => {
         absolutePath: '/tmp/bamju-test-test/hoge.md',
         itemType: ItemTypeMarkdown,
         repositoryPath: '/tmp/bamju-test-test',
-        parent: null
       });
     });
 
@@ -461,6 +486,22 @@ describe('MetaData', () => {
   });
 
   describe('rootItem', () => {
+    // TODO
+  });
+
+  describe('childItem', () => {
+    // TODO
+  });
+
+  describe('isExist', () => {
+    // TODO
+  });
+
+  describe('isSimilarFile', () => {
+    // TODO
+  });
+
+  describe('isSimilarDirectory', () => {
     // TODO
   });
 });

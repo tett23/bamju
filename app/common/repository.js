@@ -1,4 +1,5 @@
 // @flow
+/* eslint no-continue: 0 */
 
 import path from './path';
 import {
@@ -67,12 +68,15 @@ export class RepositoryManager {
 
     return rootItem.detect(itemName);
   }
+  static isExist(repositoryName: string, itemName: string): boolean {
+    return RepositoryManager.detect(repositoryName, itemName) != null;
+  }
 
-  static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
+  static async addFile(repositoryName: string, filePath: string, options: {recursive: boolean} = { recursive: true }): Promise<[?MetaData, Message]> {
     if (!path.isAbsolute(filePath)) {
       return [null, {
         type: MessageTypeFailed,
-        message: '',
+        message: 'RepositoryManager.addFile.isAbsolute',
       }];
     }
 
@@ -80,18 +84,59 @@ export class RepositoryManager {
     if (rootItem == null) {
       return [null, {
         type: MessageTypeFailed,
-        message: ''
+        message: 'RepositoryManager.addFile.rootItem',
       }];
     }
 
-    if (rootItem.detect(filePath) == null) {
+    const dirPath = path.dirname(path.normalize(filePath));
+    if (options.recursive) {
+      const [_, addDirectoryResult] = await RepositoryManager.addDirectory(repositoryName, dirPath, options);
+
+      if (addDirectoryResult.type !== MessageTypeSucceeded) {
+        return [null, addDirectoryResult];
+      }
+    }
+
+    const parentItem = RepositoryManager.detect(repositoryName, dirPath);
+    if (parentItem == null) {
       return [null, {
         type: MessageTypeFailed,
-        message: ''
+        message: `RepositoryManager.addFile.isExist ${dirPath}`,
       }];
     }
 
-    const ret = await rootItem.addFile(path.basename(filePath));
+    const itemName = path.basename(filePath);
+    const ret = await parentItem.addFile(itemName);
+
+    return ret;
+  }
+
+  static async addDirectory(
+    repositoryName: string,
+    dirPath: string,
+    options: {recursive: boolean} = { recursive: true }
+  ): Promise<[?MetaData, Message]> {
+    if (!path.isAbsolute(dirPath)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'RepositoryManager.addDirectory.isAbsolute',
+      }];
+    }
+
+    const rootItem = RepositoryManager.find(repositoryName);
+    if (rootItem == null) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'RepositoryManager.addDirectrory rootItem null check',
+      }];
+    }
+
+    let ret: [?MetaData, Message];
+    if (options.recursive) {
+      ret = await _mkdirP(dirPath, rootItem);
+    } else {
+      ret = await _mkdir(dirPath, rootItem);
+    }
 
     return ret;
   }
@@ -165,49 +210,25 @@ export class MetaData {
   }
 
   async addFile(itemName: string): Promise<[?MetaData, Message]> {
-    if (!isValidItemName(itemName)) {
+    if (!isSimilarFile(itemName)) {
       return [null, {
         type: MessageTypeFailed,
-        message: ''
+        message: `MetaData.addFile.isSimilarFile itemName=${itemName}`
       }];
     }
 
-    if (!isValidItemType(itemName)) {
+    return this._addItem(detectItemType(itemName), itemName);
+  }
+
+  async addDirectory(itemName: string): Promise<[?MetaData, Message]> {
+    if (!isSimilarDirectory(itemName)) {
       return [null, {
         type: MessageTypeFailed,
-        message: ''
+        message: 'MetaData.addDirectory.isSimilarFile'
       }];
     }
 
-    const isExist = this.children.some((item) => {
-      return item.name === itemName;
-    });
-    if (isExist) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: ''
-      }];
-    }
-
-    const ret = new MetaData({
-      id: createID(),
-      name: itemName,
-      path: path.join(this.path, itemName),
-      repositoryName: this.repositoryName,
-      repositoryPath: this.repositoryPath,
-      absolutePath: path.join(this.absolutePath, itemName),
-      itemType: detectItemType(itemName),
-      parent: null,
-      children: [],
-      isLoaded: false,
-      isOpened: false,
-    }, this);
-    this.children.push(ret);
-
-    return [ret, {
-      type: MessageTypeSucceeded,
-      message: '',
-    }];
+    return this._addItem(ItemTypeDirectory, itemName);
   }
 
   detect(name: string): ?MetaData {
@@ -224,6 +245,16 @@ export class MetaData {
     return detectInner(search, current);
   }
 
+  isExist(name: string): boolean {
+    return this.childItem(name) != null;
+  }
+
+  childItem(name: string): ?MetaData {
+    return this.children.find((item) => {
+      return item.name === name;
+    });
+  }
+
   rootItem(): MetaData {
     if (this.itemType === ItemTypeRepository || this.path === '/') {
       return this;
@@ -236,6 +267,57 @@ export class MetaData {
     }
 
     return ret;
+  }
+
+  isSimilarFile(): boolean {
+    return isSimilarFile(this.itemType);
+  }
+
+  isSimilarDirectory(): boolean {
+    return isSimilarDirectory(this.itemType);
+  }
+
+  async _addItem(itemType: ItemType, itemName: string): Promise<[?MetaData, Message]> {
+    if (!isValidItemName(itemName)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'MetaData._addItem.isValidItemName'
+      }];
+    }
+
+    if (itemType === ItemTypeUndefined) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'MetaData._addItem.ItemTypeUndefined'
+      }];
+    }
+
+    if (this.isExist(itemName)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'MetaData._addItem.isExist'
+      }];
+    }
+
+    const ret = new MetaData({
+      id: createID(),
+      name: itemName,
+      path: path.join(this.path, itemName),
+      repositoryName: this.repositoryName,
+      repositoryPath: this.repositoryPath,
+      absolutePath: path.join(this.absolutePath, itemName),
+      itemType,
+      parent: null,
+      children: [],
+      isLoaded: false,
+      isOpened: false,
+    }, this);
+    this.children.push(ret);
+
+    return [ret, {
+      type: MessageTypeSucceeded,
+      message: '',
+    }];
   }
 }
 
@@ -253,7 +335,60 @@ export function detectItemType(name: string): ItemType {
   }
 }
 
-function isValidItemType(filename: string): boolean {
+async function _mkdirP(dirPath: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
+  const pathItems = path.split(dirPath);
+  let currentItem:MetaData = targetItem;
+  for (let i = 0; i < pathItems.length; i += 1) {
+    const name = pathItems[i];
+
+    if (name === '') {
+      continue;
+    }
+
+    const existItem = currentItem.childItem(name);
+    if (existItem == null) {
+      const [dir, message] = await _mkdir(name, currentItem);
+      if (message.type === MessageTypeFailed) {
+        return [dir, message];
+      }
+
+      currentItem = dir;
+    } else if (existItem.isSimilarFile()) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'RepositoryManager._mkdirP isSimilarFile'
+      }];
+    } else if (existItem.isSimilarDirectory()) {
+      currentItem = existItem;
+    } else {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'RepositoryManager.addDirectory.else',
+      }];
+    }
+  }
+
+  return [currentItem, {
+    type: MessageTypeSucceeded,
+    message: '',
+  }];
+}
+
+async function _mkdir(dirName: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
+  if (targetItem.isExist(dirName)) {
+    return [null, {
+      type: MessageTypeFailed,
+      message: `RepositoryManager._mkdir.isExist ${dirName}`,
+    }];
+  }
+
+  const ret = await targetItem.addDirectory(dirName);
+
+  return ret;
+}
+
+
+function isSimilarFile(filename: string): boolean {
   const itemType = detectItemType(filename);
 
   switch (itemType) {
@@ -262,6 +397,16 @@ function isValidItemType(filename: string): boolean {
   case ItemTypeCSV: return true;
   case ItemTypeTSV: return true;
   case ItemTypeHTML: return true;
+  default: return false;
+  }
+}
+
+function isSimilarDirectory(filename: string): boolean {
+  const itemType = detectItemType(filename);
+
+  switch (itemType) {
+  case ItemTypeRepository: return true;
+  case ItemTypeDirectory: return true;
   default: return false;
   }
 }
