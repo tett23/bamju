@@ -1,6 +1,6 @@
 // @flow
 
-import path from 'path';
+import path from './path';
 
 type ID = string;
 
@@ -8,7 +8,7 @@ export type Buffer = {
   id: ID,
   name: string,
   path: string,
-  projectName: string,
+  repositoryName: string,
   absolutePath: string,
   itemType: ItemType,
   parent: ?Buffer,
@@ -35,27 +35,61 @@ export type ItemType = 'repository' | 'directory' | 'markdown' | 'text' | 'csv' 
 let _repositories:Array<MetaData> = [];
 
 export class RepositoryManager {
-  static async init(buffers: Array<Buffer>, _: RepositoryConfig): Promise<Array<MetaData>> {
-    const ret = buffers.map((buffer) => {
-      return new MetaData(buffer);
+  static init(buffers: Array<Buffer>, config: RepositoryConfig): Array<MetaData> {
+    const initItems = config.map((item) => {
+      return [item.repositoryName, item.absolutePath];
+    }).map(([repositoryName, absolutePath]) => {
+      let buffer = buffers.find((buf) => {
+        return buf.repositoryName === repositoryName;
+      });
+
+      if (buffer == null) {
+        buffer = createRootBuffer(repositoryName, absolutePath);
+      }
+
+      return buffer;
     });
 
-    _repositories = ret;
+    _repositories = loadBufferItems(initItems);
 
-    return ret;
+    return _repositories;
   }
 }
 
+function createRootBuffer(repositoryName: string, absolutePath: string): Buffer {
+  return {
+    id: createID(),
+    name: '/',
+    path: '/',
+    repositoryName,
+    absolutePath,
+    itemType: ItemTypeRepository,
+    projectPath: absolutePath,
+    isLoaded: false,
+    isOpened: false,
+    children: [],
+    parent: null,
+  };
+}
+
+function loadBufferItems(buffers: Array<Buffer>): Array<MetaData> {
+  return buffers.map((buf) => {
+    return new MetaData(buf);
+  });
+}
+
+function createID(): ID {
+  return `${Math.random()}`;
+}
 
 export class FileItem {
-
 }
 
 export class MetaData {
   id: ID;
   name: string;
   path: string;
-  projectName: string;
+  repositoryName: string;
   absolutePath: string;
   itemType: ItemType;
   parent: ?Buffer;
@@ -65,9 +99,12 @@ export class MetaData {
 
   constructor(buffer: Buffer) {
     this.id = buffer.id;
+    if (this.id === '') {
+      this.id = createID();
+    }
     this.name = buffer.name;
     this.path = buffer.path;
-    this.projectName = buffer.projectName;
+    this.repositoryName = buffer.repositoryName;
     this.absolutePath = buffer.absolutePath;
     this.itemType = buffer.itemType;
     if (buffer.parent != null) {
