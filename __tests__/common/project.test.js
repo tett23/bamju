@@ -52,7 +52,6 @@ function dummy(parentPath:string, items: dummyType): Array<BufferItem> {
     const itemPath = path.join(parentPath, key);
     const itemType = items[key].length === 0 ? ItemTypeMarkdown : ItemTypeDirectory;
     const childItems = dummy(path.join(parentPath, key), items[key]);
-    // console.log('childItems', itemPath, childItems);
 
     return dummyBufferItem({
       name,
@@ -261,8 +260,6 @@ describe('ProjectItem', () => {
       expect(item.path).toBe('/foo/bar/baz/test1');
 
       item = item.parent();
-      console.log('\n\n\n\n');
-      console.log('/で始まるものはルートから検索される');
       item = item.detect('./baz/test1');
       expect(item).toBeTruthy();
       expect(item.name).toBe('test1');

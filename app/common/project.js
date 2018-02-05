@@ -557,54 +557,17 @@ export class ProjectItem {
 
   // arrayを返すようにしたい
   detect(name: string): ?ProjectItem {
-    // console.log('detect item', name, this.path, this.items);
-
-    // console.log('detect item', name, this.path);
-    // 絶対パスが一致していればその時点で返していい
     const search = path.normalize(name);
-    // if (matchItemName(search, this.path)) {
-    //   // console.log('detect item match', name, this.path);
-    //   return this;
-    // }
-
-    // const search: Array<string> = name.split('/');
     let current:ProjectItem;
-    console.log('search', search);
-
-    // if (name.match(/^\//) || !name.match(/^\./)) {
     if (name.match(/^\//)) {
-      const rootItem = this.rootItem();
-      // console.log('search root rootItem', name, rootItem.name, rootItem.path, rootItem.items.map((i) => { return i.path; }));
-      // return rootItem.detect(name.substring(1));
-      console.log('match root or relative path', search[0]);
-      // current = detectInner(search.shift(), rootItem, { recursive: true });
-      current = rootItem;
+      current = this.rootItem();
     } else if (name.match(/^\./)) {
       current = this;
     } else {
       current = this.rootItem();
     }
 
-
-    // // .で始まらないやつ
-    // if (!name.match(/^\./)) {
-    //   const rootItem = this.rootItem();
-    //   current = detectInner(search.shift(), rootItem, { recursive: true });
-    // }
-
-    // let ret: ?ProjectItem = current;
-    // for (let i = 0; i < search.length; i += 1) {
-    //   if (ret == null) {
-    //     return null;
-    //   }
-    //
-    //   ret = detectInner(search[i], ret, { recursive: false });
-    // }
-
     return detectInner(search, current);
-
-
-    // return ret;
   }
 
   async content(): Promise<string> {
@@ -861,9 +824,7 @@ export function internalPath(projectName: string, itemPath: string): string {
   return `${projectName}:${itemPath}`;
 }
 
-// function detectInner(pathString: string, projectItem: ProjectItem, { recursive }: {recursive: boolean} = { recursive: false }): ?ProjectItem {
 function detectInner(pathString: string, projectItem: ProjectItem): ?ProjectItem {
-  console.log('detectInner', projectItem.path, pathString, 'itemKeys', JSON.stringify(projectItem.items.map((i) => { return i.path; })));
   if (pathString === '..') {
     const parent = projectItem.parent();
     if (parent == null) {
@@ -879,44 +840,23 @@ function detectInner(pathString: string, projectItem: ProjectItem): ?ProjectItem
 
   let ret:?ProjectItem;
   projectItem.items.some((item) => {
-    console.log('call some loop', item.path, pathString);
-    // let tmp: ?ProjectItem;
-    let innerOK: boolean = false;
-
     if (matchItemName(pathString, item.path)) {
-      innerOK = true;
-      // tmp = projectItem.items[i];
       ret = item;
-      return innerOK;
+      return true;
     }
 
-    // if (recursive) {
-    //   tmp = item.detect(['.', name].join('/'));
-    //   if (tmp != null) {
-    //     console.log('match ok', item);
-    //     innerOK = true;
-    //   }
-    // }
-    const tmp = detectInner(pathString, item);
-    if (tmp != null) {
-      console.log('match ok', item);
-      innerOK = true;
+    ret = detectInner(pathString, item);
+    if (ret != null) {
+      return true;
     }
 
-    if (innerOK && tmp != null) {
-      ret = tmp;
-    }
-
-    return innerOK;
+    return false;
   });
-
-  // console.log('return value', ret);
 
   return ret;
 }
 
 function matchItemName(searchName: string, itemName: string): boolean {
-  // console.log('matchItemName', searchName, itemName);
   if (searchName === '' || searchName === '.') {
     return true;
   }
