@@ -102,10 +102,10 @@ export class WindowManager {
     }
   }
 
-  static sendSavedEventAll(buffer) {
+  static sendSavedEventAll(buffer: Buffer) {
     _appWindows.forEach((w) => {
-      w.sendsaveevent(buffer);
-    }
+      w.sendSavedEvent(buffer);
+    });
   }
 
   static focus(windowID: string): boolean {
@@ -260,7 +260,7 @@ export class AppWindow implements Window {
     return MenuTypeApp;
   }
 
-  sendAllSavedEvent(buffer:Buffer): {
+  sendSavedEvent(buffer: Buffer) {
     this.browserWindow.webContents.send('buffer-updated', buffer);
   }
 
@@ -400,10 +400,16 @@ ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
 
   const result = await ProjectManager.saveBuffer(buffer);
 
-  WindowManager.sendSavedEventAll(buffer);
-
   e.sender.send('buffer-saved', result);
   e.returnValue = result;
+
+  const newProjectItem = ProjectManager.detect(buffer.projectName, buffer.path);
+  if (newProjectItem == null) {
+    return;
+  }
+
+  const parseResult = await newProjectItem.toBuffer();
+  WindowManager.sendSavedEventAll(parseResult.buffer);
 });
 
 function createWindowID(): string {
