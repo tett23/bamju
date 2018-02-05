@@ -140,7 +140,7 @@ export class MetaData {
   repositoryPath: string;
   absolutePath: string;
   itemType: ItemType;
-  parent: ?Buffer;
+  parent: ?MetaData;
   children: Array<MetaData>;
   isLoaded: boolean;
   isOpened: boolean;
