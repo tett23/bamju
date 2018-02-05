@@ -17,4 +17,16 @@ export function deepMerge<T>(obj: T, update: Object): T {
   return Object.assign({}, deepCopy(obj), update);
 }
 
+export const MessageTypeInfo = 'info';
+export const MessageTypeDebug = 'debug';
+export const MessageTypeWarning = 'warning';
+export const MessageTypeError = 'error';
+export type MessageType = 'info' | 'debug' | 'warning' | 'error';
+
+export type Message = {
+  success: boolean,
+  type: MessageType,
+  message: string
+};
+
 export default { sleep };
