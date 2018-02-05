@@ -61,7 +61,24 @@ describe('RepositoryManager', () => {
   });
 
   describe('find', () => {
-    // TODO
+    beforeEach(() => {
+      const dummy = createBufferTree('test', { foo: {} });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('ファイルの検索ができる', () => {
+      expect(RepositoryManager.find('test')).toMatchObject({
+        repositoryName: 'test',
+        path: '/'
+      });
+    });
+
+    it('repositoryが存在しない場合はnullを返す', () => {
+      expect(RepositoryManager.find('hoge')).not.toBe(expect.anything());
+    });
   });
 
   describe('detect', () => {
