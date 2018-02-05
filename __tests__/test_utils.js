@@ -44,7 +44,7 @@ type dummyType = {
   [_: string]: dummyType
 }
 
-export function dummyBuffer(repositoryName: string, parentPath:string, items: dummyType): Array<Buffer> {
+function dummyBuffer(repositoryName: string, parentPath:string, items: dummyType): Array<Buffer> {
   return Object.keys(items).map((key) => {
     const name = path.basename(key);
 
