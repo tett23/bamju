@@ -123,7 +123,7 @@ export class MetaData {
   absolutePath: string;
   itemType: ItemType;
   parent: ?Buffer;
-  children: Array<Buffer>;
+  children: Array<MetaData>;
   isLoaded: boolean;
   isOpened: boolean;
 
@@ -175,8 +175,32 @@ export class MetaData {
     }];
   }
 
-  detect(path: string): ?MetaData {
-    return null;
+  detect(name: string): ?MetaData {
+    const search = path.normalize(name);
+    let current:MetaData;
+    if (name.match(/^\//)) {
+      current = this.rootItem();
+    } else if (name.match(/^\./)) {
+      current = this;
+    } else {
+      current = this.rootItem();
+    }
+
+    return detectInner(search, current);
+  }
+
+  rootItem(): MetaData {
+    if (this.itemType === ItemTypeRepository || this.path === '/') {
+      return this;
+    }
+
+    const ret = RepositoryManager.detect(this.repositoryName, '/');
+
+    if (ret == null) {
+      throw new Error(`MetaData.rootItem rootItem not found. repositoryName=${this.repositoryName}`);
+    }
+
+    return ret;
   }
 }
 
@@ -205,6 +229,70 @@ function isValidItemType(filename: string): boolean {
   case ItemTypeHTML: return true;
   default: return false;
   }
+}
+
+function detectInner(pathString: string, metaData: MetaData): ?MetaData {
+  if (pathString === '..') {
+    if (metaData.itemType === ItemTypeRepository) {
+      return metaData;
+    }
+
+    if (metaData.parent == null) {
+      return null;
+    }
+  }
+  if (pathString === '..' && metaData.parent == null) {
+    return null;
+  }
+
+  if (matchItemName(pathString, metaData.path)) {
+    return metaData;
+  }
+
+  let ret:?MetaData;
+  metaData.children.some((item) => {
+    if (matchItemName(pathString, item.path)) {
+      ret = item;
+      return true;
+    }
+
+    ret = detectInner(pathString, item);
+    if (ret != null) {
+      return true;
+    }
+
+    return false;
+  });
+
+  return ret;
+}
+
+function matchItemName(searchName: string, itemName: string): boolean {
+  if (searchName === '' || searchName === '.') {
+    return true;
+  }
+
+  if (itemName.match(searchName)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.md`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.txt`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.csv`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.tsv`)) {
+    return true;
+  }
+
+  return false;
 }
 
 export default RepositoryManager;

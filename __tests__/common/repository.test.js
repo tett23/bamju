@@ -77,7 +77,11 @@ describe('RepositoryManager', () => {
     it('ファイルの検索ができる', () => {
       const metaData = RepositoryManager.detect('test', '/foo');
 
-      expect(metaData).toBe(expect.anything());
+      expect(metaData).toMatchObject({
+        repositoryName: 'test',
+        name: 'foo',
+        path: '/foo'
+      });
     });
 
     it('repositoryが存在しない場合、nullが返る', () => {
@@ -368,5 +372,13 @@ describe('MetaData', () => {
 
       await expect(result.type).toBe(MessageTypeFailed);
     });
+  });
+
+  describe('parent', () => {
+    // TODO
+  });
+
+  describe('rootItem', () => {
+    // TODO
   });
 });

@@ -31,11 +31,16 @@ function isAbsolute(str: string): boolean {
   return path.isAbsolute(str);
 }
 
+function normalize(str: string): string {
+  return path.normalize(str);
+}
+
 export default {
   sep,
   join,
   basename,
   split,
   extname,
-  isAbsolute
+  isAbsolute,
+  normalize
 };
