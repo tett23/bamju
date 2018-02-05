@@ -5,11 +5,13 @@ import path from '../app/common/path';
 
 import {
   type Buffer,
+} from '../app/common/repository';
+import {
   type ItemType,
   ItemTypeUndefined,
   ItemTypeRepository,
   detectItemType
-} from '../app/common/repository';
+} from '../app/common/metadata';
 
 type DummyBuffer = {
   name?: string,
@@ -28,7 +30,7 @@ function createDummyBuffer(obj: DummyBuffer = {}): Buffer {
     id: '',
     name: 'test',
     repositoryName: 'test',
-    projectPath: '/tmp',
+    repositoryPath: '/tmp',
     path: '',
     absolutePath: '',
     itemType: ItemTypeUndefined,
