@@ -104,8 +104,8 @@ export class WindowManager {
 
   static sendSavedEventAll(buffer) {
     _appWindows.forEach((w) => {
-      w.sendsaveevent(buffer);
-    }
+      w.sendSaveEvent(buffer);
+    });
   }
 
   static focus(windowID: string): boolean {
@@ -260,7 +260,7 @@ export class AppWindow implements Window {
     return MenuTypeApp;
   }
 
-  sendAllSavedEvent(buffer:Buffer): {
+  sendAllSavedEvent(buffer: Buffer) {
     this.browserWindow.webContents.send('buffer-updated', buffer);
   }
 
