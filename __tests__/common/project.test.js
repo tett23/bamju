@@ -189,6 +189,7 @@ describe('ProjectItem', () => {
     it('/はルートのアイテムを取得する', () => {
       let rootItem = Manager.detect('test', '/');
       expect(rootItem).toBeTruthy();
+      expect(rootItem.name).toBe('/');
       expect(rootItem.path).toBe('/');
 
       const item = rootItem.detect('deepItem');
@@ -200,6 +201,37 @@ describe('ProjectItem', () => {
       rootItem = Manager.detect('test', '/');
       rootItem = rootItem.detect('..');
       expect(rootItem).toBeTruthy();
+      expect(rootItem.path).toBe('/');
+    });
+
+    it('.は現在のアイテムを取得する', () => {
+      let item = Manager.detect('test', '/a/b/c/d');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('d');
+      expect(item.path).toBe('/a/b/c/d');
+
+      item = item.detect('.');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('d');
+      expect(item.path).toBe('/a/b/c/d');
+    });
+
+    it('/に対して.を取得するとルートの取得ができる', () => {
+      let rootItem = Manager.detect('test', '/');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.name).toBe('/');
+      expect(rootItem.path).toBe('/');
+
+      rootItem = rootItem.detect('.');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.name).toBe('/');
+      expect(rootItem.path).toBe('/');
+    });
+
+    it('/../するとルートの取得ができる', () => {
+      const rootItem = Manager.detect('test', '/../');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.name).toBe('/');
       expect(rootItem.path).toBe('/');
     });
 
@@ -267,12 +299,6 @@ describe('ProjectItem', () => {
 
       expect(item.detect('../relative path test')).toBeTruthy();
       expect(item.detect('../relative path test').path).toBe('/foo/relative path test');
-    });
-
-    it('.は現在のアイテムを取得する', () => {
-    });
-
-    it('/に対して.を取得するとルートの取得ができる', () => {
     });
 
     // it('濁点とかを含んでいても検索できる(mac-utf8)', () => {
