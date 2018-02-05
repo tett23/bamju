@@ -52,7 +52,7 @@ export type ParseResults = Array<ParseResult>;
 
 function createBufferRootItem(projectName: string, absolutePath: string): BufferItem {
   return {
-    name: projectName,
+    name: '/',
     path: '/',
     projectName,
     absolutePath,
@@ -166,7 +166,7 @@ export class Manager {
   }
 
   static find(projectName: string): ?ProjectItem {
-    return _projects.find((p: ProjectItem): boolean => { return p.name === projectName; });
+    return _projects.find((p: ProjectItem): boolean => { return p.projectName === projectName; });
   }
 
   static async notFoundBuffer(projectName: string, itemName: string): Promise<ParseResult> {
@@ -555,74 +555,56 @@ export class ProjectItem {
     });
   }
 
+  // arrayを返すようにしたい
   detect(name: string): ?ProjectItem {
-    if (name === '' || name === '.') {
-      return this;
-    }
+    // console.log('detect item', name, this.path, this.items);
 
+    // console.log('detect item', name, this.path);
+    // 絶対パスが一致していればその時点で返していい
+    const search = path.normalize(name);
+    // if (matchItemName(search, this.path)) {
+    //   // console.log('detect item match', name, this.path);
+    //   return this;
+    // }
+
+    // const search: Array<string> = name.split('/');
+    let current:ProjectItem;
+    console.log('search', search);
+
+    // if (name.match(/^\//) || !name.match(/^\./)) {
     if (name.match(/^\//)) {
       const rootItem = this.rootItem();
-      return rootItem.detect(name.substring(1));
+      // console.log('search root rootItem', name, rootItem.name, rootItem.path, rootItem.items.map((i) => { return i.path; }));
+      // return rootItem.detect(name.substring(1));
+      console.log('match root or relative path', search[0]);
+      // current = detectInner(search.shift(), rootItem, { recursive: true });
+      current = rootItem;
+    } else if (name.match(/^\./)) {
+      current = this;
+    } else {
+      current = this.rootItem();
     }
 
-    let search: Array<string> = [name];
-    if (name.match(/\//)) {
-      const pp = path.join(this.path, name).replace(/^\//, '').replace(/\/$/, '');
-      search = path.normalize(pp).split('/');
-    }
 
-    let searchName: string;
-    let current:?ProjectItem = this;
-    while (search.length !== 0) { /* eslint no-continue: 0 */
-      searchName = search.shift();
-      if (current == null) {
-        break;
-      }
+    // // .で始まらないやつ
+    // if (!name.match(/^\./)) {
+    //   const rootItem = this.rootItem();
+    //   current = detectInner(search.shift(), rootItem, { recursive: true });
+    // }
 
-      if (searchName === '' || searchName === '.') {
-        current = this;
-        continue;
-      }
+    // let ret: ?ProjectItem = current;
+    // for (let i = 0; i < search.length; i += 1) {
+    //   if (ret == null) {
+    //     return null;
+    //   }
+    //
+    //   ret = detectInner(search[i], ret, { recursive: false });
+    // }
 
-      if (current.name === searchName) {
-        current = this;
-        continue;
-      }
+    return detectInner(search, current);
 
-      if (current.name === `${searchName}.md`) {
-        current = this;
-        continue;
-      }
 
-      if (current.name === `${searchName}.txt`) {
-        current = this;
-        continue;
-      }
-
-      if (current.name === `${searchName}.csv`) {
-        current = this;
-        continue;
-      }
-
-      if (current.name === `${searchName}.tsv`) {
-        current = this;
-        continue;
-      }
-
-      let tmp:?ProjectItem;
-      current.items.some((item) => { /* eslint no-loop-func: 0 */
-        tmp = item.detect(searchName);
-        return tmp != null;
-      });
-      current = tmp;
-      if (current == null) {
-        continue;
-      }
-    }
-
-    const ret = current;
-
-    return ret;
+    // return ret;
   }
 
   async content(): Promise<string> {
@@ -713,35 +695,23 @@ export class ProjectItem {
 
   parent(): ?ProjectItem {
     if (this.path === '/') {
-      return null;
-    }
-
-    return Manager.detect(this.projectName, path.dirname(this.path));
-  }
-
-  rootItem(): ProjectItem {
-    if (this.itemType === ItemTypeProject) {
       return this;
     }
 
-    let ret:?ProjectItem;
-    let item:?ProjectItem;
-    let count = 0;
-    while ((item = this.parent())) {
-      if (item == null) {
-        break;
-      }
+    console.log('parent', this);
+    const parentPath = path.normalize([this.path, '/..'].join('/'));
+    return Manager.detect(this.projectName, parentPath);
+  }
 
-      ret = item;
-
-      if (count > 256) {
-        break;
-      }
-      count += 1;
+  rootItem(): ProjectItem {
+    if (this.itemType === ItemTypeProject || this.path === '/') {
+      return this;
     }
 
+    const ret = Manager.detect(this.projectName, '/');
+
     if (ret == null) {
-      ret = this;
+      throw new Error(`ProjectItem.rootItem rootItem not found. projectName=${this.projectName}`);
     }
 
     return ret;
@@ -889,4 +859,87 @@ export function resolveInternalPath(p: string): {projectName: ?string, path: str
 }
 export function internalPath(projectName: string, itemPath: string): string {
   return `${projectName}:${itemPath}`;
+}
+
+// function detectInner(pathString: string, projectItem: ProjectItem, { recursive }: {recursive: boolean} = { recursive: false }): ?ProjectItem {
+function detectInner(pathString: string, projectItem: ProjectItem): ?ProjectItem {
+  console.log('detectInner', projectItem.path, pathString, 'itemKeys', JSON.stringify(projectItem.items.map((i) => { return i.path; })));
+  if (pathString === '..') {
+    const parent = projectItem.parent();
+    if (parent == null) {
+      return null;
+    }
+
+    return parent;
+  }
+
+  if (matchItemName(pathString, projectItem.path)) {
+    return projectItem;
+  }
+
+  let ret:?ProjectItem;
+  projectItem.items.some((item) => {
+    console.log('call some loop', item.path, pathString);
+    // let tmp: ?ProjectItem;
+    let innerOK: boolean = false;
+
+    if (matchItemName(pathString, item.path)) {
+      innerOK = true;
+      // tmp = projectItem.items[i];
+      ret = item;
+      return innerOK;
+    }
+
+    // if (recursive) {
+    //   tmp = item.detect(['.', name].join('/'));
+    //   if (tmp != null) {
+    //     console.log('match ok', item);
+    //     innerOK = true;
+    //   }
+    // }
+    const tmp = detectInner(pathString, item);
+    if (tmp != null) {
+      console.log('match ok', item);
+      innerOK = true;
+    }
+
+    if (innerOK && tmp != null) {
+      ret = tmp;
+    }
+
+    return innerOK;
+  });
+
+  // console.log('return value', ret);
+
+  return ret;
+}
+
+function matchItemName(searchName: string, itemName: string): boolean {
+  // console.log('matchItemName', searchName, itemName);
+  if (searchName === '' || searchName === '.') {
+    return true;
+  }
+
+  if (itemName.match(searchName)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.md`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.txt`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.csv`)) {
+    return true;
+  }
+
+  if (itemName.match(`${searchName}.tsv`)) {
+    return true;
+  }
+
+  return false;
 }

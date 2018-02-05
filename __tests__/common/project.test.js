@@ -50,20 +50,8 @@ function dummy(parentPath:string, items: dummyType): Array<BufferItem> {
   return Object.keys(items).map((key) => {
     const name = path.basename(key);
     const itemPath = path.join(parentPath, key);
-    const childKeys = Object.keys(items[key]);
-    const itemType = childKeys.length === 0 ? ItemTypeMarkdown : ItemTypeDirectory;
-    const childItems:Array<BufferItem> = childKeys.map((childKey) => {
-      // console.log('childKey', childKey);
-      if (Object.keys(items[key][childKey]).length === 0) {
-        const c = {};
-        c[childKey] = {};
-        return dummy(path.join(parentPath, key), c)[0];
-      }
-
-      const r = dummy(path.join(parentPath, key), items[key])[0];
-      return r;
-    });
-
+    const itemType = items[key].length === 0 ? ItemTypeMarkdown : ItemTypeDirectory;
+    const childItems = dummy(path.join(parentPath, key), items[key]);
     // console.log('childItems', itemPath, childItems);
 
     return dummyBufferItem({
@@ -76,6 +64,33 @@ function dummy(parentPath:string, items: dummyType): Array<BufferItem> {
     });
   });
 }
+
+describe('dummyTest', () => {
+  it('ダミーデータの作成', () => {
+    let item = dummy('/', { hoge: {} });
+    expect(item.length).toBe(1);
+    expect(item[0].name).toBe('hoge');
+    expect(item[0].path).toBe('/hoge');
+
+    item = dummy('/', { hoge: {}, fuga: {} });
+    expect(item.length).toBe(2);
+    expect(item[0].name).toBe('hoge');
+    expect(item[0].path).toBe('/hoge');
+    expect(item[1].name).toBe('fuga');
+    expect(item[1].path).toBe('/fuga');
+
+    item = dummy('/', { a: { b: { c: {} } } });
+    expect(item.length).toBe(1);
+    expect(item[0].name).toBe('a');
+    expect(item[0].path).toBe('/a');
+    expect(item[0].items.length).toBe(1);
+    expect(item[0].items[0].name).toBe('b');
+    expect(item[0].items[0].path).toBe('/a/b');
+    expect(item[0].items[0].items.length).toBe(1);
+    expect(item[0].items[0].items[0].name).toBe('c');
+    expect(item[0].items[0].items[0].path).toBe('/a/b/c');
+  });
+});
 
 describe('Manager', () => {
   beforeEach(() => {
@@ -90,22 +105,25 @@ describe('ProjectItem', () => {
     beforeEach(() => {
       const dummyBufferItems = dummy('/', {
         index: {},
-        foo: {
-          bar: {
-            hoge: {
-              a: {
-                b: {
-                  c: {
-                    d: {}
-                  }
+        a: {
+          b: {
+            c: {
+              d: {
+                e: {
+                  deepItem: {}
                 }
               }
             }
+          }
+        },
+        foo: {
+          bar: {
+            baz: {
+              test1: {}
+            },
           },
-          baz: {
-            test1: {
-              rootSynonym: {}
-            }
+          'relative path test': {
+            test1: {},
           },
           synonymTest: {
             foo: {
@@ -116,11 +134,13 @@ describe('ProjectItem', () => {
             }
           }
         },
+        'detect self': {},
+        rootItem: {},
         rootSynonym: {},
         濁点つきのファイル名ガ: {},
       });
       const root = dummyBufferItem({
-        name: 'test',
+        name: '/',
         projectName: 'test',
         projectPath: '/tmp',
         path: '/',
@@ -131,7 +151,7 @@ describe('ProjectItem', () => {
         isOpened: true
       });
       const root2 = dummyBufferItem({
-        name: 'test2',
+        name: '/',
         projectName: 'test2',
         projectPath: '/tmp',
         path: '/',
@@ -160,36 +180,99 @@ describe('ProjectItem', () => {
     });
 
     it('..を含むパスを渡したときはそれを解釈して該当するアイテムを返す', () => {
-      const item = Manager.detect('test', '/foo/bar/hoge/a/b/../');
+      const item = Manager.detect('test', '/a/b/c/..');
       expect(item).toBeTruthy();
-      expect(item.name).toBe('a');
-      expect(item.path).toBe('/foo/bar/hoge/a');
+      expect(item.name).toBe('b');
+      expect(item.path).toBe('/a/b');
     });
 
-    // 現在のアイテムから検索
-    it('ProjectItemから呼んだ場合は、そのアイテム以下から検索する', () => {
-      let item = Manager.detect('test', '/rootSynonym');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('rootSynonym');
-      expect(item.path).toBe('/rootSynonym');
+    it('/はルートのアイテムを取得する', () => {
+      let rootItem = Manager.detect('test', '/');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.path).toBe('/');
 
-      item = Manager.detect('test', 'test1');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('rootSynonym');
-      expect(item.path).toBe('/foo/baz/test1/rootSynonym');
+      const item = rootItem.detect('deepItem');
+      rootItem = item.detect('/');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.name).toBe('/');
+      expect(rootItem.path).toBe('/');
 
-      item = Manager.detect('test', 'test1/../');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('baz');
-      expect(item.path).toBe('/foo/baz');
+      rootItem = Manager.detect('test', '/');
+      rootItem = rootItem.detect('..');
+      expect(rootItem).toBeTruthy();
+      expect(rootItem.path).toBe('/');
     });
-    // 現在のアイテムに..を含むとき
 
     it('/で始まるものはルートから検索される', () => {
       const item = Manager.detect('test', '/foo/bar');
       expect(item).toBeTruthy();
       expect(item.name).toBe('bar');
       expect(item.path).toBe('/foo/bar');
+    });
+
+    it('単体の文字列での検索は全てを検索する', () => {
+      const item = Manager.detect('test', 'deepItem');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('deepItem');
+      expect(item.path).toBe('/a/b/c/d/e/deepItem');
+    });
+
+    it('相対パスのときは現在のアイテムから検索する', () => {
+      let item = Manager.detect('test', '/foo/bar');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('bar');
+      expect(item.path).toBe('/foo/bar');
+
+      item = item.detect('./baz/test1');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('test1');
+      expect(item.path).toBe('/foo/bar/baz/test1');
+
+      item = item.parent();
+      console.log('\n\n\n\n');
+      console.log('/で始まるものはルートから検索される');
+      item = item.detect('./baz/test1');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('test1');
+      expect(item.path).toBe('/baz/test1');
+    });
+
+    it('/は含むが.で始まらないものはルートからの部分一致で検索する', () => {
+      let item = Manager.detect('test', '/');
+
+      item = item.detect('baz/test1');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('test1');
+      expect(item.path).toBe('/foo/bar/baz/test1');
+
+      item = Manager.detect('test', 'e/deepItem');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('deepItem');
+      expect(item.path).toBe('/a/b/c/d/e/deepItem');
+
+      item = Manager.detect('test', 'a/deepItem');
+      expect(item).toBeFalsy();
+    });
+
+    it('.で始まるときは現在のアイテムから検索する', () => {
+      const item = Manager.detect('test', '/foo/relative path test');
+      expect(item).toBeTruthy();
+      expect(item.name).toBe('relative path test');
+      expect(item.path).toBe('/foo/relative path test');
+
+      const test1 = item.detect('./test1');
+      expect(test1).toBeTruthy();
+      expect(test1.name).toBe('test1');
+      expect(test1.path).toBe('/foo/relative path test/test1');
+
+      expect(item.detect('../relative path test')).toBeTruthy();
+      expect(item.detect('../relative path test').path).toBe('/foo/relative path test');
+    });
+
+    it('.は現在のアイテムを取得する', () => {
+    });
+
+    it('/に対して.を取得するとルートの取得ができる', () => {
     });
 
     // it('濁点とかを含んでいても検索できる(mac-utf8)', () => {
