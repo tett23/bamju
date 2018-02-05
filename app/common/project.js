@@ -540,7 +540,7 @@ export class ProjectItem {
 
     this.isOpened = true;
     const p = this.parent();
-    if (p) {
+    if (p != null && p.itemType !== ItemTypeProject) {
       await p.open();
     }
 
@@ -661,7 +661,6 @@ export class ProjectItem {
       return this;
     }
 
-    console.log('parent', this);
     const parentPath = path.normalize([this.path, '/..'].join('/'));
     return Manager.detect(this.projectName, parentPath);
   }
