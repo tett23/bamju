@@ -102,6 +102,12 @@ export class WindowManager {
     }
   }
 
+  static sendSavedEventAll(buffer) {
+    _appWindows.forEach((w) => {
+      w.sendsaveevent(buffer);
+    }
+  }
+
   static focus(windowID: string): boolean {
     const window: ?Window = WindowManager._findWindow(windowID);
     if (window != null && process.platform === 'darwin') {
@@ -254,6 +260,10 @@ export class AppWindow implements Window {
     return MenuTypeApp;
   }
 
+  sendAllSavedEvent(buffer:Buffer): {
+    this.browserWindow.webContents.send('buffer-updated', buffer);
+  }
+
   async initializeRenderer() {
     this.browserWindow.webContents.send('initialize', this.conf);
   }
@@ -389,6 +399,8 @@ ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
   console.log('save-buffer', buffer);
 
   const result = await ProjectManager.saveBuffer(buffer);
+
+  WindowManager.sendSavedEventAll(buffer);
 
   e.sender.send('buffer-saved', result);
   e.returnValue = result;
