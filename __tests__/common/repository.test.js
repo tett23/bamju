@@ -81,6 +81,24 @@ describe('RepositoryManager', () => {
     });
   });
 
+  describe('isExist', () => {
+    beforeEach(() => {
+      const dummy = createBufferTree('test', { foo: {} });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('repositoryが存在する場合はtrueを返す', () => {
+      expect(RepositoryManager.isExist('test')).toBe(true);
+    });
+
+    it('repositoryが存在しない場合はfalseを返す', () => {
+      expect(RepositoryManager.isExist('hgoe')).toBe(false);
+    });
+  });
+
   describe('detect', () => {
     beforeEach(() => {
       const dummy = createBufferTree('test', { foo: {} });
@@ -105,10 +123,6 @@ describe('RepositoryManager', () => {
 
       expect(metaData).not.toBe(expect.anything());
     });
-  });
-
-  describe('isExist', () => {
-    // TODO
   });
 
   describe('addFile', () => {

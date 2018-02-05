@@ -50,8 +50,8 @@ export class RepositoryManager {
 
     return rootItem.detect(itemName);
   }
-  static isExist(repositoryName: string, itemName: string): boolean {
-    return RepositoryManager.detect(repositoryName, itemName) != null;
+  static isExist(repositoryName: string): boolean {
+    return RepositoryManager.find(repositoryName) != null;
   }
 
   static async addFile(repositoryName: string, filePath: string, options: {recursive: boolean} = { recursive: true }): Promise<[?MetaData, Message]> {
