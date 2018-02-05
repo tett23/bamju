@@ -1,4 +1,3 @@
-// @flow
 /* eslint no-undef: 0, no-cond-assign: 0, no-await-in-loop: 0, no-param-reassign: 0 */
 
 import path from 'path';
@@ -88,11 +87,6 @@ describe('dummyTest', () => {
     expect(item[0].items[0].items.length).toBe(1);
     expect(item[0].items[0].items[0].name).toBe('c');
     expect(item[0].items[0].items[0].path).toBe('/a/b/c');
-  });
-});
-
-describe('Manager', () => {
-  beforeEach(() => {
   });
 });
 
