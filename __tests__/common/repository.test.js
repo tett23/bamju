@@ -1,5 +1,7 @@
 /* eslint no-undef: 0 */
 
+import path from '../../app/common/path';
+
 import {
   RepositoryManager,
   ItemTypeMarkdown,
@@ -177,133 +179,157 @@ describe('MetaData', () => {
 
     it('該当するアイテムを返す', () => {
       const item = RepositoryManager.detect('test', 'index');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('index');
-      expect(item.path).toBe('/index');
+      expect(item).toMatchObject({
+        name: 'index',
+        path: '/index'
+      });
     });
 
     it('該当するアイテムがないときはnullを返す', () => {
-      expect(RepositoryManager.detect('test', '該当しないファイル名')).toBeFalsy();
+      expect(RepositoryManager.detect('test', '該当しないファイル名')).not.toBe(expect.anything());
     });
 
     it('..を含むパスを渡したときはそれを解釈して該当するアイテムを返す', () => {
       const item = RepositoryManager.detect('test', '/a/b/c/..');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('b');
-      expect(item.path).toBe('/a/b');
+      expect(item).toMatchObject({
+        name: 'b',
+        path: '/a/b'
+      });
     });
 
     it('/はルートのアイテムを取得する', () => {
       let rootItem = RepositoryManager.detect('test', '/');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.name).toBe('/');
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
 
       const item = rootItem.detect('deepItem');
       rootItem = item.detect('/');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.name).toBe('/');
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
 
       rootItem = RepositoryManager.detect('test', '/');
       rootItem = rootItem.detect('..');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
     });
 
     it('.は現在のアイテムを取得する', () => {
       let item = RepositoryManager.detect('test', '/a/b/c/d');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('d');
-      expect(item.path).toBe('/a/b/c/d');
+      expect(item).toMatchObject({
+        name: 'd',
+        path: '/a/b/c/d'
+      });
 
       item = item.detect('.');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('d');
-      expect(item.path).toBe('/a/b/c/d');
+      expect(item).toMatchObject({
+        name: 'd',
+        path: '/a/b/c/d'
+      });
     });
 
     it('/に対して.を取得するとルートの取得ができる', () => {
       let rootItem = RepositoryManager.detect('test', '/');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.name).toBe('/');
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
 
       rootItem = rootItem.detect('.');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.name).toBe('/');
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
     });
 
     it('/../するとルートの取得ができる', () => {
       const rootItem = RepositoryManager.detect('test', '/../');
-      expect(rootItem).toBeTruthy();
-      expect(rootItem.name).toBe('/');
-      expect(rootItem.path).toBe('/');
+      expect(rootItem).toMatchObject({
+        name: '/',
+        path: '/'
+      });
     });
 
     it('/で始まるものはルートから検索される', () => {
       const item = RepositoryManager.detect('test', '/foo/bar');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('bar');
-      expect(item.path).toBe('/foo/bar');
+      expect(item).toMatchObject({
+        name: 'bar',
+        path: '/foo/bar'
+      });
     });
 
     it('単体の文字列での検索は全てを検索する', () => {
       const item = RepositoryManager.detect('test', 'deepItem');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('deepItem');
-      expect(item.path).toBe('/a/b/c/d/e/deepItem');
+      expect(item).toMatchObject({
+        name: 'deepItem',
+        path: '/a/b/c/d/e/deepItem'
+      });
     });
 
     it('相対パスのときは現在のアイテムから検索する', () => {
       let item = RepositoryManager.detect('test', '/foo/bar');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('bar');
-      expect(item.path).toBe('/foo/bar');
+      expect(item).toMatchObject({
+        name: 'bar',
+        path: '/foo/bar'
+      });
 
       item = item.detect('./baz/test1');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('test1');
-      expect(item.path).toBe('/foo/bar/baz/test1');
+      expect(item).toMatchObject({
+        name: 'test1',
+        path: '/foo/bar/baz/test1'
+      });
 
-      item = item.parent();
+      item = item.parent;
       item = item.detect('./baz/test1');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('test1');
-      expect(item.path).toBe('/foo/bar/baz/test1');
+      expect(item).toMatchObject({
+        name: 'test1',
+        path: '/foo/bar/baz/test1'
+      });
     });
 
     it('/は含むが.で始まらないものはルートからの部分一致で検索する', () => {
       let item = RepositoryManager.detect('test', '/');
 
       item = item.detect('baz/test1');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('test1');
-      expect(item.path).toBe('/foo/bar/baz/test1');
+      expect(item).toMatchObject({
+        name: 'test1',
+        path: '/foo/bar/baz/test1'
+      });
 
       item = RepositoryManager.detect('test', 'e/deepItem');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('deepItem');
-      expect(item.path).toBe('/a/b/c/d/e/deepItem');
+      expect(item).toMatchObject({
+        name: 'deepItem',
+        path: '/a/b/c/d/e/deepItem'
+      });
 
       item = RepositoryManager.detect('test', 'a/deepItem');
-      expect(item).toBeFalsy();
+      expect(item).not.toBe(expect.anything());
     });
 
     it('.で始まるときは現在のアイテムから検索する', () => {
       const item = RepositoryManager.detect('test', '/foo/relative path test');
-      expect(item).toBeTruthy();
-      expect(item.name).toBe('relative path test');
-      expect(item.path).toBe('/foo/relative path test');
+      expect(item).toMatchObject({
+        name: 'relative path test',
+        path: '/foo/relative path test'
+      });
 
       const test1 = item.detect('./test1');
-      expect(test1).toBeTruthy();
-      expect(test1.name).toBe('test1');
-      expect(test1.path).toBe('/foo/relative path test/test1');
+      expect(test1).toMatchObject({
+        name: 'test1',
+        path: '/foo/relative path test/test1'
+      });
 
-      expect(item.detect('../relative path test')).toBeTruthy();
-      expect(item.detect('../relative path test').path).toBe('/foo/relative path test');
+      console.log('aaaaaaaaaaaaaaaa', path.join(test1.path, '/../../relative path test'));
+      const parent = test1.detect('../relative path test');
+      expect(parent).toMatchObject({
+        name: 'relative path test',
+        path: '/foo/relative path test'
+      });
     });
 
     // TODO
