@@ -180,19 +180,6 @@ export class MetaData {
   }
 }
 
-function isValidItemType(filename: string): boolean {
-  const itemType = detectItemType(filename);
-
-  switch (itemType) {
-  case ItemTypeMarkdown: return true;
-  case ItemTypeText: return true;
-  case ItemTypeCSV: return true;
-  case ItemTypeTSV: return true;
-  case ItemTypeHTML: return true;
-  default: return false;
-  }
-}
-
 export function detectItemType(name: string): ItemType {
   const ext = path.extname(name);
 
@@ -204,6 +191,19 @@ export function detectItemType(name: string): ItemType {
   case '.html': return ItemTypeHTML;
   case '': return ItemTypeDirectory;
   default: return ItemTypeUndefined;
+  }
+}
+
+function isValidItemType(filename: string): boolean {
+  const itemType = detectItemType(filename);
+
+  switch (itemType) {
+  case ItemTypeMarkdown: return true;
+  case ItemTypeText: return true;
+  case ItemTypeCSV: return true;
+  case ItemTypeTSV: return true;
+  case ItemTypeHTML: return true;
+  default: return false;
   }
 }
 
