@@ -27,10 +27,15 @@ function extname(str: string): string {
   return path.extname(str);
 }
 
+function isAbsolute(str: string): boolean {
+  return path.isAbsolute(str);
+}
+
 export default {
   sep,
   join,
   basename,
   split,
-  extname
+  extname,
+  isAbsolute
 };

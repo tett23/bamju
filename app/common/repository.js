@@ -1,6 +1,11 @@
 // @flow
 
 import path from './path';
+import {
+  type Message,
+  MessageTypeFailed,
+  MessageTypeSucceeded,
+} from './util';
 
 type ID = string;
 
@@ -51,6 +56,24 @@ export class RepositoryManager {
     _repositories = loadBufferItems(initItems);
 
     return _repositories;
+  }
+
+  static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
+    const rootItem = RepositoryManager.find(repositoryName);
+    if (rootItem == null) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: ''
+      }];
+    }
+
+    return await rootItem.addFile(filePath);
+  }
+
+  static find(repositoryName: string): ?MetaData {
+    return _repositories.find((item) => {
+      return item.repositoryName === repositoryName;
+    });
   }
 }
 
@@ -113,6 +136,51 @@ export class MetaData {
     });
     this.isLoaded = buffer.isLoaded;
     this.isOpened = buffer.isOpened;
+  }
+
+  async addFile(itemPath: string): Promise<[?MetaData, Message]> {
+    if (!path.isAbsolute(itemPath)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: '',
+      }];
+    }
+
+    if (!isValidItemType(itemPath)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: ''
+      }];
+    }
+
+    if (this.detect(itemPath) == null) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: ''
+      }];
+    }
+
+    return [this.detect(itemPath), {
+      type: MessageTypeSucceeded,
+      message: '',
+    }];
+  }
+
+  detect(path: string): ?MetaData {
+    return true;
+  }
+}
+
+function isValidItemType(filename: string): boolean {
+  const itemType = detectItemType(filename);
+
+  switch (itemType) {
+  case ItemTypeMarkdown: return true;
+  case ItemTypeText: return true;
+  case ItemTypeCSV: return true;
+  case ItemTypeTSV: return true;
+  case ItemTypeHTML: return true;
+  default: return false;
   }
 }
 

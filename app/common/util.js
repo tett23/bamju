@@ -18,13 +18,14 @@ export function deepMerge<T>(obj: T, update: Object): T {
 }
 
 export const MessageTypeInfo = 'info';
-export const MessageTypeDebug = 'debug';
+export const MessageTypeSucceeded = 'succeeded';
+export const MessageTypeFailed = 'failed';
 export const MessageTypeWarning = 'warning';
 export const MessageTypeError = 'error';
-export type MessageType = 'info' | 'debug' | 'warning' | 'error';
+export const MessageTypeDebug = 'debug';
+export type MessageType = 'info' | 'succeeded' | 'failed' | 'warning' | 'error' | 'debug';
 
 export type Message = {
-  success: boolean,
   type: MessageType,
   message: string
 };
