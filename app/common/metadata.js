@@ -7,9 +7,11 @@ import {
   MessageTypeSucceeded,
 } from './util';
 import {
-  type Buffer,
   RepositoryManager
 } from './repository';
+import {
+  type Buffer,
+} from './buffer';
 
 export const ItemTypeRepository = 'repository';
 export const ItemTypeDirectory = 'directory';
