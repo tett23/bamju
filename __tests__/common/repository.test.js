@@ -220,16 +220,16 @@ describe('MetaData', () => {
     });
 
     it('.は現在のアイテムを取得する', () => {
-      let item = RepositoryManager.detect('test', '/a/b/c/d');
+      let item = RepositoryManager.detect('test', 'detect self');
       expect(item).toMatchObject({
-        name: 'd',
-        path: '/a/b/c/d'
+        name: 'detect self',
+        path: '/detect self'
       });
 
       item = item.detect('.');
       expect(item).toMatchObject({
-        name: 'd',
-        path: '/a/b/c/d'
+        name: 'detect self',
+        path: '/detect self'
       });
     });
 
