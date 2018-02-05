@@ -197,11 +197,11 @@ export class MetaData {
       repositoryPath: this.repositoryPath,
       absolutePath: path.join(this.absolutePath, itemName),
       itemType: detectItemType(itemName),
-      parent: this,
+      parent: null,
       children: [],
       isLoaded: false,
       isOpened: false,
-    });
+    }, this);
     this.children.push(ret);
 
     return [ret, {
