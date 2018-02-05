@@ -152,13 +152,13 @@ describe('MetaData', () => {
           'relative path test': {
             test1: {},
           },
-          synonymTest: {
-            foo: {
-              synonym: {}
-            },
-            bar: {
-              synonym: {}
-            }
+        },
+        synonymTest: {
+          foo: {
+            synonym: {}
+          },
+          bar: {
+            synonym: {}
           }
         },
         'detect self': {},
@@ -312,23 +312,23 @@ describe('MetaData', () => {
     });
 
     it('.で始まるときは現在のアイテムから検索する', () => {
-      const item = RepositoryManager.detect('test', '/foo/relative path test');
+      const item = RepositoryManager.detect('test', '/synonymTest');
       expect(item).toMatchObject({
-        name: 'relative path test',
-        path: '/foo/relative path test'
+        name: 'synonymTest',
+        path: '/synonymTest'
       });
 
-      const test1 = item.detect('./test1');
-      expect(test1).toMatchObject({
-        name: 'test1',
-        path: '/foo/relative path test/test1'
+      let synonym = item.detect('./bar/synonym');
+      expect(synonym).toMatchObject({
+        name: 'synonym',
+        path: '/synonymTest/bar/synonym'
       });
 
-      console.log('aaaaaaaaaaaaaaaa', path.join(test1.path, '/../../relative path test'));
-      const parent = test1.detect('../relative path test');
-      expect(parent).toMatchObject({
-        name: 'relative path test',
-        path: '/foo/relative path test'
+      const parent = synonym.detect('../');
+      synonym = parent.detect('./synonym');
+      expect(synonym).toMatchObject({
+        name: 'synonym',
+        path: '/synonymTest/bar/synonym'
       });
     });
 
