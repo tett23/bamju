@@ -36,9 +36,7 @@ let _repositories:Array<MetaData> = [];
 
 export class RepositoryManager {
   static init(buffers: Array<Buffer>, config: RepositoryConfig): Array<MetaData> {
-    const initItems = config.map((item) => {
-      return [item.repositoryName, item.absolutePath];
-    }).map(([repositoryName, absolutePath]) => {
+    const initItems = config.map(({ repositoryName, absolutePath }) => {
       let buffer = buffers.find((buf) => {
         return buf.repositoryName === repositoryName;
       });
