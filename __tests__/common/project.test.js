@@ -234,7 +234,7 @@ describe('ProjectItem', () => {
       item = item.detect('./baz/test1');
       expect(item).toBeTruthy();
       expect(item.name).toBe('test1');
-      expect(item.path).toBe('/baz/test1');
+      expect(item.path).toBe('/foo/bar/baz/test1');
     });
 
     it('/は含むが.で始まらないものはルートからの部分一致で検索する', () => {
