@@ -104,7 +104,7 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
 
 function loadBufferItems(buffers: Array<Buffer>): Array<MetaData> {
   return buffers.map((buf) => {
-    return new MetaData(buf);
+    return new MetaData(buf, null);
   });
 }
 
@@ -127,7 +127,7 @@ export class MetaData {
   isLoaded: boolean;
   isOpened: boolean;
 
-  constructor(buffer: Buffer) {
+  constructor(buffer: Buffer, parent: ?MetaData = null) {
     this.id = buffer.id;
     if (this.id === '') {
       this.id = createID();
@@ -137,11 +137,9 @@ export class MetaData {
     this.repositoryName = buffer.repositoryName;
     this.absolutePath = buffer.absolutePath;
     this.itemType = buffer.itemType;
-    if (buffer.parent != null) {
-      this.parent = new MetaData(buffer.parent);
-    }
+    this.parent = parent;
     this.children = buffer.children.map((c) => {
-      return new MetaData(c);
+      return new MetaData(c, this);
     });
     this.isLoaded = buffer.isLoaded;
     this.isOpened = buffer.isOpened;
