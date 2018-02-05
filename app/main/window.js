@@ -400,10 +400,16 @@ ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
 
   const result = await ProjectManager.saveBuffer(buffer);
 
-  WindowManager.sendSavedEventAll(buffer);
-
   e.sender.send('buffer-saved', result);
   e.returnValue = result;
+
+  const newProjectItem = ProjectManager.detect(buffer.projectName, buffer.path);
+  if (newProjectItem == null) {
+    return;
+  }
+
+  const parseResult = await newProjectItem.toBuffer();
+  WindowManager.sendSavedEventAll(parseResult.buffer);
 });
 
 function createWindowID(): string {
