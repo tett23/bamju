@@ -152,7 +152,7 @@ describe('RepositoryManager', () => {
       let [_, result] = await RepositoryManager.addFile('test', '/hoge.md');
       await expect(result.type).toBe(MessageTypeSucceeded);
 
-      [_, result] = await RepositoryManager.addFile('not found', '/hoge.md');
+      [_, result] = await RepositoryManager.addFile('test', '/hoge.md');
       await expect(result.type).toBe(MessageTypeFailed);
     });
 
