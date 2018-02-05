@@ -8,7 +8,10 @@ import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import { appReducer } from './renderer/reducers/combined';
-import { openPageByBuffer } from './renderer/actions/tab';
+import {
+  openPageByBuffer,
+  bufferUpdated
+} from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
 import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
 import type { BufferItem } from './common/project';
@@ -51,6 +54,11 @@ ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
   }
 
   store.dispatch(openPageByBuffer(buf));
+});
+
+ipcRenderer.on('buffer-updated', (event, buf: Project.Buffer) => {
+  console.log('buffer-updated', buf);
+  store.dispatch(bufferUpdated(buf));
 });
 
 ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {

@@ -102,9 +102,9 @@ export class WindowManager {
     }
   }
 
-  static sendSavedEventAll(buffer) {
+  static sendSavedEventAll(buffer: Buffer) {
     _appWindows.forEach((w) => {
-      w.sendSaveEvent(buffer);
+      w.sendSavedEvent(buffer);
     });
   }
 
@@ -260,7 +260,7 @@ export class AppWindow implements Window {
     return MenuTypeApp;
   }
 
-  sendAllSavedEvent(buffer: Buffer) {
+  sendSavedEvent(buffer: Buffer) {
     this.browserWindow.webContents.send('buffer-updated', buffer);
   }
 

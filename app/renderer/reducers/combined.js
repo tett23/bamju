@@ -12,7 +12,9 @@ import {
 } from '../actions/tree_view';
 import {
   OPEN_PAGE,
-  openPageByBuffer
+  BUFFER_UPDATED,
+  openPageByBuffer,
+  bufferUpdated
 } from '../actions/tab';
 import {
   CLOSE_DIALOG,
@@ -108,9 +110,14 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
 
   switch (action.type) {
   case OPEN_PAGE: {
-    return (Object.assign({}, state, {
+    return Object.assign({}, state, {
       tabs: [action.buffer]
-    }): BrowserState);
+    });
+  }
+  case BUFFER_UPDATED: {
+    return Object.assign({}, state, {
+      tabs: [action.buffer]
+    });
   }
   default:
     return state;
