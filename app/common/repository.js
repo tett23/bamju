@@ -54,7 +54,7 @@ export class RepositoryManager {
     return RepositoryManager.find(repositoryName) != null;
   }
 
-  static async addFile(repositoryName: string, filePath: string, options: {recursive: boolean} = { recursive: true }): Promise<[?MetaData, Message]> {
+  static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
     if (!path.isAbsolute(filePath)) {
       return [null, {
         type: MessageTypeFailed,
@@ -70,20 +70,17 @@ export class RepositoryManager {
       }];
     }
 
-    const dirPath = path.dirname(path.normalize(filePath));
-    if (options.recursive) {
-      const [_, addDirectoryResult] = await RepositoryManager.addDirectory(repositoryName, dirPath, options);
-
-      if (addDirectoryResult.type !== MessageTypeSucceeded) {
-        return [null, addDirectoryResult];
-      }
+    const parentPath = path.dirname(path.normalize(filePath));
+    const [_, addDirectoryResult] = await RepositoryManager.addDirectory(repositoryName, parentPath);
+    if (addDirectoryResult.type !== MessageTypeSucceeded) {
+      return [null, addDirectoryResult];
     }
 
-    const parentItem = RepositoryManager.detect(repositoryName, dirPath);
+    const parentItem = RepositoryManager.detect(repositoryName, parentPath);
     if (parentItem == null) {
       return [null, {
         type: MessageTypeFailed,
-        message: `RepositoryManager.addFile.isExist ${dirPath}`,
+        message: `RepositoryManager.addFile.isExist ${parentPath}`,
       }];
     }
 

@@ -162,27 +162,13 @@ describe('RepositoryManager', () => {
       await expect(result.type).toBe(MessageTypeFailed);
     });
 
-    it('recursiveが有効な場合、親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
-      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: true });
+    it('親のディレクトリがなくてもSucceededのメッセージが返る', async () => {
+      const [metaData, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md');
 
       await expect(result.type).toBe(MessageTypeSucceeded);
       expect(metaData).toMatchObject({
         path: '/foo/bar/baz.md',
       });
-    });
-
-    it('recursiveが有効な場合、同名のディレクトリ作成してもエラーにならない', async () => {
-      let [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: true });
-      await expect(result.type).toBe(MessageTypeSucceeded);
-
-      [_, result] = await RepositoryManager.addFile('test', '/foo/bar/aaa.md', { recursive: true });
-      await expect(result.type).toBe(MessageTypeSucceeded);
-    });
-
-    it('recursiveが有効でない場合、親のディレクトリがないといFailedのメッセージが返る', async () => {
-      const [_, result] = await RepositoryManager.addFile('test', '/foo/bar/baz.md', { recursive: false });
-
-      await expect(result.type).toBe(MessageTypeFailed);
     });
 
     it('絶対パスでない場合、Failedのメッセージが返る', async () => {
