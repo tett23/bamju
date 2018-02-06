@@ -5,7 +5,7 @@ import path from '../app/common/path';
 
 import {
   type Buffer,
-} from '../app/common/repository';
+} from '../app/common/buffer';
 import {
   type ItemType,
   ItemTypeUndefined,
