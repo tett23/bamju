@@ -50,6 +50,7 @@ export class RepositoryManager {
 
     return rootItem.detect(itemName);
   }
+
   static isExist(repositoryName: string): boolean {
     return RepositoryManager.find(repositoryName) != null;
   }
