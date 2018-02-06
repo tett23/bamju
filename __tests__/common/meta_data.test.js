@@ -9,6 +9,9 @@ import {
   ItemTypeCSV,
   ItemTypeTSV,
   ItemTypeHTML,
+  ItemTypeRepository,
+  ItemTypeDirectory,
+  ItemTypeUndefined
 } from '../../app/common/metadata';
 import {
   MessageTypeFailed,
@@ -332,11 +335,83 @@ describe('MetaData', () => {
     // TODO
   });
 
-  describe('isSimilarFile', () => {
-    // TODO
+  it('isSimilarFile', () => {
+    const metaData = {
+      id: createMetaDataID(),
+      name: '/',
+      path: '/',
+      repositoryName,
+      repositoryPath: absolutePath,
+      absolutePath,
+      itemType: ItemTypeRepository,
+      isLoaded: false,
+      isOpened: false,
+      children: [],
+      parent: null,
+    };
+    allTypes.beforeEach((itemType) => {
+      metaData.itemType = itemType;
+
+      switch (itemType) {
+      case ItemTypeMarkdown:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeText:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeCSV:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeTSV:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeHTML:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeRepository:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeDirectory:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeUndefined:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      default:
+        return expect(true).toBe(false);
+      }
+    });
   });
 
-  describe('isSimilarDirectory', () => {
-    // TODO
+  it('isSimilarDirectory', () => {
+    const metaData = {
+      id: createMetaDataID(),
+      name: '/',
+      path: '/',
+      repositoryName,
+      repositoryPath: absolutePath,
+      absolutePath,
+      itemType: ItemTypeRepository,
+      isLoaded: false,
+      isOpened: false,
+      children: [],
+      parent: null,
+    };
+    allTypes.beforeEach((itemType) => {
+      metaData.itemType = itemType;
+
+      switch (itemType) {
+      case ItemTypeMarkdown:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeText:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeCSV:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeTSV:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeHTML:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      case ItemTypeRepository:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeDirectory:
+        return expect(item.isSimilarDirectory()).toBe(true);
+      case ItemTypeUndefined:
+        return expect(item.isSimilarDirectory()).toBe(false);
+      default:
+        return expect(true).toBe(false);
+      }
+    });
   });
 });
