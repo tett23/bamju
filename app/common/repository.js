@@ -93,11 +93,7 @@ export class RepositoryManager {
     return ret;
   }
 
-  static async addDirectory(
-    repositoryName: string,
-    dirPath: string,
-    options: {recursive: boolean} = { recursive: true }
-  ): Promise<[?MetaData, Message]> {
+  static async addDirectory(repositoryName: string, dirPath: string): Promise<[?MetaData, Message]> {
     if (!path.isAbsolute(dirPath)) {
       return [null, {
         type: MessageTypeFailed,
@@ -113,12 +109,7 @@ export class RepositoryManager {
       }];
     }
 
-    let ret: [?MetaData, Message];
-    if (options.recursive) {
-      ret = await _mkdirP(dirPath, rootItem);
-    } else {
-      ret = await _mkdir(dirPath, rootItem);
-    }
+    const ret = await _mkdir(dirPath, rootItem);
 
     return ret;
   }
@@ -155,7 +146,7 @@ function loadBufferItems(buffers: Array<Buffer>): Array<MetaData> {
 export class FileItem {
 }
 
-async function _mkdirP(dirPath: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
+async function _mkdir(dirPath: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
   const pathItems = path.split(dirPath);
   let currentItem:MetaData = targetItem;
   for (let i = 0; i < pathItems.length; i += 1) {
@@ -167,7 +158,7 @@ async function _mkdirP(dirPath: string, targetItem: MetaData): Promise<[?MetaDat
 
     const existItem = currentItem.childItem(name);
     if (existItem == null) {
-      const [dir, message] = await _mkdir(name, currentItem);
+      const [dir, message] = await currentItem.addDirectory(name);
       if (message.type === MessageTypeFailed) {
         return [dir, message];
       }
@@ -192,19 +183,6 @@ async function _mkdirP(dirPath: string, targetItem: MetaData): Promise<[?MetaDat
     type: MessageTypeSucceeded,
     message: '',
   }];
-}
-
-async function _mkdir(dirName: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
-  if (targetItem.isExist(dirName)) {
-    return [null, {
-      type: MessageTypeFailed,
-      message: `RepositoryManager._mkdir.isExist ${dirName}`,
-    }];
-  }
-
-  const ret = await targetItem.addDirectory(dirName);
-
-  return ret;
 }
 
 export default RepositoryManager;

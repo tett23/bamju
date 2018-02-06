@@ -1,5 +1,4 @@
 /* eslint no-undef: 0 */
-// @flow
 
 import {
   RepositoryManager,

@@ -1,11 +1,11 @@
 /* eslint no-undef: 0 */
-// @flow
 
 import {
   RepositoryManager,
 } from '../../app/common/repository';
 import {
   ItemTypeMarkdown,
+  ItemTypeDirectory,
 } from '../../app/common/metadata';
 import {
   MessageTypeFailed,
@@ -213,6 +213,90 @@ describe('RepositoryManager', () => {
   });
 
   describe('addDirectory', () => {
-    // TODO
+    beforeEach(() => {
+      const dummy = createBufferTree('test', {});
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('ディレクトリの作成ができる', async () => {
+      const [metaData, result] = await RepositoryManager.addDirectory('test', '/hoge');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData).toMatchObject({
+        name: 'hoge',
+        path: '/hoge',
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test/hoge',
+        itemType: ItemTypeDirectory,
+        repositoryPath: '/tmp/bamju-test-test',
+      });
+    });
+
+    it('ディレクトリは再帰的に作成される', async () => {
+      const [metaData, result] = await RepositoryManager.addDirectory('test', '/foo/bar/baz');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData).toMatchObject({
+        name: 'baz',
+        path: '/foo/bar/baz',
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test/foo/bar/baz',
+        itemType: ItemTypeDirectory,
+        repositoryPath: '/tmp/bamju-test-test',
+      });
+    });
+
+    it('ファイル名に.を含む場合Failedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addDirectory('test', '/foo/bar/baz.a');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('repositoryが存在しない場合、Failedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addDirectory('not found', '/hoge');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('同名のディレクトリを作っても中身が消えたりしない（別のオブジェクトに差し替えられたりしない）', async () => {
+      let [dir, result] = await RepositoryManager.addDirectory('test', '/hoge', { recursive: false });
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      await dir.addFile('foo.md');
+      const item = RepositoryManager.detect('test', '/hoge/foo.md');
+      expect(item.path).toBe('/hoge/foo.md');
+
+      [dir, result] = await RepositoryManager.addDirectory('test', '/hoge');
+      await expect(result.type).toBe(MessageTypeSucceeded);
+    });
+
+    it('絶対パスでない場合、Failedのメッセージが返る', async () => {
+      const [_, result] = await RepositoryManager.addDirectory('test', 'hoge');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('.を含むパスを解釈できる', async () => {
+      const [metaData, result] = await RepositoryManager.addDirectory('test', '/foo/./baz', { recursive: true });
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      expect(metaData).toMatchObject({
+        path: '/foo/baz',
+      });
+    });
+
+    it('..を含むパスを解釈できる', async () => {
+      const [metaData, result] = await RepositoryManager.addDirectory('test', '/foo/bar/../baz', { recursive: true });
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      expect(metaData).toMatchObject({
+        path: '/foo/baz',
+      });
+    });
   });
 });

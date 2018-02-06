@@ -129,7 +129,7 @@ export class MetaData {
     if (!isValidItemName(itemName)) {
       return [null, {
         type: MessageTypeFailed,
-        message: 'MetaData._addItem.isValidItemName'
+        message: `MetaData._addItem.isValidItemName ${itemName}`
       }];
     }
 
