@@ -349,7 +349,43 @@ describe('MetaData', () => {
   });
 
   describe('rootItem', () => {
-    // TODO
+    beforeEach(() => {
+      const dummy = createBufferTree('test', {
+        foo: {
+          bar: {
+            baz: {
+              'testItem.md': {}
+            }
+          }
+        }
+      });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('ルートのアイテムが取得できる', () => {
+      const item = RepositoryManager.detect('test', 'testItem');
+      expect(item.rootItem().path).toBe('/');
+    });
+
+    it('ItemTypeUndefinedでも取得できる', () => {
+      const item = RepositoryManager.detect('test', 'testItem');
+      item.name = '';
+      item.path = '';
+      item.parent = [];
+      item.itemType = ItemTypeUndefined;
+
+      expect(item.rootItem().path).toBe('/');
+    });
+
+    it('repositoryが存在しない場合はErrorが投げられる', () => {
+      const item = RepositoryManager.detect('test', 'testItem');
+      item.repositoryName = '';
+
+      expect(item.rootItem).toThrowError();
+    });
   });
 
   describe('childItem', () => {
