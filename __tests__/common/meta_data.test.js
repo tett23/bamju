@@ -389,7 +389,35 @@ describe('MetaData', () => {
   });
 
   describe('childItem', () => {
-    // TODO
+    beforeEach(() => {
+      const dummy = createBufferTree('test', {
+        foo: {
+          bar: {}
+        }
+      });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('子のアイテムを取得できる', () => {
+      const item = RepositoryManager.detect('test', '/');
+
+      expect(item.childItem('foo').path).toBe('/foo');
+    });
+
+    it('ファイルがない場合はnullを返す', () => {
+      const item = RepositoryManager.detect('test', '/');
+
+      expect(item.childItem('hogehoge')).not.toBe(expect.anything());
+    });
+
+    it('直下にない場合はnullを返す', () => {
+      const item = RepositoryManager.detect('test', '/');
+
+      expect(item.childItem('bar')).not.toBe(expect.anything());
+    });
   });
 
   describe('isExist', () => {
