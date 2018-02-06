@@ -320,7 +320,31 @@ describe('MetaData', () => {
   });
 
   describe('parent', () => {
-    // TODO
+    beforeEach(() => {
+      const dummy = createBufferTree('test', {
+        foo: {
+          bar: {
+            baz: {
+              'testItem.md': {}
+            }
+          }
+        }
+      });
+      RepositoryManager.init([dummy], [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju-test-test'
+      }]);
+    });
+
+    it('親のアイテムを取得できる', () => {
+      const item = RepositoryManager.detect('test', 'testItem');
+      expect(item.parent.path).toBe('/foo/bar/baz');
+    });
+
+    it('this.path === "/"のときはnullを返す', () => {
+      const item = RepositoryManager.detect('test', '/');
+      expect(item.parent).not.toBe(expect.anything());
+    });
   });
 
   describe('rootItem', () => {
