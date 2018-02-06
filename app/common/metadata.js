@@ -58,7 +58,7 @@ export class MetaData {
   }
 
   async addFile(itemName: string): Promise<[?MetaData, Message]> {
-    if (!isSimilarFile(itemName)) {
+    if (!isSimilarFile(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,
         message: `MetaData.addFile.isSimilarFile itemName=${itemName}`
@@ -69,7 +69,7 @@ export class MetaData {
   }
 
   async addDirectory(itemName: string): Promise<[?MetaData, Message]> {
-    if (!isSimilarDirectory(itemName)) {
+    if (!isSimilarDirectory(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,
         message: 'MetaData.addDirectory.isSimilarFile'
@@ -187,9 +187,7 @@ export function createMetaDataID(): MetaDataID {
   return `${Math.random()}`;
 }
 
-export function isSimilarFile(filename: string): boolean {
-  const itemType = detectItemType(filename);
-
+export function isSimilarFile(itemType: ItemType): boolean {
   switch (itemType) {
   case ItemTypeMarkdown: return true;
   case ItemTypeText: return true;
@@ -200,9 +198,7 @@ export function isSimilarFile(filename: string): boolean {
   }
 }
 
-export function isSimilarDirectory(filename: string): boolean {
-  const itemType = detectItemType(filename);
-
+export function isSimilarDirectory(itemType: ItemType): boolean {
   switch (itemType) {
   case ItemTypeRepository: return true;
   case ItemTypeDirectory: return true;

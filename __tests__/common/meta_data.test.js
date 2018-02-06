@@ -4,6 +4,7 @@ import {
   RepositoryManager,
 } from '../../app/common/repository';
 import {
+  MetaData,
   ItemTypeMarkdown,
   ItemTypeText,
   ItemTypeCSV,
@@ -359,40 +360,43 @@ describe('MetaData', () => {
     // TODO
   });
 
+  const allTypes = [ItemTypeMarkdown, ItemTypeText, ItemTypeCSV, ItemTypeTSV, ItemTypeHTML, ItemTypeRepository, ItemTypeDirectory, ItemTypeUndefined];
+
   it('isSimilarFile', () => {
-    const metaData = {
-      id: createMetaDataID(),
+    const metaData = new MetaData({
+      id: '',
       name: '/',
       path: '/',
-      repositoryName,
-      repositoryPath: absolutePath,
-      absolutePath,
+      repositoryName: 'test',
+      repositoryPath: '/tmp/test',
+      absolutePath: '/tmp/test',
       itemType: ItemTypeRepository,
       isLoaded: false,
       isOpened: false,
       children: [],
       parent: null,
-    };
-    allTypes.beforeEach((itemType) => {
+    });
+
+    allTypes.forEach((itemType) => {
       metaData.itemType = itemType;
 
       switch (itemType) {
       case ItemTypeMarkdown:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarFile()).toBe(true);
       case ItemTypeText:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarFile()).toBe(true);
       case ItemTypeCSV:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarFile()).toBe(true);
       case ItemTypeTSV:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarFile()).toBe(true);
       case ItemTypeHTML:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarFile()).toBe(true);
       case ItemTypeRepository:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarFile()).toBe(false);
       case ItemTypeDirectory:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarFile()).toBe(false);
       case ItemTypeUndefined:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarFile()).toBe(false);
       default:
         return expect(true).toBe(false);
       }
@@ -400,39 +404,41 @@ describe('MetaData', () => {
   });
 
   it('isSimilarDirectory', () => {
-    const metaData = {
-      id: createMetaDataID(),
+    const metaData = new MetaData({
+      id: '',
       name: '/',
       path: '/',
-      repositoryName,
-      repositoryPath: absolutePath,
-      absolutePath,
+      repositoryName: 'test',
+      repositoryPath: '/tmp/test',
+      absolutePath: '/tmp/test',
       itemType: ItemTypeRepository,
       isLoaded: false,
       isOpened: false,
       children: [],
       parent: null,
-    };
-    allTypes.beforeEach((itemType) => {
+    });
+
+    allTypes.forEach((itemType) => {
       metaData.itemType = itemType;
+
 
       switch (itemType) {
       case ItemTypeMarkdown:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       case ItemTypeText:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       case ItemTypeCSV:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       case ItemTypeTSV:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       case ItemTypeHTML:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       case ItemTypeRepository:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarDirectory()).toBe(true);
       case ItemTypeDirectory:
-        return expect(item.isSimilarDirectory()).toBe(true);
+        return expect(metaData.isSimilarDirectory()).toBe(true);
       case ItemTypeUndefined:
-        return expect(item.isSimilarDirectory()).toBe(false);
+        return expect(metaData.isSimilarDirectory()).toBe(false);
       default:
         return expect(true).toBe(false);
       }
