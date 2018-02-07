@@ -138,7 +138,7 @@ export class Repository {
     return this.items.push(metaData);
   }
 
-  async addFile(filePath: string): Promise<[?MetaData, Message]> {
+  async addFile(filePath: string, content: string): Promise<[?MetaData, Message]> {
     const normalizedPath = path.normalize(filePath);
     if (!path.isAbsolute(normalizedPath)) {
       return [null, {
@@ -162,7 +162,7 @@ export class Repository {
     }
 
     const itemName = path.basename(normalizedPath);
-    const [metaData, message] = await parentItem.addFile(itemName);
+    const [metaData, message] = await parentItem.addFile(itemName, content);
 
     return [metaData, message];
   }

@@ -60,7 +60,7 @@ export class MetaData {
     this.isOpened = buffer.isOpened;
   }
 
-  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, Message]> {
+  async addFile(itemName: string, content: string): Promise<[?MetaData, Message]> {
     if (!isSimilarFile(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,
@@ -77,7 +77,7 @@ export class MetaData {
       fs.writeFileSync(ret.absolutePath, content);
     } catch (e) {
       return [null, {
-        type: MessageTypeFailed,
+        type: MessageTypeError,
         message: `MetaData.addDirectory mkdir error. ${e.message}`
       }];
     }

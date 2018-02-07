@@ -1,5 +1,7 @@
 /* eslint no-undef: 0 */
 
+import fs from 'fs';
+
 import {
   RepositoryManager,
 } from '../../app/common/repository_manager';
@@ -101,6 +103,14 @@ describe('Repository', () => {
       expect(metaData).toMatchObject({
         path: '/foo/baz.md',
       });
+    });
+
+    it('contentの内容でファイルが作成される', async () => {
+      const [metaData, _] = await repository.addFile('/foo/bar/../baz.md', 'hogehoge');
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+
+      expect(content).toBe('hogehoge');
     });
   });
 
