@@ -59,7 +59,7 @@ export class MetaData {
     this.isOpened = buffer.isOpened;
   }
 
-  async addFile(itemName: string): Promise<[?MetaData, Message]> {
+  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, Message]> {
     if (!isSimilarFile(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,
@@ -67,7 +67,21 @@ export class MetaData {
       }];
     }
 
-    return this._addItem(detectItemType(itemName), itemName);
+    const [ret, message] = await this._addItem(detectItemType(itemName), itemName);
+    if (ret == null || message.type === MessageTypeFailed) {
+      return [ret, message];
+    }
+
+    try {
+      fs.writeFileSync(ret.absolutePath, content);
+    } catch (e) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: `MetaData.addDirectory mkdir error. ${e.message}`
+      }];
+    }
+
+    return [ret, message];
   }
 
   async addDirectory(itemName: string): Promise<[?MetaData, Message]> {

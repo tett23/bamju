@@ -69,6 +69,14 @@ describe('MetaData', () => {
       });
     });
 
+    it('addFileされたとき、実際にファイルが作られる', async () => {
+      const [metaData, _] = await rootItem.addFile('hoge.md');
+
+      await expect(() => {
+        fs.statSync(metaData.absolutePath);
+      }).not.toThrowError();
+    });
+
     it('有効な拡張子の場合はSucceededが返る', async () => {
       const [_, result] = await rootItem.addFile('hoge.md');
 
