@@ -96,11 +96,12 @@ export class MetaData {
   }
 
   getIDs(): Array<MetaDataID> {
-    const ret = this.children().map((child) => {
-      return child.id;
+    const ret:Array<MetaDataID> = [this.id];
+    this.children().forEach((child) => {
+      child.getIDs().forEach((id) => {
+        ret.push(id);
+      });
     });
-
-    ret.push(this.id);
 
     return ret;
   }
@@ -133,6 +134,23 @@ export class MetaData {
     return repo;
   }
 
+  detect(name: string): ?MetaData {
+    if (name === '/') {
+      return this.repository().rootItem();
+    }
+    if (name === '.') {
+      return this;
+    }
+    if (name === '..') {
+      if (this.path === '/') {
+        return this;
+      }
+      return this.parent();
+    }
+
+    return this.repository().detect(name, this);
+  }
+
   isExist(name: string): boolean {
     return this.children().find((item) => {
       return item.name === name;
@@ -145,6 +163,22 @@ export class MetaData {
 
   isSimilarDirectory(): boolean {
     return isSimilarDirectory(this.itemType);
+  }
+
+  isMatchPath(searchPath: string): boolean {
+    if (searchPath.startsWith('/')) {
+      if (this.isSimilarFile()) {
+        return this.path.startsWith(searchPath) && matchItemName(this.name, searchPath);
+      }
+
+      return this.path === searchPath;
+    }
+
+    if (this.isSimilarFile()) {
+      return matchItemName(this.path, searchPath);
+    }
+
+    return !!this.path.match(searchPath);
   }
 
   async _addItem(itemType: ItemType, itemName: string): Promise<[?MetaData, Message]> {

@@ -45,8 +45,18 @@ export class Repository {
     this.items = items;
   }
 
+  find(itemPath: string): ?MetaData {
+    return this.items.find((item) => {
+      return item.path === itemPath;
+    });
+  }
+
   detect(name: string, current: ?MetaData = null): ?MetaData {
     const searchPath = path.normalize(name);
+
+    if (searchPath === '/') {
+      return this.rootItem();
+    }
 
     let targetItem:MetaData;
     if (current == null) {
@@ -55,36 +65,41 @@ export class Repository {
       targetItem = current;
     }
 
+    let matchItems;
     if (searchPath.match(/^\//)) {
-      this._getItems(searchPath, this.rootItem().getIDs());
-    } else if (searchPath.match(/^\./)) {
-      this._getItems(searchPath, targetItem.getIDs());
-    } else {
-      this._getItems(searchPath, targetItem.getIDs());
-      const ret = this._getItems(searchPath, targetItem.getIDs());
-      if (ret != null) {
-        return ret;
-      }
-
-      return this._getItems(searchPath, this.rootItem().getIDs());
+      matchItems = this._getItems(searchPath, this.rootItem().getIDs());
     }
+    if (searchPath.match(/^\./)) {
+      matchItems = this._getItems(searchPath, targetItem.getIDs());
+    } else {
+      matchItems = this._getItems(searchPath, targetItem.getIDs());
+      if (matchItems.length === 0) {
+        matchItems = this._getItems(searchPath, this.rootItem().getIDs());
+      }
+    }
+
+    return matchItems[0];
   }
 
-  _getItems(searchPath: string, targetIDs: Array<MetaDataID>): ?MetaData {
-    const id = targetIDs.find((targetID) => {
+  _getItems(searchPath: string, targetIDs: Array<MetaDataID>): Array<MetaData> {
+    const matchIDs = targetIDs.filter((targetID) => {
       const item = this.getItemByID(targetID);
       if (item == null) {
         return false;
       }
 
-      return item.path.match(searchPath);
+      return item.isMatchPath(searchPath);
     });
 
-    if (id == null) {
-      return null;
-    }
+    const ret = [];
+    matchIDs.forEach((id) => {
+      const item = this.getItemByID(id);
+      if (item != null) {
+        ret.push(item);
+      }
+    });
 
-    return this.getItemByID(id);
+    return ret;
   }
 
   getItemByID(id: MetaDataID): ?MetaData {
@@ -116,14 +131,15 @@ export class Repository {
   }
 
   async addFile(filePath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(filePath)) {
+    const normalizedPath = path.normalize(filePath);
+    if (!path.isAbsolute(normalizedPath)) {
       return [null, {
         type: MessageTypeFailed,
-        message: 'RepositoryManager.addFile.isAbsolute',
+        message: `RepositoryManager.addFile.isAbsolute ${normalizedPath}`,
       }];
     }
 
-    const parentPath = path.dirname(path.normalize(filePath));
+    const parentPath = path.dirname(normalizedPath);
     const [_, addDirectoryResult] = await this.addDirectory(parentPath);
     if (addDirectoryResult.type !== MessageTypeSucceeded) {
       return [null, addDirectoryResult];
@@ -137,7 +153,7 @@ export class Repository {
       }];
     }
 
-    const itemName = path.basename(filePath);
+    const itemName = path.basename(normalizedPath);
     const [metaData, message] = await parentItem.addFile(itemName);
 
     return [metaData, message];
@@ -163,7 +179,9 @@ export class Repository {
       }];
     }
 
-    return [createdItems[0], message];
+    const ret = createdItems[createdItems.length - 1];
+
+    return [ret, message];
   }
 
   getItemByPath(itemPath: string): ?MetaData {
@@ -193,7 +211,10 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
     }
 
     const name = pathItems[i];
-    if (currentItem.isExist(name)) {
+    const child = currentItem.childItem(name);
+    if (child != null) {
+      ret.push(child);
+      currentItem = child;
       continue;
     }
 
@@ -220,70 +241,6 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
     type: MessageTypeSucceeded,
     message: ''
   }];
-
-  // if (items.length === 0) {
-  //   return [null, {
-  //     type: MessageTypeFailed,
-  //     message: 'RepositoryManager._mkdirP isSimilarFile'
-  //   }];
-  // }
-  //
-  //
-  // const ret = items[items.length - 1];
-  // if (ret == null) {
-  //   return [null, {
-  //     type: MessageTypeFailed,
-  //     message: 'RepositoryManager._mkdirP isSimilarFile'
-  //   }];
-  // }
-  //
-  // if (ret.path != dirPath) {
-  //   return [null, {
-  //     type: MessageTypeFailed,
-  //     message: 'RepositoryManager._mkdirP isSimilarFile'
-  //   }];
-  // }
-  //
-  // return [ret, {
-  //   type: MessageTypeSucceeded,
-  //   message: '',
-  // }];
-
-  // let currentItem:MetaData = targetItem;
-  // for (let i = 0; i < pathItems.length; i += 1) {
-  //   const name = pathItems[i];
-  //
-  //   if (name === '') {
-  //     continue;
-  //   }
-  //
-  //   const existItem = currentItem.childItem(name);
-  //   if (existItem == null) {
-  //     const [dir, message] = await currentItem.addDirectory(name);
-  //     if (message.type === MessageTypeFailed) {
-  //       return [dir, message];
-  //     }
-  //
-  //     currentItem = dir;
-  //   } else if (existItem.isSimilarFile()) {
-  //     return [null, {
-  //       type: MessageTypeFailed,
-  //       message: 'RepositoryManager._mkdirP isSimilarFile'
-  //     }];
-  //   } else if (existItem.isSimilarDirectory()) {
-  //     currentItem = existItem;
-  //   } else {
-  //     return [null, {
-  //       type: MessageTypeFailed,
-  //       message: 'RepositoryManager.addDirectory.else',
-  //     }];
-  //   }
-  // }
-  //
-  // return [currentItem, {
-  //   type: MessageTypeSucceeded,
-  //   message: '',
-  // }];
 }
 
 function createRootBuffer(repositoryName: string, absolutePath: string): Buffer {
