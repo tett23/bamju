@@ -120,7 +120,48 @@ describe('MetaData', () => {
   });
 
   describe('addDirectory', () => {
-    // TODO
+    let rootItem:MetaData;
+    beforeEach(() => {
+      rootItem = repository.rootItem();
+    });
+
+    it('ディレクトリの追加ができる', async () => {
+      const [metaData, result] = await rootItem.addDirectory('hoge');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+      await expect(metaData).toMatchObject({
+        name: 'hoge',
+        path: '/hoge',
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju/test/hoge',
+        itemType: ItemTypeDirectory,
+        repositoryPath: '/tmp/bamju/test',
+      });
+    });
+
+    it('.つきのディレクトリは作成できない', async () => {
+      const [_, result] = await rootItem.addDirectory('foo.bar');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('同名のディレクトリが存在していた場合、Failedのメッセージが返る', async () => {
+      let [_, result] = await rootItem.addDirectory('synonym');
+
+      await expect(result.type).toBe(MessageTypeSucceeded);
+
+      [_, result] = await rootItem.addDirectory('synonym');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('path.sepを含むディレクトリを作ろうとするとFailedのメッセージが返る', async () => {
+      const testFileName = ['/foo/bar', 'a/b'];
+      for (let i = 0; i < testFileName.length; i += 1) {
+        const [_, result] = await rootItem.addDirectory(testFileName[i]);
+        await expect(result.type).toBe(MessageTypeFailed);
+      }
+    });
   });
 
   describe('parent', () => {
