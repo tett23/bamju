@@ -3,7 +3,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import { promisify } from 'util';
 import mkdirp from 'mkdirp';
 import expandHomeDir from 'expand-home-dir';
 import {
@@ -113,24 +112,24 @@ async function updateConfigFile(): Promise<void> {
   }
 
   try {
-    await promisify(fs.stat)(path.dirname(configPath));
+    fs.statSync(path.dirname(configPath));
   } catch (e) {
     await mkdirp(path.dirname(configPath), 0o755);
   }
 
-  await promisify(fs.writeFile)(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
+  fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
 }
 
 async function loadConfigFile(): Promise<BamjuConfig> {
   try {
-    await promisify(fs.stat)(configPath);
+    fs.statSync(configPath);
+    await fs.statSync(configPath);
   } catch (e) {
     console.log('loadConfigFile error: ', e);
     return defaultConfig;
   }
 
-  const buf:Buffer = await promisify(fs.readFile)(configPath);
-  const conf:string = buf.toString('UTF-8');
+  const conf:string = fs.readFileSync(configPath, 'utf8');
 
   const json = JSON.parse(conf);
 
