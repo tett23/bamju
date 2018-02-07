@@ -8,7 +8,7 @@ import {
 } from './util';
 import {
   RepositoryManager
-} from './repository';
+} from './repository_manager';
 import {
   type Buffer,
 } from './buffer';

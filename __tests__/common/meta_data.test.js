@@ -2,7 +2,7 @@
 
 import {
   RepositoryManager,
-} from '../../app/common/repository';
+} from '../../app/common/repository_manager';
 import {
   MetaData,
   ItemTypeMarkdown,
