@@ -127,7 +127,7 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
 
   repositoryKeys.forEach((repositoryName) => {
     const sorted = ret[repositoryName].sort((a, b) => {
-      return a.path > b.path;
+      return a.absolutePath.length < b.absolutePath.length ? -1 : 1;
     });
 
     try {

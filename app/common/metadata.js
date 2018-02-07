@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'fs';
 import path from './path';
 import {
   type Message,
@@ -77,7 +78,23 @@ export class MetaData {
       }];
     }
 
-    return this._addItem(ItemTypeDirectory, itemName);
+    const [ret, message] = await this._addItem(ItemTypeDirectory, itemName);
+    if (ret == null || message.type === MessageTypeFailed) {
+      return [ret, message];
+    }
+
+    try {
+      fs.mkdirSync(ret.absolutePath);
+    } catch (e) {
+      if (e.code !== 'EEXIST') {
+        return [null, {
+          type: MessageTypeFailed,
+          message: `MetaData.addDirectory mkdir error. ${e.message}`
+        }];
+      }
+    }
+
+    return [ret, message];
   }
 
   childItem(name: string): ?MetaData {
@@ -113,7 +130,7 @@ export class MetaData {
     const repo = this.repository();
 
     const ret:Array<MetaData> = [];
-    this.childrenIDs.forEach((childID) => {
+    this.childrenIDs.forEach((childID: string) => {
       const item:?MetaData = repo.getItemByID(childID);
 
       if (item != null) {

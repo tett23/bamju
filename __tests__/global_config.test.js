@@ -3,14 +3,14 @@
 import fs from 'fs';
 
 jest.setTimeout(500);
-beforeAll(() => {
+beforeEach(() => {
   try {
     fs.mkdirSync('/tmp/bamju');
   } catch (_) {
   }
 });
 
-afterAll(() => {
+afterEach(() => {
   try {
     rmForce('/tmp/bamju');
   } catch (e) {

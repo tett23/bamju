@@ -1,5 +1,7 @@
 /* eslint no-undef: 0 */
 
+import fs from 'fs';
+
 import {
   RepositoryManager,
 } from '../../app/common/repository_manager';
@@ -22,6 +24,7 @@ import {
   MessageTypeSucceeded
 } from '../../app/common/util';
 
+import '../global_config.test';
 
 import {
   dummy,
@@ -137,6 +140,14 @@ describe('MetaData', () => {
         itemType: ItemTypeDirectory,
         repositoryPath: '/tmp/bamju/test',
       });
+    });
+
+    it('addDirectoryされたとき、実際にディレクトリが作られる', async () => {
+      const [metaData, _] = await rootItem.addDirectory('hoge');
+
+      await expect(() => {
+        fs.statSync(metaData.absolutePath);
+      }).not.toThrowError();
     });
 
     it('.つきのディレクトリは作成できない', async () => {

@@ -206,7 +206,7 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
     if (!currentItem.isSimilarDirectory()) {
       return [[], {
         type: MessageTypeFailed,
-        message: '',
+        message: '_mkdir check parent directory type error',
       }];
     }
 
@@ -220,16 +220,10 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
 
     const [createItem, message] = await currentItem.addDirectory(name);
     if (createItem == null) {
-      return [[], {
-        type: MessageTypeFailed,
-        message: '',
-      }];
+      return [[], message];
     }
     if (message.type !== MessageTypeSucceeded) {
-      return [[], {
-        type: MessageTypeFailed,
-        message: ''
-      }];
+      return [[], message];
     }
 
     ret.push(createItem);
