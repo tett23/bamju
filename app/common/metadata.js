@@ -98,7 +98,15 @@ export class MetaData {
   }
 
   parent(): ?MetaData {
-    return this.repository().getItemByID(this.parentID);
+    const { parentID } = this;
+    if (this.path === '/') {
+      return this;
+    }
+    if (parentID == null) {
+      return null;
+    }
+
+    return this.repository().getItemByID(parentID);
   }
 
   children(): Array<MetaData> {
