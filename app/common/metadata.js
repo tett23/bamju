@@ -232,6 +232,30 @@ export class MetaData {
     };
   }
 
+  async getContent(): Promise<[string, Message]> {
+    if (!this.isSimilarFile()) {
+      return ['', {
+        type: MessageTypeFailed,
+        message: `MetaData.updateContent itemType check. path=${this.path} itemType=${this.itemType}`
+      }];
+    }
+
+    let ret = '';
+    try {
+      ret = fs.readFileSync(this.absolutePath, 'utf8');
+    } catch (e) {
+      return ['', {
+        type: MessageTypeSucceeded,
+        message: ''
+      }];
+    }
+
+    return [ret, {
+      type: MessageTypeSucceeded,
+      message: ''
+    }];
+  }
+
   toBuffer(): Buffer {
     return {
       id: this.id,

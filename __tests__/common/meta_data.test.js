@@ -395,4 +395,32 @@ describe('MetaData', () => {
       expect(result.type).toBe(MessageTypeError);
     });
   });
+
+  describe('getContent', () => {
+    it('ファイルの内容が取得できる', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+
+      await metaData.updateContent('hogehoge');
+      const [content, result] = await metaData.getContent();
+      expect(result.type).toBe(MessageTypeSucceeded);
+
+      expect(content).toBe('hogehoge');
+    });
+
+    it('isSimilarFile === trueでない場合、MessageTypeFailedが返る', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      const [__, result] = await metaData.getContent('hogehoge');
+
+      expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('実ファイルがなくてもエラーにはならない', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      fs.unlinkSync(metaData.absolutePath);
+
+      const [content, result] = await metaData.getContent('hogehoge');
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(content).toBe('');
+    });
+  });
 });
