@@ -66,34 +66,6 @@ export class RepositoryManager {
 
     return repo.detect(itemName);
   }
-
-  async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
-    const repo = this.find(repositoryName);
-    if (repo == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addFile repo null check',
-      }];
-    }
-
-    const ret = await repo.addFile(filePath);
-
-    return ret;
-  }
-
-  async addDirectory(repositoryName: string, dirPath: string): Promise<[?MetaData, Message]> {
-    const repo = this.find(repositoryName);
-    if (repo == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectrory repo null check',
-      }];
-    }
-
-    const ret = await repo.addDirectory(dirPath);
-
-    return ret;
-  }
 }
 
 let _instance:?RepositoryManager = null;
