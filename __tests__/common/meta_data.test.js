@@ -252,8 +252,8 @@ describe('MetaData', () => {
       itemType: ItemTypeRepository,
       isLoaded: false,
       isOpened: false,
-      children: [],
-      parent: null,
+      childrenIDs: [],
+      parentID: null,
     });
 
     allTypes.forEach((itemType) => {
@@ -293,8 +293,8 @@ describe('MetaData', () => {
       itemType: ItemTypeRepository,
       isLoaded: false,
       isOpened: false,
-      children: [],
-      parent: null,
+      childrenIDs: [],
+      parentID: null,
     });
 
     allTypes.forEach((itemType) => {
@@ -321,6 +321,49 @@ describe('MetaData', () => {
       default:
         return expect(true).toBe(false);
       }
+    });
+  });
+
+  describe('toBuffer', () => {
+    it('入力と同じBufferが得られる', () => {
+      const buffer = {
+        id: '',
+        name: '/',
+        path: '/',
+        repositoryName: 'test',
+        repositoryPath: '/tmp/test',
+        absolutePath: '/tmp/test',
+        itemType: ItemTypeRepository,
+        isLoaded: false,
+        isOpened: false,
+        childrenIDs: [],
+        parentID: null,
+      };
+      const metaData = new MetaData(buffer);
+      buffer.id = metaData.id;
+
+      expect(metaData.toBuffer()).toMatchObject(buffer);
+    });
+
+    it('値が変更された場合、変更された値が得られる', () => {
+      const buffer = {
+        id: '',
+        name: '/',
+        path: '/',
+        repositoryName: 'test',
+        repositoryPath: '/tmp/test',
+        absolutePath: '/tmp/test',
+        itemType: ItemTypeRepository,
+        isLoaded: false,
+        isOpened: false,
+        children: [],
+        parent: null,
+      };
+      const metaData = new MetaData(buffer);
+
+      metaData.name = 'foo';
+
+      expect(metaData.toBuffer().name).toBe('foo');
     });
   });
 });

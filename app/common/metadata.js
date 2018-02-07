@@ -208,6 +208,22 @@ export class MetaData {
     return !!this.path.match(searchPath);
   }
 
+  toBuffer(): Buffer {
+    return {
+      id: this.id,
+      name: this.name,
+      path: this.path,
+      repositoryName: this.repositoryName,
+      repositoryPath: this.repositoryPath,
+      absolutePath: this.absolutePath,
+      itemType: this.itemType,
+      parentID: this.parentID,
+      childrenIDs: this.childrenIDs,
+      isLoaded: this.isLoaded,
+      isOpened: this.isOpened,
+    };
+  }
+
   async _addItem(itemType: ItemType, itemName: string): Promise<[?MetaData, Message]> {
     if (!isValidItemName(itemName)) {
       return [null, {
