@@ -130,14 +130,16 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
       return a.path > b.path;
     });
 
-    fs.mkdirSync(path.join('/tmp/bamju', repositoryName));
+    try {
+      fs.mkdirSync(path.join('/tmp/bamju', repositoryName));
+    } catch (_) {
+    }
 
     sorted.forEach((buf) => {
       if (buf.itemType === ItemTypeDirectory) {
         try {
           fs.mkdirSync(buf.absolutePath);
-        } catch (e) {
-          console.log(`dummy error: ${e.message}`);
+        } catch (_) {
         }
       } else {
         try {
