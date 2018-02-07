@@ -97,6 +97,21 @@ export class RepositoryManager {
       message: ''
     }];
   }
+
+  removeRepository(repositoryName: string): ?Repository {
+    const removeIndex = this._repositories.findIndex((item) => {
+      return item.name === repositoryName;
+    });
+
+    if (removeIndex === -1) {
+      return null;
+    }
+
+    const ret = this._repositories[removeIndex];
+    this._repositories.splice(removeIndex, 1);
+
+    return ret;
+  }
 }
 
 let _instance:?RepositoryManager = null;

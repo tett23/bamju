@@ -198,4 +198,16 @@ describe('RepositoryManager', () => {
       expect(testFunc).toThrowError();
     });
   });
+
+  describe('addRepository', () => {
+    it('Repositoryの削除ができる', () => {
+      expect(manager.removeRepository('test')).toMatchObject({
+        name: 'test'
+      });
+    });
+
+    it('repositoryNameが存在しない場合、nullが返る', () => {
+      expect(manager.removeRepository('test')).not.toBe(expect.anything());
+    });
+  });
 });
