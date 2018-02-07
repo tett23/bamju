@@ -1,6 +1,8 @@
 // @flow
 /* eslint no-continue: 0 */
 
+import fs from 'fs';
+
 import path from './path';
 import {
   type Buffer,
@@ -32,6 +34,12 @@ export class Repository {
   constructor(buffers: Array<Buffer>, config: RepositoryConfig) {
     this.name = config.repositoryName;
     this.absolutePath = config.absolutePath;
+
+    const stat = fs.statSync(config.absolutePath);
+    if (!stat.isDirectory()) {
+      throw new Error(`Repository.constructor stat error: ${config.absolutePath}`);
+    }
+
     if (buffers.length === 0) {
       this.items = [new MetaData(createRootBuffer(config.repositoryName, config.absolutePath))];
     } else {

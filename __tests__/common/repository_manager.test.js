@@ -41,6 +41,7 @@ describe('RepositoryManager', () => {
     });
 
     it('引数のBufferをロードする', async () => {
+      fs.mkdirSync('/tmp/bamju/test-test');
       manager = await new RepositoryManager({}, [{
         repositoryName: 'hoge',
         absolutePath: '/tmp/bamju/test-test'
@@ -52,6 +53,8 @@ describe('RepositoryManager', () => {
     });
 
     it('Configにある項目がRepositoryに存在しなかったら追加する', async () => {
+      fs.mkdirSync('/tmp/bamju/test-test1');
+      fs.mkdirSync('/tmp/bamju/test-test2');
       manager = new RepositoryManager({}, [
         {
           repositoryName: 'test1',

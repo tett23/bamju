@@ -39,8 +39,16 @@ beforeEach(() => {
 
 describe('Repository', () => {
   describe('constructor', () => {
-    // TODO
-    // TODO: absolutePathが存在しないときエラー
+    it('absolutePathが実際に存在しない場合Failedのメッセージが返る', () => {
+      const testFunc = () => { /* eslint no-new: 0 */
+        new Repository({
+          repositoryName: 'foo',
+          absolutePath: '/tmp/bamju/foo'
+        });
+      };
+
+      expect(testFunc).toThrowError();
+    });
   });
 
   describe('addFile', () => {
