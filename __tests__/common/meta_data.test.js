@@ -432,12 +432,14 @@ describe('MetaData', () => {
   });
 
   describe('parse', () => {
-    // TODO: .txt, .mdのディレクトリを自動で開く
-    // file, directoryの場合
-    // 存在しない場合
     beforeEach(async () => {
-      const [item, _] = await repository.addFile('/foo.md');
+      let [item, _] = await repository.addFile('/foo.md');
       item.updateContent('# foo');
+      [item, _] = await repository.addFile('/foo.csv');
+      item.updateContent('a,b,c');
+      [item, _] = await repository.addFile('/foo.tsv');
+      item.updateContent('d	e	f');
+
       const [dir, __] = await repository.addDirectory('/testDir');
       await dir.addDirectory('foo');
 
@@ -494,5 +496,25 @@ describe('MetaData', () => {
       expect(result.type).toBe(MessageTypeSucceeded);
       expect(!!parseResult.content.match('<h1>baz</h1>')).toBe(true);
     });
+
+    it('csvのパースができる', async () => {
+      const metaData = repository.getItemByPath('/foo.csv');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match('<table><tr><td>a</td><td>b</td><td>c</td><tr></table>')).toBe(true);
+    });
+
+    it('tsvのパースができる', async () => {
+      const metaData = repository.getItemByPath('/foo.tsv');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match('<table><tr><td>d</td><td>e</td><td>f</td><tr></table>')).toBe(true);
+    });
+
+    // TODO; 存在しない場合
+    // TODO: tableの中身のタグ解釈
+    // TODO: Markdown.parseのcurrentの解釈
   });
 });

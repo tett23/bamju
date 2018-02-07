@@ -8,9 +8,12 @@ import {
   type StackItems,
 } from './parser'; /* eslint flowtype-errors/show-errors: 0 */
 import {
-  ProjectItem,
+  MetaData,
   type ParseResult
-} from '../../common/project';
+} from '../../common/metadata';
+import {
+  Markdown
+} from './markdown';
 
 export type TableOption = {
   delimiter: string
@@ -21,7 +24,7 @@ const defaultOption = {
 };
 
 export class Table implements Parser<TableOption> {
-  static async parse(projectItem: ProjectItem, text: string, _: StackItems = [], options: TableOption = defaultOption): Promise<ParseResult> {
+  static async parse(metaData: MetaData, text: string, _: StackItems = [], options: TableOption = defaultOption): Promise<ParseResult> {
     const csv = await (promisify(CSVParser))(text, { delimiter: options.delimiter });
 
     const tbody = csv.map((row) => {
@@ -32,19 +35,12 @@ export class Table implements Parser<TableOption> {
       return `<tr>${cols.join('')}<tr>`;
     }).join('');
 
-    const html = `<table>${tbody}</table>`;
+    const tableHTML = `<table>${tbody}</table>`;
 
-    return {
-      buffer: {
-        name: projectItem.name,
-        path: projectItem.path,
-        projectName: projectItem.projectName,
-        absolutePath: projectItem.absolutePath,
-        itemType: projectItem.itemType,
-        body: html
-      },
-      children: []
-    };
+
+    const ret = await Markdown.parse(metaData, tableHTML);
+
+    return ret;
   }
 }
 

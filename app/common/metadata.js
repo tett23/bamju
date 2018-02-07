@@ -20,6 +20,9 @@ import {
 import {
   Markdown,
 } from '../main/parser/markdown';
+import {
+  Table as TableParser,
+} from '../main/parser/table';
 
 export const ItemTypeRepository = 'repository';
 export const ItemTypeDirectory = 'directory';
@@ -546,6 +549,14 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
   }
   case ItemTypeHTML: {
     parseResult.content = content;
+    break;
+  }
+  case ItemTypeCSV: {
+    parseResult = await TableParser.parse(metaData, content, [], { delimiter: ',' });
+    break;
+  }
+  case ItemTypeTSV: {
+    parseResult = await TableParser.parse(metaData, content, [], { delimiter: '\t' });
     break;
   }
   default:
