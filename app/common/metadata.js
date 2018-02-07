@@ -86,6 +86,13 @@ export class MetaData {
   }
 
   async addDirectory(itemName: string): Promise<[?MetaData, Message]> {
+    if (!this.isSimilarDirectory()) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: 'MetaData.addDirectory isSimilarDirectory error'
+      }];
+    }
+
     if (!isSimilarDirectory(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,

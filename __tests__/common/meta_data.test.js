@@ -183,6 +183,13 @@ describe('MetaData', () => {
         await expect(result.type).toBe(MessageTypeFailed);
       }
     });
+
+    it('isSimilarDirectoryでないMetaDataにaddDirectoryはできない', async () => {
+      const [fileMetaData, _] = await rootItem.addFile('foo.md');
+      const [__, result] = await fileMetaData.addDirectory('bar');
+
+      await expect(result.type).toBe(MessageTypeFailed);
+    });
   });
 
   describe('parent', () => {
