@@ -25,22 +25,25 @@ type initBuffer = {
 export class RepositoryManager {
   _repositories: Array<Repository>
 
-  constructor(buffers: initBuffer, config: Array<RepositoryConfig>) {
-    const repositories = config.map((conf) => {
-      let init: Array<Buffer> = [];
-      Object.keys(buffers).some((key) => {
-        const items = buffers[key];
-        if (items) {
-          init = items;
+  constructor(bufferItems: initBuffer, config: Array<RepositoryConfig>) {
+    this._repositories = [];
+    config.forEach((conf) => {
+      let items: Array<Buffer> = [];
+      Object.keys(bufferItems).some((key) => {
+        if (bufferItems[key] != null) {
+          items = bufferItems[key];
+          return true;
         }
 
-        return items != null;
+        return false;
       });
 
-      return new Repository(init, conf);
+      const [_, result] = this.addRepository(conf, items);
+      if (result.type !== MessageTypeSucceeded) {
+        throw new Error(result.message);
+      }
     });
 
-    this._repositories = repositories;
     _instance = this;
   }
 
@@ -65,6 +68,34 @@ export class RepositoryManager {
     }
 
     return repo.detect(itemName);
+  }
+
+  addRepository(conf: RepositoryConfig, items: Array<Buffer> = []): [?Repository, Message] {
+    if (this.find(conf.repositoryName)) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: `RepositoryManager.addRepository duplicate entry. ${conf.repositoryName}`
+      }];
+    }
+
+    const isExist = this._repositories.some((item) => {
+      return item.absolutePath === conf.absolutePath;
+    });
+    if (isExist === true) {
+      return [null, {
+        type: MessageTypeFailed,
+        message: `RepositoryManager.addRepository absolutePath check. ${conf.absolutePath}`
+      }];
+    }
+
+    const repo = new Repository(items, conf);
+
+    this._repositories.push(repo);
+
+    return [repo, {
+      type: MessageTypeSucceeded,
+      message: ''
+    }];
   }
 }
 

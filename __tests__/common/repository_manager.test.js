@@ -1,5 +1,7 @@
 /* eslint no-undef: 0 */
 
+import fs from 'fs';
+
 import {
   RepositoryManager,
 } from '../../app/common/repository_manager';
@@ -34,25 +36,25 @@ beforeEach(() => {
 
 describe('RepositoryManager', () => {
   describe('constructor', () => {
-    it('引数が空なら値も空になる', async () => {
+    it('引数が空なら値も空になる', () => {
       manager = new RepositoryManager({}, []);
 
-      await expect(manager.getRepositories()).toMatchObject([]);
+      expect(manager.getRepositories()).toMatchObject([]);
     });
 
-    it('引数のBufferをロードする', async () => {
+    it('引数のBufferをロードする', () => {
       fs.mkdirSync('/tmp/bamju/test-test');
-      manager = await new RepositoryManager({}, [{
+      manager = new RepositoryManager({}, [{
         repositoryName: 'hoge',
         absolutePath: '/tmp/bamju/test-test'
       }]);
       const repositories = manager.getRepositories();
 
-      await expect(repositories.length).toBe(1);
-      await expect(repositories[0].name).toBe('hoge');
+      expect(repositories.length).toBe(1);
+      expect(repositories[0].name).toBe('hoge');
     });
 
-    it('Configにある項目がRepositoryに存在しなかったら追加する', async () => {
+    it('Configにある項目がRepositoryに存在しなかったら追加する', () => {
       fs.mkdirSync('/tmp/bamju/test-test1');
       fs.mkdirSync('/tmp/bamju/test-test2');
       manager = new RepositoryManager({}, [
@@ -67,12 +69,43 @@ describe('RepositoryManager', () => {
 
       const repositories = manager.getRepositories();
 
-      await expect(repositories.length).toBe(2);
-      await expect(manager.find('test1').name).toBe('test1');
-      await expect(manager.find('test2').name).toBe('test2');
+      expect(repositories.length).toBe(2);
+      expect(manager.find('test1').name).toBe('test1');
+      expect(manager.find('test2').name).toBe('test2');
     });
 
-    // TODO: 同名のリポジトリを追加したときの挙動
+    it('同名のrepositoryが追加されるとFailedのメッセージが返る', () => {
+      fs.mkdirSync('/tmp/bamju/foo');
+      const testFunc = () => {
+        return new RepositoryManager({}, [
+          {
+            repositoryName: 'foo',
+            absolutePath: '/tmp/bamju/foo'
+          }, {
+            repositoryName: 'foo',
+            absolutePath: '/tmp/bamju/foo'
+          },
+        ]);
+      };
+
+      expect(testFunc).toThrowError();
+    });
+
+    it('absolutePathが同じrepositoryが追加されるとFailedのメッセージが返る', () => {
+      const testFunc = () => {
+        return new RepositoryManager({}, [
+          {
+            repositoryName: 'foo',
+            absolutePath: '/tmp/bamju/foo'
+          }, {
+            repositoryName: 'foo',
+            absolutePath: '/tmp/bamju/foo'
+          },
+        ]);
+      };
+
+      expect(testFunc).toThrowError();
+    });
   });
 
   describe('find', () => {
@@ -110,6 +143,59 @@ describe('RepositoryManager', () => {
       const metaData = manager.detect('not found', '/bar');
 
       expect(metaData).not.toBe(expect.anything());
+    });
+  });
+
+  describe('addRepository', () => {
+    it('porositoryの追加ができる', () => {
+      fs.mkdirSync('/tmp/bamju/foo');
+      manager.addRepository({
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      });
+
+      expect(manager.find('foo').name).toBe('foo');
+    });
+
+    it('同名のrepositoryが追加されるとFailedのメッセージが返る', () => {
+      fs.mkdirSync('/tmp/bamju/foo');
+      manager.addRepository({
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      });
+
+      const [_, result] = manager.addRepository({
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      });
+
+      expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('absolutePathが同じrepositoryが追加されるとFailedのメッセージが返る', () => {
+      fs.mkdirSync('/tmp/bamju/foo');
+      manager.addRepository({
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      });
+
+      const [_, result] = manager.addRepository({
+        repositoryName: 'bar',
+        absolutePath: '/tmp/bamju/foo'
+      });
+
+      expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('absolutePathが実際に存在しない場合Failedのメッセージが返る', () => {
+      const testFunc = () => {
+        manager.addRepository({
+          repositoryName: 'foo',
+          absolutePath: '/tmp/bamju/foo'
+        });
+      };
+
+      expect(testFunc).toThrowError();
     });
   });
 });
