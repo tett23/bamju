@@ -112,6 +112,15 @@ export class RepositoryManager {
 
     return ret;
   }
+
+  toBuffers(): {[string]: Array<Buffer>} {
+    const ret = {};
+    this._repositories.forEach((item) => {
+      ret[item.name] = item.toBuffers();
+    });
+
+    return ret;
+  }
 }
 
 let _instance:?RepositoryManager = null;

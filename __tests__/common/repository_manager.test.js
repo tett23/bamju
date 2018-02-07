@@ -210,4 +210,30 @@ describe('RepositoryManager', () => {
       expect(manager.removeRepository('test')).not.toBe(expect.anything());
     });
   });
+
+  describe('toBuffer', () => {
+    it('Bufferの取得ができる', () => {
+      manager = new RepositoryManager({
+        test: [{
+          id: '',
+          name: '/',
+          path: '/',
+          repositoryName: 'test',
+          repositoryPath: '/tmp/test',
+          absolutePath: '/tmp/test',
+          itemType: ItemTypeDirectory,
+          isLoaded: false,
+          isOpened: false,
+          childrenIDs: [],
+          parentID: null,
+        }]
+      }, [{
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju/test'
+      }]);
+      const buffers = manager.toBuffers();
+
+      expect(buffers.test[0].path).toBe('/');
+    });
+  });
 });

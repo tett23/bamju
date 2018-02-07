@@ -205,6 +205,31 @@ describe('Repository', () => {
     });
   });
 
+  describe('toBuffers', () => {
+    it('Bufferの取得ができる', () => {
+      const repo = new Repository([{
+        id: '',
+        name: '/',
+        path: '/',
+        repositoryName: 'test',
+        repositoryPath: '/tmp/test',
+        absolutePath: '/tmp/test',
+        itemType: ItemTypeDirectory,
+        isLoaded: false,
+        isOpened: false,
+        childrenIDs: [],
+        parentID: null,
+      }], {
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju/test'
+      });
+      const buffers = repo.toBuffers();
+
+      expect(buffers.length).toBe(1);
+      expect(buffers[0].path).toBe('/');
+    });
+  });
+
   describe('detect', () => {
     beforeEach(() => {
       const buffers = dummy({

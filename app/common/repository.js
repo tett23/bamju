@@ -197,6 +197,12 @@ export class Repository {
       return item.path === itemPath;
     });
   }
+
+  toBuffers(): Array<Buffer> {
+    return this.items.map((item) => {
+      return item.toBuffer();
+    });
+  }
 }
 
 async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<MetaData>, Message]> {
