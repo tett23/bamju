@@ -190,12 +190,19 @@ describe('Repository', () => {
     });
   });
 
+  describe('rootItem', () => {
+    it('ルートのアイテムが取得できる', () => {
+      const item = repository.rootItem();
+      expect(item.path).toBe('/');
+    });
+  });
+
   describe('detect', () => {
     beforeEach(() => {
       const buffers = dummy({
         test: [
           'index',
-          'a/b/c/d/e/deepItem',
+          'a/b/c/d/e/deepItem.md',
           'foo/bar/baz/test1',
           'relative path test/test1',
           'synonymTest/foo/synonym',
@@ -329,8 +336,8 @@ describe('Repository', () => {
     it('単体の文字列での検索は全てを検索する', () => {
       const item = repository.detect('deepItem');
       expect(item).toMatchObject({
-        name: 'deepItem',
-        path: '/a/b/c/d/e/deepItem'
+        name: 'deepItem.md',
+        path: '/a/b/c/d/e/deepItem.md'
       });
     });
 
@@ -366,8 +373,8 @@ describe('Repository', () => {
 
       item = repository.detect('e/deepItem');
       expect(item).toMatchObject({
-        name: 'deepItem',
-        path: '/a/b/c/d/e/deepItem'
+        name: 'deepItem.md',
+        path: '/a/b/c/d/e/deepItem.md'
       });
 
       item = repository.detect('a/deepItem');

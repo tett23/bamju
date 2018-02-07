@@ -156,14 +156,14 @@ export class MetaData {
   isMatchPath(searchPath: string): boolean {
     if (searchPath.startsWith('/')) {
       if (this.isSimilarFile()) {
-        return this.path.startsWith(searchPath) && matchItemName(this.name, searchPath);
+        return this.path.startsWith(searchPath) && matchItemName(searchPath, this.path);
       }
 
       return this.path === searchPath;
     }
 
     if (this.isSimilarFile()) {
-      return matchItemName(this.path, searchPath);
+      return matchItemName(searchPath, this.path);
     }
 
     return !!this.path.match(searchPath);
@@ -260,31 +260,40 @@ export function isValidItemName(name: string): boolean {
 }
 
 function detectInner(pathString: string, metaData: MetaData): ?MetaData {
-  if (pathString === '..') {
-    if (metaData.itemType === ItemTypeRepository) {
-      return metaData;
-    }
-
-    if (metaData.parent() == null) {
-      return null;
-    }
-  }
-  if (pathString === '..' && metaData.parent() == null) {
-    return null;
+  const normalizedPath = path.normalize(pathString);
+  if (normalizedPath === metaData.path) {
+    return metaData;
   }
 
-  if (matchItemName(pathString, metaData.path)) {
+  if (normalizedPath === '/') {
+    return metaData.repository().rootItem();
+  }
+
+  if (normalizedPath === '.' || normalizedPath === './') {
+    return metaData;
+  }
+
+  if ((normalizedPath === '..' || normalizedPath === '../')) {
+    const parent = metaData.parent();
+    if (parent != null) {
+      return parent;
+    }
+
+    return metaData.repository().rootItem();
+  }
+
+  if (matchItemName(normalizedPath, metaData.path)) {
     return metaData;
   }
 
   let ret:?MetaData;
   metaData.children().some((item) => {
-    if (matchItemName(pathString, item.path)) {
+    if (matchItemName(normalizedPath, item.path)) {
       ret = item;
       return true;
     }
 
-    ret = detectInner(pathString, item);
+    ret = detectInner(normalizedPath, item);
     if (ret != null) {
       return true;
     }
@@ -300,23 +309,27 @@ function matchItemName(searchName: string, itemName: string): boolean {
     return true;
   }
 
-  if (itemName.match(searchName)) {
+  if (itemName === searchName) {
     return true;
   }
 
-  if (itemName.match(`${searchName}.md`)) {
+  if (itemName.endsWith(searchName)) {
     return true;
   }
 
-  if (itemName.match(`${searchName}.txt`)) {
+  if (itemName.endsWith(`${searchName}.md`)) {
     return true;
   }
 
-  if (itemName.match(`${searchName}.csv`)) {
+  if (itemName.endsWith(`${searchName}.txt`)) {
     return true;
   }
 
-  if (itemName.match(`${searchName}.tsv`)) {
+  if (itemName.endsWith(`${searchName}.csv`)) {
+    return true;
+  }
+
+  if (itemName.endsWith(`${searchName}.tsv`)) {
     return true;
   }
 
