@@ -456,6 +456,14 @@ describe('MetaData', () => {
       await index.updateContent('<h1>baz</h1>');
     });
 
+    it('ファイルが存在しない場合MessageTypeErrorが返る', async () => {
+      const metaData = repository.getItemByPath('/foo.md');
+      fs.unlinkSync(metaData.absolutePath);
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeError);
+    });
+
     it('ファイルのパースができる', async () => {
       const metaData = repository.getItemByPath('/foo.md');
       const [parseResult, result] = await metaData.parse();
@@ -513,7 +521,6 @@ describe('MetaData', () => {
       expect(!!parseResult.content.match('<table><tr><td>d</td><td>e</td><td>f</td><tr></table>')).toBe(true);
     });
 
-    // TODO; 存在しない場合
     // TODO: tableの中身のタグ解釈
     // TODO: Markdown.parseのcurrentの解釈
   });
