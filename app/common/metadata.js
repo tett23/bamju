@@ -17,6 +17,9 @@ import {
 import {
   type Buffer,
 } from './buffer';
+import {
+  Markdown,
+} from '../main/parser/markdown';
 
 export const ItemTypeRepository = 'repository';
 export const ItemTypeDirectory = 'directory';
@@ -29,6 +32,12 @@ export const ItemTypeUndefined = 'undefined';
 export type ItemType = 'repository' | 'directory' | 'markdown' | 'text' | 'csv' | 'tsv' | 'html' | 'undefined';
 
 export type MetaDataID = string;
+
+export type ParseResult = {
+  content: string,
+  children: Array<ParseResult>
+};
+export type ParseResults = Array<ParseResult>;
 
 export class MetaData {
   id: MetaDataID;
@@ -216,6 +225,30 @@ export class MetaData {
     return !!this.path.match(searchPath);
   }
 
+  async parse(): Promise<[?ParseResult, Message]> {
+    try {
+      fs.statSync(this.absolutePath);
+    } catch (e) {
+      const r = await parseResultNotFound(this);
+      return [r, {
+        type: MessageTypeError,
+        message: `MetaData.parse error: ${e.message}`
+      }];
+    }
+
+    if (this.isSimilarFile()) {
+      return this._parseFile();
+    } else if (this.isSimilarDirectory()) {
+      return this._parseDirectory();
+    }
+
+    const ret = await parseResultNotFound(this);
+    return [ret, {
+      type: MessageTypeError,
+      message: 'MetaData.parse unexpected error'
+    }];
+  }
+
   async updateContent(content: string): Promise<Message> {
     if (!this.isSimilarFile()) {
       return {
@@ -261,6 +294,10 @@ export class MetaData {
       type: MessageTypeSucceeded,
       message: ''
     }];
+  }
+
+  internalPath(): string {
+    return internalPath(this.repositoryName, this.path);
   }
 
   toBuffer(): Buffer {
@@ -322,6 +359,29 @@ export class MetaData {
       message: '',
     }];
   }
+
+  async _parseFile(): Promise<[?ParseResult, Message]> {
+    const ret = await parseFile(this);
+
+    return ret;
+  }
+
+  async _parseDirectory(): Promise<[?ParseResult, Message]> {
+    let directoryIndexItem = this.childItem('index.md');
+    if (directoryIndexItem != null) {
+      const r = await parseFile(directoryIndexItem);
+      return r;
+    }
+    directoryIndexItem = this.childItem('index.txt');
+    if (directoryIndexItem != null) {
+      const r = await parseFile(directoryIndexItem);
+      return r;
+    }
+
+    const ret = await parseDirectory(this);
+
+    return ret;
+  }
 }
 
 export function detectItemType(name: string): ItemType {
@@ -367,6 +427,10 @@ export function isValidItemName(name: string): boolean {
   }
 
   return true;
+}
+
+export function internalPath(repositoryName: string, itemPath: string): string {
+  return `${repositoryName}:${itemPath}`;
 }
 
 function detectInner(pathString: string, metaData: MetaData): ?MetaData {
@@ -444,4 +508,64 @@ function matchItemName(searchName: string, itemName: string): boolean {
   }
 
   return false;
+}
+
+async function parseResultNotFound(metaData: MetaData): Promise<ParseResult> {
+  const md: string =
+`
+# not found
+
+${metaData.internalPath()}
+`;
+
+  const ret = await Markdown.parse(metaData, md);
+
+  return ret;
+}
+
+async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
+  const [content, message] = await metaData.getContent();
+  if (message.type !== MessageTypeSucceeded) {
+    return [null, message];
+  }
+
+  const parseResult = await Markdown.parse(metaData, content);
+
+  return [parseResult, {
+    type: MessageTypeSucceeded,
+    message: ''
+  }];
+}
+
+async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Message]> {
+  let directoryItems: Array<string> = [];
+  try {
+    directoryItems = fs.readdirSync(metaData.absolutePath);
+  } catch (e) {
+    return [null, {
+      type: MessageTypeError,
+      message: `MetaData.openDirectory error: ${e.message}`
+    }];
+  }
+
+  const items:Array<string> = directoryItems.map((filename) => {
+    if (isValidItemName(filename) === ItemTypeUndefined) {
+      return null;
+    }
+
+    return `- [[${internalPath(metaData.repositoryName, filename)}]]{${filename}}`;
+  }).filter(Boolean); // nullを消したい
+
+  const md = `
+# ${metaData.name}
+
+${items.join('\n')}
+  `;
+
+  const ret = await Markdown.parse(metaData, md);
+
+  return [ret, {
+    type: MessageTypeSucceeded,
+    message: ''
+  }];
 }

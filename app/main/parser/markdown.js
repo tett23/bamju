@@ -1,19 +1,25 @@
-/* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0, flowtype-errors/show-errors: 0 */
+/* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0, flowtype-errors/show-errors: 0, prefer-const: 0 */
 // @flow
 
-import path from 'path';
 import marked from 'marked';
+import path from '../../common/path';
 import {
-  Manager,
   ItemTypeMarkdown,
   ItemTypeText,
   ItemTypeCSV,
   ItemTypeTSV,
-  ItemTypeUndefined,
-  type ProjectItem,
+  MetaData,
   type ParseResult,
-  type ParseResults
-} from '../../common/project';
+  type ParseResults,
+  internalPath,
+} from '../../common/metadata';
+import {
+  getInstance,
+} from '../../common/repository_manager';
+import {
+  type Message,
+  MessageTypeSucceeded,
+} from '../../common/util';
 import {
   type Parser,
   type StackItem,
@@ -59,14 +65,14 @@ type ParseInlineToken = {
   text: ?string
 };
 
-class Markdown implements Parser<MarkdownOption> {
-  static async parse(projectItem: ProjectItem, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
+export class Markdown implements Parser<MarkdownOption> {
+  static async parse(metaData: MetaData, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
     if (md === '') {
-      return emptyFileBuffer(projectItem);
+      return emptyFileBuffer();
     }
 
     const options = Object.assign({}, defaultOption, opt);
-    stack.push({ projectName: projectItem.projectName, absolutePath: projectItem.absolutePath });
+    stack.push({ projectName: metaData.repositoryName, absolutePath: metaData.absolutePath });
 
     const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
@@ -95,11 +101,11 @@ class Markdown implements Parser<MarkdownOption> {
         }
       }
       if (ret.type === 'inlineLink') {
-        ret.repo = ret.repo || projectItem.projectName;
-        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack, path.dirname(projectItem.path));
+        ret.repo = ret.repo || metaData.repositoryName;
+        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack, path.dirname(metaData.path));
         children.push(result);
 
-        ret.html = result.buffer.body;
+        ret.html = result.content;
       }
 
       return ret;
@@ -115,35 +121,35 @@ class Markdown implements Parser<MarkdownOption> {
       let re:RegExp = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, r: string, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, text, path.dirname(projectItem.path));
+          return Markdown.wikiLinkReplacer(r, name, text, path.dirname(metaData.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, r: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, name, path.dirname(projectItem.path));
+          return Markdown.wikiLinkReplacer(r, name, name, path.dirname(metaData.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?):(.+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, repo: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(repo, name, name, path.dirname(projectItem.path));
+          return Markdown.wikiLinkReplacer(repo, name, name, path.dirname(metaData.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(projectItem.projectName, name, text, path.dirname(projectItem.path));
+          return Markdown.wikiLinkReplacer(metaData.repositoryName, name, text, path.dirname(metaData.path));
         });
       }
 
       re = /\[\[(?!inline\|)([^{[\]]+?)\]\]/;
       while (re.test(ret)) {
         ret = ret.replace(re, (_, name: string): string => {
-          return Markdown.wikiLinkReplacer(projectItem.projectName, name, name, path.dirname(projectItem.path));
+          return Markdown.wikiLinkReplacer(metaData.repositoryName, name, name, path.dirname(metaData.path));
         });
       }
 
@@ -154,15 +160,8 @@ class Markdown implements Parser<MarkdownOption> {
       .then(p5);
 
     return {
-      buffer: {
-        name: projectItem.name,
-        path: projectItem.path,
-        projectName: projectItem.projectName,
-        absolutePath: projectItem.absolutePath,
-        itemType: projectItem.itemType,
-        body: html
-      },
-      children
+      content: html,
+      children,
     };
   }
 
@@ -173,29 +172,41 @@ class Markdown implements Parser<MarkdownOption> {
   }
 
   static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems, dirname: string): Promise<ParseResult> {
-    const projectItem:?ProjectItem = Manager.detect(token.repo, token.name);
-    if (!projectItem) {
+    const metaData:?MetaData = getInstance().detect(token.repo, token.name);
+    if (!metaData) {
       return inlineNotFoundBuffer(token, dirname);
     }
 
-    const { itemType } = projectItem;
-    let ret:ParseResult;
+    const { itemType } = metaData;
+    let ret:ParseResult = { content: '', children: [] };
     if (itemType === ItemTypeCSV || itemType === ItemTypeTSV) {
-      ret = await projectItem.toBuffer();
+      const [r, message] = await metaData.parse();
+      if (r != null) {
+        ret = r;
+      }
+      if (message.type !== MessageTypeSucceeded) {
+        ret.content = message.message;
+      }
     } else if (itemType === ItemTypeMarkdown || itemType === ItemTypeText) {
-      ret = await parseChild(projectItem, token, headingLevel, stack);
+      ret = await parseChild(metaData, token, headingLevel, stack);
     } else {
-      ret = await projectItem.toBuffer();
+      const [r, message] = await metaData.parse();
+      if (r != null) {
+        ret = r;
+      }
+      if (message.type !== MessageTypeSucceeded) {
+        ret.content = message.message;
+      }
     }
 
     return ret;
   }
 
-  static checkInlineLoop(projectItem: ProjectItem, stackItems: StackItems): boolean {
+  static checkInlineLoop(metaData: MetaData, stackItems: StackItems): boolean {
     let ret:boolean = false;
 
     stackItems.forEach((stackItem: StackItem) => {
-      if (stackItem.projectName === projectItem.projectName && stackItem.absolutePath === projectItem.absolutePath) {
+      if (stackItem.repositoryName === metaData.repositoryName && stackItem.absolutePath === metaData.absolutePath) {
         ret = true;
       }
     });
@@ -204,7 +215,7 @@ class Markdown implements Parser<MarkdownOption> {
   }
 
   static isExistPage(repo: string, name: string): boolean {
-    const p:?ProjectItem = Manager.detect(repo, name);
+    const p:?MetaData = getInstance().detect(repo, name);
     return p != null;
   }
 }
@@ -235,38 +246,40 @@ function renderInlineLink(html: string): string {
   return `<div>${html}</div>`;
 }
 
-async function parseChild(projectItem, token: ParseInlineToken, headingLevel = 1, stack: StackItems): Promise<ParseResult> {
+async function parseChild(metaData, token: ParseInlineToken, headingLevel = 1, stack: StackItems): Promise<ParseResult> {
   const {
     repo, name, text
   } = token;
 
-  let altText:string = !text ? `${projectItem.projectName}:${projectItem.path}` : text;
+  let altText:string = !text ? `${metaData.internalPath()}` : text;
   altText = `{${altText}}`;
 
   // ループしていると壊れるので
-  if (Markdown.checkInlineLoop(projectItem, stack)) {
-    return loopBuffer(projectItem, altText);
+  if (Markdown.checkInlineLoop(metaData, stack)) {
+    return loopBuffer(metaData, altText);
   }
 
-  let md:string = await projectItem.content();
-  // h1のおきかえ
-  md = md.replace(/^#\s*(.+)$/m, `# [[${repo}:${projectItem.path}]]{${text || name}}`);
+  let message:Message;
+  let md = '';
+  [md, message] = await metaData.getContent();
+  if (message.type !== MessageTypeSucceeded) {
+    return {
+      content: `error: ${message.message}`,
+      children: []
+    };
+  }
 
-  const ret = await Markdown.parse(projectItem, md, stack, { headingLevel });
+  // h1のおきかえ
+  md = md.replace(/^#\s*(.+)$/m, `# [[${internalPath(repo, metaData.path)}]]{${text || name}}`);
+
+  const ret = await Markdown.parse(metaData, md, stack, { headingLevel });
 
   return ret;
 }
 
-function emptyFileBuffer(projectItem: ProjectItem): ParseResult {
+function emptyFileBuffer(): ParseResult {
   return {
-    buffer: {
-      name: projectItem.name,
-      path: projectItem.path,
-      projectName: projectItem.projectName,
-      absolutePath: projectItem.absolutePath,
-      itemType: projectItem.itemType,
-      body: '(empty file)'
-    },
+    content: '(empty file)',
     children: []
   };
 }
@@ -276,33 +289,18 @@ function inlineNotFoundBuffer(token: ParseInlineToken, dirname: string): ParseRe
     repo, name, fragment
   } = token;
 
-  const linkText = `[[inline|${repo}:${name}${fragment ? `#${fragment}` : ''}]]`;
-  console.log('inlineNotFoundBuffer linkText', linkText);
+  const linkText = `[[inline|${internalPath(repo, name)}${fragment ? `#${fragment}` : ''}]]`;
   const body = linkString(repo, name, linkText, dirname, false);
 
   return {
-    buffer: {
-      name: '',
-      path: '',
-      projectName: '',
-      absolutePath: '',
-      itemType: ItemTypeUndefined,
-      body
-    },
+    content: body,
     children: []
   };
 }
 
-function loopBuffer(projectItem: ProjectItem, altText: string): ParseResult {
+function loopBuffer(metaData: MetaData, altText: string): ParseResult {
   return {
-    buffer: {
-      name: projectItem.name,
-      path: projectItem.path,
-      projectName: projectItem.projectName,
-      absolutePath: projectItem.absolutePath,
-      itemType: projectItem.itemType,
-      body: `!loop [[${projectItem.projectName}:${projectItem.path}]]${altText}`
-    },
+    content: `!loop [[${metaData.internalPath()}]]${altText}`,
     children: []
   };
 }

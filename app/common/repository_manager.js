@@ -61,13 +61,13 @@ export class RepositoryManager {
     return this.find(repositoryName) != null;
   }
 
-  detect(repositoryName: string, itemName: string): ?MetaData {
+  detect(repositoryName: string, itemName: string, current: ?MetaData = null): ?MetaData {
     const repo = this.find(repositoryName);
     if (repo == null) {
       return null;
     }
 
-    return repo.detect(itemName);
+    return repo.detect(itemName, current);
   }
 
   addRepository(conf: RepositoryConfig, items: Array<Buffer> = []): [?Repository, Message] {

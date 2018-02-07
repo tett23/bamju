@@ -445,6 +445,8 @@ describe('Repository', () => {
       });
     });
 
+    // TODO: .txt, .mdのディレクトリを自動で開く
+
     // TODO
     // it('濁点とかを含んでいても検索できる(mac-utf8)', () => {
     //   expect(RepositoryManager.detect('test', '該当しないファイル名ガ')).toBeTruthy();

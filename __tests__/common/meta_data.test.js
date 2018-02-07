@@ -430,4 +430,33 @@ describe('MetaData', () => {
       expect(content).toBe('');
     });
   });
+
+  describe('parse', () => {
+    // TODO: .txt, .mdのディレクトリを自動で開く
+    // file, directoryの場合
+    // 存在しない場合
+    beforeEach(async () => {
+      const [item, _] = await repository.addFile('/foo.md');
+      item.updateContent('# foo');
+      const [dir, __] = await repository.addDirectory('/testDir');
+      await dir.addDirectory('foo');
+    });
+
+    it('ファイルのパースができる', async () => {
+      const metaData = repository.getItemByPath('/foo.md');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match(/<h1.*?>foo<\/h1>/)).toBe(true);
+    });
+
+    it('ディレクトリのパースができる', async () => {
+      const metaData = repository.getItemByPath('/testDir');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match(/<h1.*?>testDir<\/h1>/)).toBe(true);
+      expect(!!parseResult.content.match(/<li.*?><span.*?>foo<\/span><\/li>/)).toBe(true);
+    });
+  });
 });
