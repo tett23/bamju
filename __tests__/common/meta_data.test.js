@@ -440,6 +440,18 @@ describe('MetaData', () => {
       item.updateContent('# foo');
       const [dir, __] = await repository.addDirectory('/testDir');
       await dir.addDirectory('foo');
+
+      let [withIndexDir, ___] = await repository.addDirectory('/md index test');
+      let [index, ____] = await withIndexDir.addFile('index.md');
+      await index.updateContent('# foo');
+
+      [withIndexDir, ___] = await repository.addDirectory('/text index test');
+      [index, ____] = await withIndexDir.addFile('index.txt');
+      await index.updateContent('# bar');
+
+      [withIndexDir, ___] = await repository.addDirectory('/html index test');
+      [index, ____] = await withIndexDir.addFile('index.html');
+      await index.updateContent('<h1>baz</h1>');
     });
 
     it('ファイルのパースができる', async () => {
@@ -457,6 +469,30 @@ describe('MetaData', () => {
       expect(result.type).toBe(MessageTypeSucceeded);
       expect(!!parseResult.content.match(/<h1.*?>testDir<\/h1>/)).toBe(true);
       expect(!!parseResult.content.match(/<li.*?><span.*?>foo<\/span><\/li>/)).toBe(true);
+    });
+
+    it('ディレクトリをparseしたとき、index.mdが存在すればそちらを開く', async () => {
+      const metaData = repository.getItemByPath('/md index test');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match(/<h1.*?>foo<\/h1>/)).toBe(true);
+    });
+
+    it('ディレクトリをparseしたとき、index.txtが存在すればそちらを開く', async () => {
+      const metaData = repository.getItemByPath('/text index test');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match('# bar')).toBe(true);
+    });
+
+    it('ディレクトリをparseしたとき、index.htmlが存在すればそちらを開く', async () => {
+      const metaData = repository.getItemByPath('/html index test');
+      const [parseResult, result] = await metaData.parse();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(!!parseResult.content.match('<h1>baz</h1>')).toBe(true);
     });
   });
 });

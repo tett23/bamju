@@ -377,6 +377,11 @@ export class MetaData {
       const r = await parseFile(directoryIndexItem);
       return r;
     }
+    directoryIndexItem = this.childItem('index.html');
+    if (directoryIndexItem != null) {
+      const r = await parseFile(directoryIndexItem);
+      return r;
+    }
 
     const ret = await parseDirectory(this);
 
@@ -529,7 +534,26 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
     return [null, message];
   }
 
-  const parseResult = await Markdown.parse(metaData, content);
+  let parseResult:ParseResult = { content: '', children: [] };
+  switch (metaData.itemType) {
+  case ItemTypeMarkdown: {
+    parseResult = await Markdown.parse(metaData, content);
+    break;
+  }
+  case ItemTypeText: {
+    parseResult.content = content;
+    break;
+  }
+  case ItemTypeHTML: {
+    parseResult.content = content;
+    break;
+  }
+  default:
+    return [null, {
+      type: MessageTypeFailed,
+      message: 'parseFile itemType trap default'
+    }];
+  }
 
   return [parseResult, {
     type: MessageTypeSucceeded,
