@@ -7,20 +7,23 @@ import { promisify } from 'util';
 import mkdirp from 'mkdirp';
 import expandHomeDir from 'expand-home-dir';
 import {
-  Manager,
-  type BufferItem
-} from './project';
+  getInstance,
+} from './repository_manager';
+import {
+  type RepositoryConfig,
+} from './repository';
+import {
+  type Buffer,
+} from './buffer';
 
 export type BamjuConfig = {
-  projects: {
-    [string]: string
-  },
+  repositories: Array<RepositoryConfig>,
   windows: Windows,
   followChange: boolean,
   config: {
     mkdirP: boolean
   },
-  bufferItems: Array<BufferItem>,
+  bufferItems: {[string]: Array<Buffer>},
   init: () => Promise<void>,
   update: ({}) => Promise<void>,
   quit: () => void
@@ -44,9 +47,12 @@ export type Window = {
 export type Windows = Array<Window>;
 
 export const defaultConfig:BamjuConfig = {
-  projects: {
-    'bamju-specifications': '/Users/tett23/projects/bamju-specifications',
-  },
+  repositories: [
+    {
+      repositoryName: 'bamju-specifications',
+      absolutePath: '/Users/tett23/projects/bamju-specifications',
+    }
+  ],
   windows: [{
     id: 'init',
     rectangle: {
@@ -64,7 +70,7 @@ export const defaultConfig:BamjuConfig = {
       }
     ]
   }],
-  bufferItems: [],
+  bufferItems: {},
   followChange: true,
   config: {
     mkdirP: true
@@ -80,7 +86,7 @@ export const defaultConfig:BamjuConfig = {
     return updateConfigFile();
   },
   quit() {
-    Config.bufferItems = Manager.getBufferItems();
+    Config.bufferItems = getInstance().toBuffers();
 
     fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
     _quit = true;
