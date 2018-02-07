@@ -438,7 +438,7 @@ describe('MetaData', () => {
       [item, _] = await repository.addFile('/foo.csv');
       item.updateContent('a,b,c');
       [item, _] = await repository.addFile('/foo.tsv');
-      item.updateContent('d	e	f');
+      item.updateContent('d\te\tf');
 
       const [dir, __] = await repository.addDirectory('/testDir');
       await dir.addDirectory('foo');
@@ -459,7 +459,7 @@ describe('MetaData', () => {
     it('ファイルが存在しない場合MessageTypeErrorが返る', async () => {
       const metaData = repository.getItemByPath('/foo.md');
       fs.unlinkSync(metaData.absolutePath);
-      const [parseResult, result] = await metaData.parse();
+      const [_, result] = await metaData.parse();
 
       expect(result.type).toBe(MessageTypeError);
     });
