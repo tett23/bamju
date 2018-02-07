@@ -79,15 +79,6 @@ export class MetaData {
 
     return this._addItem(ItemTypeDirectory, itemName);
   }
-  //
-  // detect(name: string): ?MetaData {
-  //   ret = current.find((item) => {
-  //     return item.path.match(search);
-  //   });
-  //   const search = path.normalize(name);
-  //
-  //   return detectInner(search, this);
-  // }
 
   childItem(name: string): ?MetaData {
     return this.children().find((item) => {
@@ -141,14 +132,11 @@ export class MetaData {
     if (name === '.') {
       return this;
     }
-    if (name === '..') {
-      if (this.path === '/') {
-        return this;
-      }
-      return this.parent();
+    if (name === '..' && this.path === '/') {
+      return this;
     }
 
-    return this.repository().detect(name, this);
+    return detectInner(name, this);
   }
 
   isExist(name: string): boolean {
@@ -277,11 +265,11 @@ function detectInner(pathString: string, metaData: MetaData): ?MetaData {
       return metaData;
     }
 
-    if (metaData.parent == null) {
+    if (metaData.parent() == null) {
       return null;
     }
   }
-  if (pathString === '..' && metaData.parent == null) {
+  if (pathString === '..' && metaData.parent() == null) {
     return null;
   }
 
@@ -290,7 +278,7 @@ function detectInner(pathString: string, metaData: MetaData): ?MetaData {
   }
 
   let ret:?MetaData;
-  metaData.children.some((item) => {
+  metaData.children().some((item) => {
     if (matchItemName(pathString, item.path)) {
       ret = item;
       return true;
