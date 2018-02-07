@@ -1,7 +1,10 @@
 // @flow
 /* eslint no-undef: 0 */
 
+import fs from 'fs';
 import path from '../app/common/path';
+
+import './global_config.test';
 
 import {
   type Buffer,
@@ -10,7 +13,7 @@ import {
   type ItemType,
   createMetaDataID,
   ItemTypeUndefined,
-  ItemTypeRepository,
+  ItemTypeDirectory,
   detectItemType
 } from '../app/common/metadata';
 
@@ -46,12 +49,6 @@ function mergeDummyData(obj: DummyBuffer = {}): Buffer {
 function createDummyBuffer(item: DummyBuffer): Buffer {
   return mergeDummyData(item);
 }
-
-// function createDummyBuffers(items: Array<DummyBuffer>): Array<Buffer> {
-//   return items.map((item) => {
-//     return createDummyBuffer(item);
-//   });
-// }
 
 type dummyType = {
   [string]: Array<string>
@@ -124,6 +121,30 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
       if (parentIdx !== -1) {
         ret[repositoryName][i].parentID = ret[repositoryName][parentIdx].id;
         ret[repositoryName][parentIdx].childrenIDs.push(buf.id);
+      }
+    });
+  });
+
+  repositoryKeys.forEach((repositoryName) => {
+    const sorted = ret[repositoryName].sort((a, b) => {
+      return a.path > b.path;
+    });
+
+    fs.mkdirSync(path.join('/tmp/bamju', repositoryName));
+
+    sorted.forEach((buf) => {
+      if (buf.itemType === ItemTypeDirectory) {
+        try {
+          fs.mkdirSync(buf.absolutePath);
+        } catch (e) {
+          console.log(`dummy error: ${e.message}`);
+        }
+      } else {
+        try {
+          fs.writeFileSync(buf.absolutePath, '');
+        } catch (e) {
+          console.log(`dummy error: ${e.message}`);
+        }
       }
     });
   });
