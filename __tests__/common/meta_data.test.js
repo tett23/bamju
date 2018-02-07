@@ -1,6 +1,7 @@
 /* eslint no-undef: 0 */
 
 import fs from 'fs';
+import path from '../../app/common/path';
 
 import {
   RepositoryManager,
@@ -21,6 +22,7 @@ import {
 } from '../../app/common/metadata';
 import {
   MessageTypeFailed,
+  MessageTypeError,
   MessageTypeSucceeded
 } from '../../app/common/util';
 
@@ -364,6 +366,33 @@ describe('MetaData', () => {
       metaData.name = 'foo';
 
       expect(metaData.toBuffer().name).toBe('foo');
+    });
+  });
+
+  describe('updateContent', () => {
+    it('ファイルの変更ができる', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+
+      const result = await metaData.updateContent('hogehoge');
+      expect(result.type).toBe(MessageTypeSucceeded);
+      const updated = fs.readFileSync(metaData.absolutePath, 'utf8');
+
+      expect(updated).toBe('hogehoge');
+    });
+
+    it('isSimilarFile === trueでない場合、MessageTypeFailedが返る', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      const result = await metaData.updateContent('hogehoge');
+      expect(result.type).toBe(MessageTypeFailed);
+    });
+
+    it('何らかの理由で親がなかったりするとMessageTypeErrorが返る', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      fs.unlinkSync(metaData.absolutePath);
+      fs.rmdirSync(path.dirname(metaData.absolutePath));
+
+      const result = await metaData.updateContent('hogehoge');
+      expect(result.type).toBe(MessageTypeError);
     });
   });
 });

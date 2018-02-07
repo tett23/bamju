@@ -5,6 +5,7 @@ import path from './path';
 import {
   type Message,
   MessageTypeFailed,
+  MessageTypeError,
   MessageTypeSucceeded,
 } from './util';
 import {
@@ -206,6 +207,29 @@ export class MetaData {
     }
 
     return !!this.path.match(searchPath);
+  }
+
+  async updateContent(content: string): Promise<Message> {
+    if (!this.isSimilarFile()) {
+      return {
+        type: MessageTypeFailed,
+        message: `MetaData.updateContent itemType check. path=${this.path} itemType=${this.itemType}`
+      };
+    }
+
+    try {
+      fs.writeFileSync(this.absolutePath, content);
+    } catch (e) {
+      return {
+        type: MessageTypeError,
+        message: `MetaData.updateContent error. ${e.message}`
+      };
+    }
+
+    return {
+      type: MessageTypeSucceeded,
+      message: ''
+    };
   }
 
   toBuffer(): Buffer {
