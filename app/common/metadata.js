@@ -7,8 +7,11 @@ import {
   MessageTypeSucceeded,
 } from './util';
 import {
-  RepositoryManager
+  getInstance
 } from './repository_manager';
+import {
+  Repository
+} from './repository';
 import {
   type Buffer,
 } from './buffer';
@@ -33,12 +36,12 @@ export class MetaData {
   repositoryPath: string;
   absolutePath: string;
   itemType: ItemType;
-  parent: ?MetaData;
-  children: Array<MetaData>;
+  parentID: ?MetaDataID;
+  childrenIDs: Array<MetaDataID>;
   isLoaded: boolean;
   isOpened: boolean;
 
-  constructor(buffer: Buffer, parent: ?MetaData = null) {
+  constructor(buffer: Buffer) {
     this.id = buffer.id;
     if (this.id === '') {
       this.id = createMetaDataID();
@@ -49,10 +52,8 @@ export class MetaData {
     this.repositoryPath = buffer.repositoryPath;
     this.absolutePath = buffer.absolutePath;
     this.itemType = buffer.itemType;
-    this.parent = parent;
-    this.children = buffer.children.map((c) => {
-      return new MetaData(c, this);
-    });
+    this.parentID = buffer.parentID;
+    this.childrenIDs = buffer.childrenIDs;
     this.isLoaded = buffer.isLoaded;
     this.isOpened = buffer.isOpened;
   }
@@ -61,7 +62,7 @@ export class MetaData {
     if (!isSimilarFile(detectItemType(itemName))) {
       return [null, {
         type: MessageTypeFailed,
-        message: `MetaData.addFile.isSimilarFile itemName=${itemName}`
+        message: `MetaData.addFile isSimilarFile check itemName=${itemName}`
       }];
     }
 
@@ -78,43 +79,64 @@ export class MetaData {
 
     return this._addItem(ItemTypeDirectory, itemName);
   }
-
-  detect(name: string): ?MetaData {
-    const search = path.normalize(name);
-    let current:MetaData;
-    if (name.match(/^\//)) {
-      current = this.rootItem();
-    } else if (name.match(/^\./)) {
-      current = this;
-    } else {
-      current = this.rootItem();
-    }
-
-    return detectInner(search, current);
-  }
-
-  isExist(name: string): boolean {
-    return this.childItem(name) != null;
-  }
+  //
+  // detect(name: string): ?MetaData {
+  //   ret = current.find((item) => {
+  //     return item.path.match(search);
+  //   });
+  //   const search = path.normalize(name);
+  //
+  //   return detectInner(search, this);
+  // }
 
   childItem(name: string): ?MetaData {
-    return this.children.find((item) => {
+    return this.children().find((item) => {
       return item.name === name;
     });
   }
 
-  rootItem(): MetaData {
-    if (this.itemType === ItemTypeRepository || this.path === '/') {
-      return this;
-    }
+  getIDs(): Array<MetaDataID> {
+    const ret = this.children().map((child) => {
+      return child.id;
+    });
 
-    const ret = RepositoryManager.detect(this.repositoryName, '/');
-
-    if (ret == null) {
-      throw new Error(`MetaData.rootItem rootItem not found. repositoryName=${this.repositoryName}`);
-    }
+    ret.push(this.id);
 
     return ret;
+  }
+
+  parent(): ?MetaData {
+    return this.repository().getItemByID(this.parentID);
+  }
+
+  children(): Array<MetaData> {
+    const repo = this.repository();
+
+    const ret:Array<MetaData> = [];
+    this.childrenIDs.forEach((childID) => {
+      const item:?MetaData = repo.getItemByID(childID);
+
+      if (item != null) {
+        ret.push(item);
+      }
+    });
+
+    return ret;
+  }
+
+  repository(): Repository {
+    const repo = getInstance().find(this.repositoryName);
+    if (repo == null) {
+      throw new Error();
+    }
+
+    return repo;
+  }
+
+  isExist(name: string): boolean {
+    return this.children().find((item) => {
+      return item.name === name;
+    }) != null;
   }
 
   isSimilarFile(): boolean {
@@ -143,7 +165,7 @@ export class MetaData {
     if (this.isExist(itemName)) {
       return [null, {
         type: MessageTypeFailed,
-        message: 'MetaData._addItem.isExist'
+        message: 'MetaData._addItem isExist check'
       }];
     }
 
@@ -155,12 +177,13 @@ export class MetaData {
       repositoryPath: this.repositoryPath,
       absolutePath: path.join(this.absolutePath, itemName),
       itemType,
-      parent: null,
-      children: [],
+      parentID: this.id,
+      childrenIDs: [],
       isLoaded: false,
       isOpened: false,
-    }, this);
-    this.children.push(ret);
+    });
+    this.childrenIDs.push(ret.id);
+    this.repository().addMetaData(ret);
 
     return [ret, {
       type: MessageTypeSucceeded,

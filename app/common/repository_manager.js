@@ -1,5 +1,4 @@
 // @flow
-/* eslint no-continue: 0 */
 
 import path from './path';
 import {
@@ -9,178 +8,100 @@ import {
 } from './util';
 import {
   MetaData,
-  createMetaDataID,
   ItemTypeRepository,
 } from './metadata';
+import {
+  Repository,
+  type RepositoryConfig
+} from './repository';
 import {
   type Buffer,
 } from './buffer';
 
-type RepositoryConfig = Array<{
-  repositoryName: string,
-  absolutePath: string
-}>;
-
-let _repositories:Array<MetaData> = [];
+type initBuffer = {
+  [string]: Array<Buffer>
+};
 
 export class RepositoryManager {
-  static init(buffers: Array<Buffer>, config: RepositoryConfig): Array<MetaData> {
-    const initItems = config.map(({ repositoryName, absolutePath }) => {
-      let buffer = buffers.find((buf) => {
-        return buf.repositoryName === repositoryName;
+  _repositories: Array<Repository>
+
+  constructor(buffers: initBuffer, config: Array<RepositoryConfig>) {
+    const repositories = config.map((conf) => {
+      let init: Array<Buffer> = [];
+      Object.keys(buffers).some((key) => {
+        const items = buffers[key];
+        if (items) {
+          init = items;
+        }
+
+        return items != null;
       });
 
-      if (buffer == null) {
-        buffer = createRootBuffer(repositoryName, absolutePath);
-      }
-
-      return buffer;
+      return new Repository(init, conf);
     });
 
-    _repositories = loadBufferItems(initItems);
-
-    return _repositories;
+    this._repositories = repositories;
+    _instance = this;
   }
 
-  static detect(repositoryName: string, itemName: string): ?MetaData {
-    const rootItem = RepositoryManager.find(repositoryName);
-    if (rootItem == null) {
+  getRepositories(): Array<Repository> {
+    return this._repositories;
+  }
+
+  find(repositoryName: string): ?Repository {
+    return this._repositories.find((repo) => {
+      return repo.name === repositoryName;
+    });
+  }
+
+  isExist(repositoryName: string): boolean {
+    return this.find(repositoryName) != null;
+  }
+
+  detect(repositoryName: string, itemName: string): ?MetaData {
+    const repo = this.find(repositoryName);
+    if (repo == null) {
       return null;
     }
 
-    return rootItem.detect(itemName);
+    return repo.detect(itemName);
   }
 
-  static isExist(repositoryName: string): boolean {
-    return RepositoryManager.find(repositoryName) != null;
-  }
-
-  static async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(filePath)) {
+  async addFile(repositoryName: string, filePath: string): Promise<[?MetaData, Message]> {
+    const repo = this.find(repositoryName);
+    if (repo == null) {
       return [null, {
         type: MessageTypeFailed,
-        message: 'RepositoryManager.addFile.isAbsolute',
+        message: 'RepositoryManager.addFile repo null check',
       }];
     }
 
-    const rootItem = RepositoryManager.find(repositoryName);
-    if (rootItem == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addFile.rootItem',
-      }];
-    }
-
-    const parentPath = path.dirname(path.normalize(filePath));
-    const [_, addDirectoryResult] = await RepositoryManager.addDirectory(repositoryName, parentPath);
-    if (addDirectoryResult.type !== MessageTypeSucceeded) {
-      return [null, addDirectoryResult];
-    }
-
-    const parentItem = RepositoryManager.detect(repositoryName, parentPath);
-    if (parentItem == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `RepositoryManager.addFile.isExist ${parentPath}`,
-      }];
-    }
-
-    const itemName = path.basename(filePath);
-    const ret = await parentItem.addFile(itemName);
+    const ret = await repo.addFile(filePath);
 
     return ret;
   }
 
-  static async addDirectory(repositoryName: string, dirPath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(dirPath)) {
+  async addDirectory(repositoryName: string, dirPath: string): Promise<[?MetaData, Message]> {
+    const repo = this.find(repositoryName);
+    if (repo == null) {
       return [null, {
         type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectory.isAbsolute',
+        message: 'RepositoryManager.addDirectrory repo null check',
       }];
     }
 
-    const rootItem = RepositoryManager.find(repositoryName);
-    if (rootItem == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectrory rootItem null check',
-      }];
-    }
-
-    const ret = await _mkdir(dirPath, rootItem);
+    const ret = await repo.addDirectory(dirPath);
 
     return ret;
   }
-
-  static find(repositoryName: string): ?MetaData {
-    return _repositories.find((item) => {
-      return item.repositoryName === repositoryName;
-    });
-  }
 }
 
-function createRootBuffer(repositoryName: string, absolutePath: string): Buffer {
-  return {
-    id: createMetaDataID(),
-    name: '/',
-    path: '/',
-    repositoryName,
-    repositoryPath: absolutePath,
-    absolutePath,
-    itemType: ItemTypeRepository,
-    isLoaded: false,
-    isOpened: false,
-    children: [],
-    parent: null,
-  };
-}
+let _instance:?RepositoryManager = null;
 
-function loadBufferItems(buffers: Array<Buffer>): Array<MetaData> {
-  return buffers.map((buf) => {
-    return new MetaData(buf, null);
-  });
-}
-
-export class FileItem {
-}
-
-async function _mkdir(dirPath: string, targetItem: MetaData): Promise<[?MetaData, Message]> {
-  const pathItems = path.split(dirPath);
-  let currentItem:MetaData = targetItem;
-  for (let i = 0; i < pathItems.length; i += 1) {
-    const name = pathItems[i];
-
-    if (name === '') {
-      continue;
-    }
-
-    const existItem = currentItem.childItem(name);
-    if (existItem == null) {
-      const [dir, message] = await currentItem.addDirectory(name);
-      if (message.type === MessageTypeFailed) {
-        return [dir, message];
-      }
-
-      currentItem = dir;
-    } else if (existItem.isSimilarFile()) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager._mkdirP isSimilarFile'
-      }];
-    } else if (existItem.isSimilarDirectory()) {
-      currentItem = existItem;
-    } else {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectory.else',
-      }];
-    }
+export function getInstance(): RepositoryManager {
+  if (_instance == null) {
+    throw new Error();
   }
 
-  return [currentItem, {
-    type: MessageTypeSucceeded,
-    message: '',
-  }];
+  return _instance;
 }
-
-export default RepositoryManager;

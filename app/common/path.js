@@ -35,6 +35,10 @@ function normalize(str: string): string {
   return path.normalize(str);
 }
 
+function resolve(str: string): string {
+  return normalize(str);
+}
+
 function dirname(str: string): string {
   return path.dirname(str);
 }
@@ -47,5 +51,6 @@ export default {
   extname,
   isAbsolute,
   normalize,
+  resolve,
   dirname
 };

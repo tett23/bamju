@@ -13,8 +13,8 @@ export type Buffer = {
   repositoryPath: string,
   absolutePath: string,
   itemType: ItemType,
-  parent: ?Buffer,
-  children: Array<Buffer>,
+  parentID: ?MetaDataID,
+  childrenIDs: Array<MetaDataID>,
   isLoaded: boolean,
   isOpened: boolean
 };

@@ -8,6 +8,7 @@ import {
 } from '../app/common/buffer';
 import {
   type ItemType,
+  createMetaDataID,
   ItemTypeUndefined,
   ItemTypeRepository,
   detectItemType
@@ -25,88 +26,119 @@ type DummyBuffer = {
   items?: Array<Buffer>
 };
 
-function createDummyBuffer(obj: DummyBuffer = {}): Buffer {
+function mergeDummyData(obj: DummyBuffer = {}): Buffer {
   return Object.assign({}, {
-    id: '',
+    id: createMetaDataID(),
     name: 'test',
     repositoryName: 'test',
-    repositoryPath: '/tmp',
+    repositoryPath: '/tmp/bamju/test',
     path: '',
     absolutePath: '',
     itemType: ItemTypeUndefined,
     items: [],
     isLoaded: true,
     isOpened: false,
-    parent: null,
-    children: []
+    parentID: null,
+    childrenIDs: []
   }, obj);
 }
 
+function createDummyBuffer(item: DummyBuffer): Buffer {
+  return mergeDummyData(item);
+}
+
+// function createDummyBuffers(items: Array<DummyBuffer>): Array<Buffer> {
+//   return items.map((item) => {
+//     return createDummyBuffer(item);
+//   });
+// }
+
 type dummyType = {
-  [_: string]: dummyType
+  [string]: Array<string>
 }
 
-function dummyBuffer(repositoryName: string, parentPath:string, items: dummyType): Array<Buffer> {
-  return Object.keys(items).map((key) => {
-    const name = path.basename(key);
+function createByPath(repositoryName: string, itemPath:string): Buffer {
+  let name = path.basename(itemPath);
+  if (itemPath === '/') {
+    name = '/';
+  }
+  const repositoryPath = path.join('/tmp/bamju', repositoryName);
+  const absolutePath = path.join(repositoryPath, itemPath);
 
-    const itemPath = path.join(parentPath, key);
-
-    return createDummyBuffer({
-      name,
-      repositoryName,
-      path: itemPath,
-      absolutePath: path.join('/tmp', repositoryName, itemPath),
-      isLoaded: true,
-      children: dummyBuffer(repositoryName, [parentPath, key].join('/'), items[key]),
-      itemType: detectItemType(key)
-    });
-  });
-}
-
-export function createBufferTree(name: string, items: dummyType): Buffer {
   return createDummyBuffer({
-    id: 'aaaaaa',
-    name: '/',
-    repositoryName: name,
-    repositoryPath: `/tmp/bamju-test-${name}`,
-    path: '/',
-    absolutePath: `/tmp/bamju-test-${name}`,
-    itemType: ItemTypeRepository,
-    parent: null,
-    children: dummyBuffer(name, '/', items),
-    isLoaded: true,
-    isOpened: true,
+    name,
+    path: itemPath,
+    repositoryName,
+    repositoryPath,
+    absolutePath,
+    itemType: detectItemType(itemPath)
   });
 }
 
-describe('dummy', () => {
-  it('createTree', () => {
-    const item = createBufferTree('bamju-repository-test', {
-      foo: {}
-    });
-    expect(item.children.length).toBe(1);
-    expect(item.children[0].name).toBe('foo');
-    expect(item.children[0].path).toBe('/foo');
+export function dummy(items: dummyType): {[string]: Array<Buffer>} {
+  const ret = {};
+  const repositoryKeys = Object.keys(items);
 
-    // item = dummyBuffer('/', { hoge: {}, fuga: {} });
-    // expect(item.length).toBe(2);
-    // expect(item[0].name).toBe('hoge');
-    // expect(item[0].path).toBe('/hoge');
-    // expect(item[1].name).toBe('fuga');
-    // expect(item[1].path).toBe('/fuga');
-    //
-    // item = dummyBuffer('/', { a: { b: { c: {} } } });
-    // expect(item.length).toBe(1);
-    // expect(item[0].name).toBe('a');
-    // expect(item[0].path).toBe('/a');
-    // expect(item[0].items.length).toBe(1);
-    // expect(item[0].items[0].name).toBe('b');
-    // expect(item[0].items[0].path).toBe('/a/b');
-    // expect(item[0].items[0].items.length).toBe(1);
-    // expect(item[0].items[0].items[0].name).toBe('c');
-    // expect(item[0].items[0].items[0].path).toBe('/a/b/c');
+  repositoryKeys.forEach((repositoryName) => {
+    const repositoryBuffers:Array<Buffer> = [];
+
+    items[repositoryName].forEach((itemPath) => {
+      let parentPath = '/';
+      path.split(path.join('/', path.dirname(itemPath))).forEach((name) => {
+        parentPath = path.join(parentPath, name);
+        const isExist = repositoryBuffers.some((item) => {
+          return item.path === parentPath;
+        });
+
+        if (!isExist) {
+          repositoryBuffers.push(createByPath(repositoryName, parentPath));
+        }
+      });
+
+      repositoryBuffers.push(createByPath(repositoryName, path.join('/', itemPath)));
+    });
+
+    ret[repositoryName] = repositoryBuffers;
   });
+
+  repositoryKeys.forEach((repositoryName) => {
+    ret[repositoryName].forEach((buf, i) => {
+      const parentPath = path.dirname(buf.path);
+      if (buf.path === '/') {
+        ret[repositoryName][i].childrenIDs = ret[repositoryName].filter((item) => {
+          return !item.path.match(/^\/.+?\/.+/);
+        }).filter((b) => {
+          return b.id !== buf.id;
+        }).map((item) => {
+          return item.id;
+        });
+
+        return;
+      } else if (parentPath === '/') {
+        return;
+      }
+
+      const parentIdx = ret[repositoryName].findIndex((item) => {
+        return item.path === parentPath;
+      });
+      if (parentIdx !== -1) {
+        ret[repositoryName][i].parentID = ret[repositoryName][parentIdx].id;
+        ret[repositoryName][parentIdx].childrenIDs.push(buf.id);
+      }
+    });
+  });
+
+  return ret;
+}
+
+it('dummy', () => {
+  const items = dummy({
+    test: [
+      'foo/bar/baz.md'
+    ]
+  });
+
+  expect(items.test.length).toBe(4);
 });
 
 export default {};
