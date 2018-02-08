@@ -47,6 +47,17 @@ export class RepositoryManager {
     _instance = this;
   }
 
+  async loadRepositories(): Promise<Repository[]> {
+    const promiseAll = this._repositories.map(async (repo) => {
+      const r = await repo.load();
+      return r;
+    });
+
+    const ret = await Promise.all(promiseAll);
+
+    return ret;
+  }
+
   getRepositories(): Array<Repository> {
     return this._repositories;
   }

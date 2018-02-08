@@ -77,9 +77,10 @@ export class MetaData {
       try {
         fs.statSync(this.absolutePath);
       } catch (e) {
+        // TODO: 無名ファイルにする処理
         return [null, {
-          type: MessageTypeError,
-          message: `MetaData.load stat error: ${e.message}`
+          type: MessageTypeSucceeded,
+          message: ''
         }];
       }
     }

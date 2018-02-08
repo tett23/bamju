@@ -70,7 +70,7 @@ describe('MetaData', () => {
       expect(newState.childrenIDs[0]).toBe(metaData.childrenIDs[0]);
     });
 
-    it('absolutePathが存在しない場合、MessageTypeErrorが返る', async () => {
+    it('absolutePathが存在しなくてもエラーになはらない', async () => {
       const metaData = repository.getItemByPath('/foo/bar/baz');
       metaData.children().forEach((item) => {
         fs.unlinkSync(item.absolutePath);
@@ -79,8 +79,10 @@ describe('MetaData', () => {
 
       const [_, result] = await metaData.load();
 
-      expect(result.type).toBe(MessageTypeError);
+      expect(result.type).toBe(MessageTypeSucceeded);
     });
+
+    // TODO: ファイルが存在しなくなった場合、無名ファイルに追加
 
     it('子のアイテムが存在しなくなった場合は削除される', async () => {
       const metaData = repository.getItemByPath('/foo/bar/baz');

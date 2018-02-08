@@ -3,7 +3,7 @@
 
 import path from 'path';
 import { app } from 'electron';
-import { Manager } from './common/project';
+import { RepositoryManager } from './common/repository_manager';
 import { WindowManager } from './main/window';
 
 const { Config, defaultConfig } = require('./common/bamju_config');
@@ -56,8 +56,8 @@ app.on('ready', async () => {
 
   await Config.init();
 
-  Manager.init(Config.bufferItems);
-  Manager.loadProjects();
+  const repositoryManager = new RepositoryManager(Config.bufferItems, Config.repositories);
+  repositoryManager.loadRepositories();
 
   WindowManager.loadWindows(Config.windows);
 });

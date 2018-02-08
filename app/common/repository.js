@@ -15,8 +15,9 @@ import {
 } from './metadata';
 import {
   type Message,
-  MessageTypeFailed,
   MessageTypeSucceeded,
+  MessageTypeFailed,
+  MessageTypeError,
 } from './util';
 
 export type RepositoryConfig = {
@@ -47,6 +48,42 @@ export class Repository {
         return new MetaData(buf);
       });
     }
+  }
+
+  async load(): Promise<[?Repository, Message]> {
+    const rootItem = this.rootItem();
+    try {
+      const stat = fs.statSync(rootItem.absolutePath);
+      if (!stat.isDirectory()) {
+        return [null, {
+          type: MessageTypeFailed,
+          message: `Repository.load stat.isDirectory absolutePath=${rootItem.absolutePath}`
+        }];
+      }
+    } catch (e) {
+      return [null, {
+        type: MessageTypeError,
+        message: `Repository.load stat error: ${e.message}`
+      }];
+    }
+
+    const promiseAll = this.items.map(async (item) => {
+      const r = await item.load();
+      return r;
+    });
+    const results = await Promise.all(promiseAll);
+
+    const errorResult = results.find(([_, message]) => {
+      return message.type !== MessageTypeSucceeded;
+    });
+    if (errorResult != null) {
+      return errorResult;
+    }
+
+    return [this, {
+      type: MessageTypeSucceeded,
+      message: ''
+    }];
   }
 
   loadItems(items: Array<MetaData>) {

@@ -1,6 +1,7 @@
 /* eslint no-undef: 0 */
 
 import fs from 'fs';
+import path from '../../app/common/path';
 
 import {
   RepositoryManager,
@@ -13,8 +14,9 @@ import {
   ItemTypeDirectory,
 } from '../../app/common/metadata';
 import {
+  MessageTypeSucceeded,
   MessageTypeFailed,
-  MessageTypeSucceeded
+  MessageTypeError,
 } from '../../app/common/util';
 
 
@@ -42,14 +44,60 @@ beforeEach(() => {
 describe('Repository', () => {
   describe('constructor', () => {
     it('absolutePathが実際に存在しない場合Failedのメッセージが返る', () => {
-      const testFunc = () => { /* eslint no-new: 0 */
-        new Repository({
+      const testFunc = () => {
+        return new Repository({
           repositoryName: 'foo',
           absolutePath: '/tmp/bamju/foo'
         });
       };
 
       expect(testFunc).toThrowError();
+    });
+  });
+
+  describe('load', () => {
+    it('ファイルの差分をロードできる', async () => {
+      const rootItem = repository.rootItem();
+      fs.mkdirSync(path.join(rootItem.absolutePath, 'diff'));
+      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo/bar/baz/testItem.md'));
+
+      const [newState, message] = await repository.load();
+      expect(message.type).toBe(MessageTypeSucceeded);
+
+      const diffItem = newState.getItemByPath('/diff');
+      expect(diffItem).toMatchObject({
+        name: 'diff',
+        path: path.join(rootItem.path, 'diff'),
+        parentID: rootItem.id
+      });
+
+      const del = newState.getItemByPath('/foo/bar/baz/testItem.md');
+      expect(del).not.toBe(expect.anything());
+    });
+
+    it('rootItemが消えていた場合、MessageTypeErrorが返る', async () => {
+      const rootItem = repository.rootItem();
+      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo/bar/baz/testItem.md'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar/baz'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo'));
+      fs.rmdirSync(rootItem.absolutePath);
+
+      const [_, message] = await repository.load();
+      expect(message.type).toBe(MessageTypeError);
+    });
+
+    it('rootItemがディレクトリでない場合、MessageTypeFailedが返る', async () => {
+      const rootItem = repository.rootItem();
+      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo/bar/baz/testItem.md'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar/baz'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo'));
+      fs.rmdirSync(rootItem.absolutePath);
+      fs.writeFileSync('/tmp/bamju/test', '');
+
+      const [_, message] = await repository.load();
+      expect(message.type).toBe(MessageTypeFailed);
     });
   });
 
