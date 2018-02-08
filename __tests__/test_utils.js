@@ -60,7 +60,7 @@ function createByPath(repositoryName: string, itemPath:string): Buffer {
     name = '/';
   }
   const repositoryPath = path.join('/tmp/bamju', repositoryName);
-  const absolutePath = path.join(repositoryPath, itemPath);
+  const absolutePath = path.join(repositoryPath, itemPath).replace(/\/$/, '');
 
   return createDummyBuffer({
     name,
