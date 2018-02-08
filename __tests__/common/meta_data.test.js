@@ -51,6 +51,95 @@ beforeEach(() => {
 });
 
 describe('MetaData', () => {
+  describe('load', () => {
+    it('現在のディレクトリが読みこめる', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      const [newState, result] = await metaData.load();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(newState.childrenIDs.length).toBe(1);
+      expect(newState.isExist('testItem.md')).toBe(true);
+    });
+
+    it('すでに管理されているオブジェクトの場合、新たに作られたりはしない', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      const [newState, result] = await metaData.load();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(newState.childrenIDs.length).toBe(1);
+      expect(newState.childrenIDs[0]).toBe(metaData.childrenIDs[0]);
+    });
+
+    it('absolutePathが存在しない場合、MessageTypeErrorが返る', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      metaData.children().forEach((item) => {
+        fs.unlinkSync(item.absolutePath);
+      });
+      fs.rmdirSync(metaData.absolutePath);
+
+      const [_, result] = await metaData.load();
+
+      expect(result.type).toBe(MessageTypeError);
+    });
+
+    it('子のアイテムが存在しなくなった場合は削除される', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      fs.unlinkSync(metaData.children()[0].absolutePath);
+      const [newState, result] = await metaData.load();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(newState.childrenIDs.length).toBe(0);
+    });
+
+    it('管理されていなかった子が存在した場合、childrenIDsに追加される', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      fs.writeFileSync(path.join(metaData.absolutePath, 'new file.md'));
+
+      const [newState, result] = await metaData.load();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(newState.childrenIDs.length).toBe(2);
+      expect(newState.childItem('new file.md')).toMatchObject({
+        name: 'new file.md',
+        path: '/foo/bar/baz/new file.md',
+        parentID: metaData.id,
+        childrenIDs: []
+      });
+    });
+
+    it('子のオブジェクトもloadされる', async () => {
+      const rootItem = repository.rootItem();
+      fs.mkdirSync(path.join(rootItem.absolutePath, 'recursive test'));
+      fs.mkdirSync(path.join(rootItem.absolutePath, 'recursive test', 'a'));
+      fs.mkdirSync(path.join(rootItem.absolutePath, 'recursive test', 'a', 'b'));
+      fs.mkdirSync(path.join(rootItem.absolutePath, 'recursive test', 'a', 'b', 'c'));
+      fs.writeFileSync(path.join(rootItem.absolutePath, 'recursive test', 'a', 'b', 'c', 'testfile.md'), '');
+
+      const [newState, result] = await rootItem.load();
+
+      expect(result.type).toBe(MessageTypeSucceeded);
+      let metaData = newState.childItem('recursive test');
+      expect(metaData.childrenIDs.length).toBe(1);
+      metaData = metaData.childItem('a');
+      expect(metaData.childrenIDs.length).toBe(1);
+      metaData = metaData.childItem('b');
+      expect(metaData.childrenIDs.length).toBe(1);
+      const parent = metaData.childItem('c');
+      expect(parent.childrenIDs.length).toBe(1);
+      metaData = parent.childItem('testfile.md');
+      expect(metaData.childrenIDs.length).toBe(0);
+
+      expect(metaData).toMatchObject({
+        name: 'testfile.md',
+        path: '/recursive test/a/b/c/testfile.md',
+        parentID: parent.id,
+        childrenIDs: []
+      });
+    });
+
+    // TODO: 存在しなくなったディレクトリは無名ファイルとする
+  });
+
   describe('addFile', () => {
     let rootItem:MetaData;
     beforeEach(() => {

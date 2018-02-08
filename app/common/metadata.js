@@ -72,6 +72,38 @@ export class MetaData {
     this.isOpened = buffer.isOpened;
   }
 
+  async load(): Promise<[?MetaData, Message]> {
+    if (this.isSimilarFile() || this.isSimilarDirectory()) {
+      try {
+        fs.statSync(this.absolutePath);
+      } catch (e) {
+        return [null, {
+          type: MessageTypeError,
+          message: `MetaData.load stat error: ${e.message}`
+        }];
+      }
+    }
+
+    if (this.isSimilarFile()) {
+      this.isLoaded = true;
+    } else if (this.isSimilarDirectory()) {
+      const loadDirResult = await this._loadDirectory();
+      if (loadDirResult.type !== MessageTypeSucceeded) {
+        return [null, loadDirResult];
+      }
+    } else {
+      return [null, {
+        type: MessageTypeError,
+        message: `MetaData.load unexpected item type: absolutePath=${this.absolutePath} itemType=${this.itemType}`
+      }];
+    }
+
+    return [this, {
+      type: MessageTypeSucceeded,
+      message: ''
+    }];
+  }
+
   async addFile(itemName: string, content: string): Promise<[?MetaData, Message]> {
     if (!isSimilarFile(detectItemType(itemName))) {
       return [null, {
@@ -390,6 +422,89 @@ export class MetaData {
 
     return ret;
   }
+
+  async _readdir(): Promise<[Array<string>, Message]> {
+    const ret = await _readdir(this.absolutePath);
+
+    return ret;
+  }
+
+  async _loadDirectory(): Promise<Message> {
+    const [childNames, readdirResult] = await this._readdir();
+    if (readdirResult.type !== MessageTypeSucceeded) {
+      return readdirResult;
+    }
+
+    const currentChildren = this.children();
+    const promiseAll = childNames.map(async (childName) => {
+      const childItem = currentChildren.find((item) => {
+        return item.name === childName;
+      });
+      if (childItem != null) {
+        const [_, loadResult] = await childItem.load();
+        if (loadResult.type !== MessageTypeSucceeded) {
+          return [null, loadResult];
+        }
+
+        return [childItem, {
+          type: MessageTypeSucceeded,
+          message: ''
+        }];
+      }
+
+      const [newItem, addResult] = await this._addItem(detectItemType(childName), childName);
+      if (addResult.type !== MessageTypeSucceeded) {
+        return [null, addResult];
+      }
+      if (newItem != null) {
+        const [_, newItemLoadResult] = await newItem.load();
+        if (newItemLoadResult.type !== MessageTypeSucceeded) {
+          return [null, newItemLoadResult];
+        }
+      }
+
+      return [newItem, {
+        type: MessageTypeSucceeded,
+        message: ''
+      }];
+    });
+
+    const results = await Promise.all(promiseAll);
+    const errorResult = results.find(([_, result]) => {
+      return result.type !== MessageTypeSucceeded;
+    });
+    if (errorResult != null) {
+      return errorResult[1];
+    }
+
+    this.childrenIDs = results.map(([item, _]) => {
+      return item.id;
+    }).filter(Boolean);
+
+    this.isLoaded = true;
+
+    return {
+      type: MessageTypeSucceeded,
+      message: ''
+    };
+  }
+}
+
+async function _readdir(absolutePath: string): Promise<[Array<string>, Message]> {
+  let ret: Array<string>;
+  try {
+    ret = fs.readdirSync(absolutePath);
+  } catch (e) {
+    return [[], {
+      type: MessageTypeError,
+      message: `metadata._readdir error: ${e.message}`
+    }];
+  }
+
+  return [ret, {
+    type: MessageTypeSucceeded,
+    message: ''
+  }];
 }
 
 export function detectItemType(name: string): ItemType {
@@ -573,14 +688,9 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
 }
 
 async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Message]> {
-  let directoryItems: Array<string> = [];
-  try {
-    directoryItems = fs.readdirSync(metaData.absolutePath);
-  } catch (e) {
-    return [null, {
-      type: MessageTypeError,
-      message: `MetaData.openDirectory error: ${e.message}`
-    }];
+  const [directoryItems, readdirResult] = await _readdir(metaData.absolutePath);
+  if (readdirResult.type !== MessageTypeSucceeded) {
+    return [null, readdirResult];
   }
 
   const items:Array<string> = directoryItems.map((filename) => {
