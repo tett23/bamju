@@ -335,8 +335,9 @@ export class MetaData {
   }
 
   async open(): Promise<MetaData> {
+    await this.load();
+
     this.isOpened = true;
-    // TODO: childrenIDsの更新
 
     return this;
   }
@@ -496,6 +497,10 @@ export class MetaData {
     }
 
     this.childrenIDs = results.map(([item, _]) => {
+      if (item == null) {
+        return null;
+      }
+
       return item.id;
     }).filter(Boolean);
 
