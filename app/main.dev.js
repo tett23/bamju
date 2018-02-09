@@ -8,8 +8,13 @@ import {
   openPage,
   buffers,
   createFile,
+  closeItem,
+  openItem,
 } from './main/repository';
 
+import {
+  type Buffer,
+} from './common/buffer';
 import {
   isSimilarMessage,
 } from './common/util';
@@ -39,7 +44,7 @@ ipcMain.on('open-page', async (e, req) => {
 });
 
 ipcMain.on('buffers', async (e) => {
-  const result = buffers();
+  const result = await buffers();
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
@@ -64,6 +69,31 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   e.sender.send('refresh-tree-view', result);
 
   e.sender.send('file-created', result);
+  e.returnValue = result;
+});
+
+ipcMain.on('close-item', async (e, buf: Buffer) => {
+  const result = await closeItem(buf);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('update-buffer', result);
+  e.returnValue = result;
+});
+
+
+ipcMain.on('open-item', async (e, buf: Buffer) => {
+  const result = await openItem(buf);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('update-buffer', result);
   e.returnValue = result;
 });
 

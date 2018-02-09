@@ -14,9 +14,9 @@ import {
 
 import {
   REFRESH_TREE_VIEW,
-  REFRESH_TREE_VIEW_ITEM,
+  UPDATE_BUFFER,
   refreshTreeView,
-  openTreeViewItem
+  updateBuffer,
 } from '../actions/tree_view';
 import {
   OPEN_PAGE,
@@ -45,10 +45,10 @@ function initialTreeViewState(): TreeViewState {
   };
 }
 
-function updateBufferItem(source: {[string]: Buffer[]}, repositoryName: string, path: string, update: Buffer): {[string]: Buffer[]} {
-  const repo = source[repositoryName];
+function updateBufferItem(source: {[string]: Buffer[]}, update: Buffer): {[string]: Buffer[]} {
+  const repo = source[update.repositoryName];
   const newItems = repo.map((item) => {
-    if (item.path === path) {
+    if (item.path === update.path) {
       return update;
     }
 
@@ -56,7 +56,7 @@ function updateBufferItem(source: {[string]: Buffer[]}, repositoryName: string, 
   });
 
   const ret = deepCopy(source);
-  ret[repositoryName] = deepCopy(newItems);
+  ret[update.repositoryName] = deepCopy(newItems);
 
   return ret;
 }
@@ -70,8 +70,8 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
       repositories: action.repositories
     });
   }
-  case REFRESH_TREE_VIEW_ITEM: {
-    const newRepositories = updateBufferItem(deepCopy(state.repositories), action.repositoryName, action.path, action.item);
+  case UPDATE_BUFFER: {
+    const newRepositories = updateBufferItem(deepCopy(state.repositories), action.buffer);
 
     return Object.assign({}, state, { repositories: newRepositories });
   }
@@ -172,7 +172,7 @@ type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openPageByBuffer>
 | $ReturnType<typeof refreshTreeView>
-| $ReturnType<typeof openTreeViewItem>
+| $ReturnType<typeof updateBuffer>
 | $ReturnType<typeof openNewFileDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof updateMessage>

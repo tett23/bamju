@@ -13,7 +13,10 @@ import {
   bufferUpdated
 } from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
-import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
+import {
+  refreshTreeView,
+  updateBuffer,
+} from './renderer/actions/tree_view';
 import {
   type Buffer
 } from './common/buffer';
@@ -61,15 +64,15 @@ ipcRenderer.on('buffer-updated', (event, buf: Buffer) => {
 });
 
 ipcRenderer.on('update-buffers', (event, repositories: {[string]: Buffer[]}) => {
-  console.log('refresh-tree-view', repositories);
+  console.log('update-buffers', repositories);
 
   store.dispatch(refreshTreeView(repositories));
 });
 
-ipcRenderer.on('update-buffer', (event, { repositoryName, path: itemPath, item }: {repositoryName: string, path: string, item: Buffer}) => {
-  console.log('update-buffer', repositoryName, itemPath, item);
+ipcRenderer.on('update-buffer', (event, buffer: Buffer) => {
+  console.log('update-buffer', buffer);
 
-  store.dispatch(openTreeViewItem(repositoryName, itemPath, item));
+  store.dispatch(updateBuffer(buffer));
 });
 
 ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {

@@ -39,75 +39,18 @@ class repositoriesTreeView extends React.Component<Props> {
     super(props);
   }
 
-  onClickItem(e, item: Buffer) {
-    console.log(this);
-
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('repositoriesTreeView.onClick', item);
-
-    switch (item.itemType) {
-    case ItemTypeRepository:
-      return openFile(item);
-    case ItemTypeDirectory:
-      return openFile(item);
-    case ItemTypeMarkdown:
-      return openFile(item);
-    case ItemTypeText:
-      return openFile(item);
-    case ItemTypeCSV:
-      return openFile(item);
-    case ItemTypeTSV:
-      return openFile(item);
-    default:
-    }
-  }
-
-  buildItems(items: Buffer[]): Array<*> {
-    if (items.length === 0) {
-      return [];
-    }
-
-    const ret:Array<*> = items.map((item: Buffer) => {
-      const spanClass = `${itemType(item.itemType)}`;
-
-      let children = [];
-      if (item.isOpened) {
-        const childBuffers = item.childrenIDs.map((childrenID) => {
-          return items.find((child) => {
-            return child.id === childrenID;
-          });
-        }).filter(Boolean);
-        children = this.buildItems(childBuffers);
-      }
-
-      return ((
-        <ul className={styles.repositoryItem} key={item.absolutePath}>
-          <li
-            role="menuitem"
-            onClick={e => { return this.onClickItem(e, item); }}
-            onKeyUp={e => { return this.onClickItem(e, item); }}
-            onContextMenu={e => { return contextmenu(e, item); }}
-          >
-            <div>
-              {icon(item)}
-              <span className={spanClass}>
-                {item.name}
-              </span>
-              {children}
-            </div>
-          </li>
-        </ul>
-      ));
-    });
-
-    return ret;
-  }
-
   render() {
     console.log('repositoriesTreeView.render this', this);
     const items = Object.keys(this.props.repositories).map((repositoryName) => {
-      return this.buildItems(this.props.repositories[repositoryName]);
+      const repo = this.props.repositories[repositoryName];
+      const rootItem = repo.find((item) => {
+        return item.itemType === ItemTypeRepository;
+      });
+      if (rootItem == null) {
+        return null;
+      }
+
+      return buildItems(rootItem, repo);
     });
 
     return (
@@ -123,14 +66,72 @@ class repositoriesTreeView extends React.Component<Props> {
   }
 }
 
-function toggleTreeView(e, item: Buffer) {
+function buildItems(item: Buffer, repository: Buffer[]) {
+  const spanClass = `${itemType(item.itemType)}`;
+
+  let children = [];
+  if (item.isOpened) {
+    children = item.childrenIDs.map((childrenID) => {
+      return repository.find((child) => {
+        return child.id === childrenID;
+      });
+    }).filter(Boolean).map((child) => {
+      return buildItems(child, repository);
+    });
+  }
+
+  const ret = (
+    <ul className={styles.repositoryItem} key={item.absolutePath}>
+      <li
+        role="menuitem"
+        onClick={e => { return onClickItem(e, item); }}
+        onKeyUp={e => { return onClickItem(e, item); }}
+        onContextMenu={e => { return contextmenu(e, item); }}
+      >
+        <div>
+          {icon(item)}
+          <span className={spanClass}>
+            {item.name}
+          </span>
+          {children}
+        </div>
+      </li>
+    </ul>
+  );
+
+  return ret;
+}
+
+function onClickItem(e, item: Buffer) {
+  e.preventDefault();
+  e.stopPropagation();
+  console.log('repositoriesTreeView.onClick', item);
+
+  switch (item.itemType) {
+  case ItemTypeRepository:
+    return openFile(item);
+  case ItemTypeDirectory:
+    return openFile(item);
+  case ItemTypeMarkdown:
+    return openFile(item);
+  case ItemTypeText:
+    return openFile(item);
+  case ItemTypeCSV:
+    return openFile(item);
+  case ItemTypeTSV:
+    return openFile(item);
+  default:
+  }
+}
+
+function toggleTreeView(e, buffer: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (item.isOpened) {
-    ipcRenderer.send('close-item', { repositoryName: item.repositoryName, path: item.path });
+  if (buffer.isOpened) {
+    ipcRenderer.send('close-item', buffer);
   } else {
-    ipcRenderer.send('open-item', { repositoryName: item.repositoryName, path: item.path });
+    ipcRenderer.send('open-item', buffer);
   }
 }
 
@@ -248,7 +249,6 @@ function itemType(t: ItemType) {
 }
 
 const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[string]: Buffer[]}} => {
-  console.log('repositoriesTreeView mapStateToProps', state);
   if (state == null) {
     return {
       repositories: {}
@@ -262,8 +262,6 @@ const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[str
 
 
 const mapDispatchToProps = (dispatch) => {
-  console.log('repositoriesTreeView mapDispatchToProps', dispatch);
-
   return {
     refreshTreeView: (repositories: {[string]: Buffer[]}) => {
       dispatch(refreshTreeView(repositories));

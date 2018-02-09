@@ -5,7 +5,7 @@ import {
 } from '../../common/buffer';
 
 export const REFRESH_TREE_VIEW = 'REFRESH_TREE_VIEW';
-export const REFRESH_TREE_VIEW_ITEM = 'REFRESH_TREE_VIEW_ITEM';
+export const UPDATE_BUFFER = 'UPDATE_BUFFER';
 
 export type page = {
   body: string
@@ -18,11 +18,9 @@ export function refreshTreeView(repositories: {[string]: Buffer[]}) {
   };
 }
 
-export function openTreeViewItem(repositoryName: string, path: string, update: Buffer) {
+export function updateBuffer(buffer: Buffer) {
   return {
-    type: REFRESH_TREE_VIEW_ITEM,
-    repositoryName,
-    path,
-    item: update
+    type: UPDATE_BUFFER,
+    buffer,
   };
 }
