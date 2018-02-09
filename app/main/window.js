@@ -14,12 +14,20 @@ import {
   MenuTypeEditor
 } from '../menu';
 import {
-  Manager as ProjectManager,
+  RepositoryManager,
+  getInstance,
+} from '../common/repository_manager';
+import {
+  MetaData,
   internalPath,
-  ProjectItem,
-  type ProjectItems,
+} from '../common/metadata';
+import {
   type Buffer,
-} from '../common/project';
+} from '../common/buffer';
+import {
+  MessageTypeSucceeded,
+  MessageTypeFailed,
+} from '../common/util';
 
 const {
   Config, Window: WindowConfig, findWindowConfig, addWindowConfig, removeWindowConfig, replaceWindowConfig
@@ -49,8 +57,8 @@ export class WindowManager {
     _appWindows.push(w);
   }
 
-  static createEditorWindow(projectItem: ProjectItem, parentWindowID: ?string) {
-    const w = new EditorWindow(projectItem, parentWindowID);
+  static createEditorWindow(metaData: MetaData, parentWindowID: ?string) {
+    const w = new EditorWindow(metaData, parentWindowID);
 
     _editorWindows.push(w);
   }
@@ -149,11 +157,11 @@ export class WindowManager {
 
   static getEditorWindow(projectName: string, itemPath: string): ?EditorWindow {
     return _editorWindows.find((w) => {
-      return w.projectItem.projectName === projectName && w.projectItem.path === itemPath;
+      return w.metaData.projectName === projectName && w.metaData.path === itemPath;
     });
   }
 
-  static async updateTreeView(tv: ProjectItems): Promise<void> {
+  static async updateTreeView(tv: MetaData[]): Promise<void> {
     const p: Array<Promise<void>> = _appWindows.map(async (item: AppWindow): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
       await item.updateTreeView(tv);
@@ -268,28 +276,28 @@ export class AppWindow implements Window {
     this.browserWindow.webContents.send('initialize', this.conf);
   }
 
-  async updateTreeView(tv: ProjectItems): Promise<void> {
+  async updateTreeView(tv: MetaData[]): Promise<void> {
     this.browserWindow.webContents.send('refresh-tree-view', tv);
   }
 }
 
 export class EditorWindow implements Window {
   browserWindow: BrowserWindow;
-  projectItem: ProjectItem;
+  metaData: MetaData;
   parentWindowID: ?string;
   _windowID: string;
 
-  static create(projectItem: ProjectItem, parentWindowID: ?string) {
-    new EditorWindow(projectItem, parentWindowID); /* eslint no-new: 0 */
+  static create(metaData: MetaData, parentWindowID: ?string) {
+    new EditorWindow(metaData, parentWindowID); /* eslint no-new: 0 */
   }
 
-  constructor(projectItem: ProjectItem, parentWindowID: ?string) {
-    this.projectItem = projectItem;
+  constructor(metaData: MetaData, parentWindowID: ?string) {
+    this.metaData = metaData;
     this.parentWindowID = parentWindowID;
     this._windowID = createWindowID();
     const browserWindow = new BrowserWindow({
       show: false,
-      title: `${projectItem.internalPath()}`,
+      title: `${metaData.internalPath()}`,
     });
     this.browserWindow = browserWindow;
 
@@ -344,8 +352,8 @@ export class EditorWindow implements Window {
   }
 
   async initializeRenderer() {
-    const buffer = await this.projectItem.toRawBuffer();
-    this.browserWindow.webContents.send('initialize', buffer);
+    const content = await this.metaData.getContent();
+    this.browserWindow.webContents.send('initialize', content);
   }
 
   sendSaveEvent() {
@@ -377,8 +385,8 @@ ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {wi
 ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
   console.log('open-by-bamju-editor', fileInfo);
 
-  const projectItem = ProjectManager.detect(fileInfo.projectName, fileInfo.itemName);
-  if (projectItem == null) {
+  const metaData = getInstance().detect(fileInfo.projectName, fileInfo.itemName);
+  if (metaData == null) {
     e.send('show-information', {
       type: 'error',
       message: `file not found. projectName${internalPath(fileInfo.projectName, fileInfo.itemName)}`
@@ -389,27 +397,62 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
 
   const editorWindow = WindowManager.getEditorWindow(fileInfo.projectName, fileInfo.itemName);
   if (editorWindow == null) {
-    WindowManager.createEditorWindow(projectItem, fileInfo.parentWindowID);
+    WindowManager.createEditorWindow(metaData, fileInfo.parentWindowID);
   } else {
     editorWindow.focus();
   }
 });
 
-ipcMain.on('save-buffer', async (e, buffer: Buffer) => {
+ipcMain.on('save-buffer', async (e, { buffer, content }: {buffer: Buffer, content: string}) => {
   console.log('save-buffer', buffer);
 
-  const result = await ProjectManager.saveBuffer(buffer);
-
-  e.sender.send('buffer-saved', result);
-  e.returnValue = result;
-
-  const newProjectItem = ProjectManager.detect(buffer.projectName, buffer.path);
-  if (newProjectItem == null) {
+  const repo = getInstance().find(buffer.repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'save-buffer error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
     return;
   }
 
-  const parseResult = await newProjectItem.toBuffer();
-  WindowManager.sendSavedEventAll(parseResult.buffer);
+  const metaData = repo.getItemByPath(buffer.path);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'save-buffer error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
+
+  const message = await metaData.updateContent(content);
+  if (message.type !== MessageTypeSucceeded) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `save-buffer error: ${message.message}`,
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+  }
+
+  e.sender.send('buffer-saved', message);
+  e.returnValue = message;
+
+  const [parseResult, parseMesage] = await metaData.parse();
+  if (parseResult == null || parseMesage !== MessageTypeSucceeded) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `save-buffer error: ${parseMesage.message}`,
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
+
+  WindowManager.sendSavedEventAll(parseResult.content);
 });
 
 function createWindowID(): string {
