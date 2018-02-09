@@ -83,7 +83,7 @@ function breadcrumbItemsOnClick(e, repo: string, path: string) {
   e.preventDefault();
   e.stopPropagation();
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: path });
+  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: path });
 }
 
 function contextmenu(e, buf: Buffer) {
@@ -102,7 +102,7 @@ function contextmenu(e, buf: Buffer) {
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
         parentWindowID: window.windowID,
-        projectName: buf.repositoryName,
+        repositoryName: buf.repositoryName,
         itemName: buf.path
       });
     },
@@ -113,7 +113,7 @@ function contextmenu(e, buf: Buffer) {
     click: () => {
       ipcRenderer.send('open-page', {
         windowID: window.windowID,
-        projectName: buf.repositoryName,
+        repositoryName: buf.repositoryName,
         itemName: buf.path,
       });
     }

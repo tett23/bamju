@@ -1,17 +1,17 @@
 // @flow
 
 import {
-  ProjectItem,
+  MetaData,
   type ParseResult,
-} from '../../common/project';
+} from '../../common/metadata';
 
 export type StackItem = {
-  projectName: string,
+  repositoryName: string,
   absolutePath: string
 };
 export type StackItems = Array<StackItem>;
 
 // 本来interfaceだけど、staticのチェックをするにはこうするしかないらしい
 export type Parser<OptionType> = {
-  parse(ProjectItem, string, StackItems, OptionType): Promise<ParseResult>
+  parse(MetaData, string, StackItems, OptionType): Promise<ParseResult>
 };

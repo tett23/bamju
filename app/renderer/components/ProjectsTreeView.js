@@ -136,21 +136,21 @@ function toggleTreeView(e, item: Buffer) {
 
 function icon(item: Buffer) {
   switch (item.itemType) {
-  case 'project':
+  case ItemTypeRepository:
     return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
-  case 'directory':
+  case ItemTypeDirectory:
     if (item.isOpened) {
       return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
     }
     return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
 
-  case 'markdown':
+  case ItemTypeMarkdown:
     return <FontAwesome name="file-text" />;
-  case 'text':
+  case ItemTypeText:
     return <FontAwesome name="file-text" />;
-  case 'csv':
+  case ItemTypeCSV:
     return <FontAwesome name="file-text" />;
-  case 'tsv':
+  case ItemTypeTSV:
     return <FontAwesome name="file-text" />;
   default:
     return <FontAwesome name="question-circle" />;
@@ -167,7 +167,7 @@ function addProject(e) {
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
-      ipcRenderer.send('add-project', { path: directory });
+      ipcRenderer.send('add-repository', directory);
     });
   });
 }
@@ -219,7 +219,7 @@ function contextmenu(e, item: Buffer) {
           message: '削除しますか'
         });
         if (choice === 0) {
-          ipcRenderer.send('remove-project', { path: item.absolutePath });
+          ipcRenderer.send('remove-repository', { path: item.absolutePath });
         }
       }
     }));

@@ -38,7 +38,7 @@ export type Window = {
   },
   tabs: [{
     buffer: {
-      projectName: string,
+      repositoryName: string,
       path: string
     }
   }]
@@ -63,7 +63,7 @@ export const defaultConfig:BamjuConfig = {
     tabs: [
       {
         buffer: {
-          projectName: '',
+          repositoryName: '',
           path: ''
         }
       }

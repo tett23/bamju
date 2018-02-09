@@ -10,7 +10,7 @@ import editorReducer from './renderer/reducers/editor_combined';
 import { openBuffer } from './renderer/actions/editor';
 import {
   type Buffer
-} from './common/project';
+} from './common/buffer';
 import './app.global.css';
 
 const store = createStore(

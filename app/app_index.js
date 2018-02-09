@@ -38,11 +38,11 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   (async () => {
-    const projectName:string = conf.tabs[0].buffer.projectName || '';
+    const repositoryName :string = conf.tabs[0].buffer.repositoryName || '';
     const itemName:string = conf.tabs[0].buffer.path || '';
 
     ipcRenderer.sendSync('buffers');
-    ipcRenderer.send('open-page', { projectName, itemName });
+    ipcRenderer.send('open-page', { repositoryName, itemName });
   })();
 });
 
@@ -85,7 +85,7 @@ ipcRenderer.on('file-created', (event, result: {success: boolean, message: strin
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: name });
+  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: name });
 };
 
 window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {

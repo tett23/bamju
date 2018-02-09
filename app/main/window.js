@@ -31,8 +31,8 @@ import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';
 
-ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}) => {
-  console.log('open-new-window', projectName, itemName);
+ipcMain.on('open-new-window', async (e, { windowID, repositoryName, itemName }: {windowID: string, repositoryName: string, itemName: string}) => {
+  console.log('open-new-window', repositoryName, itemName);
 
   let conf:?WindowConfig = findWindowConfig(windowID);
   if (conf === null || conf === undefined) {
@@ -44,7 +44,7 @@ ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {wi
   conf.rectangle.y += 50;
   conf.tabs = [{
     buffer: {
-      projectName,
+      repositoryName,
       path: itemName
     }
   }];
@@ -52,20 +52,20 @@ ipcMain.on('open-new-window', async (e, { windowID, projectName, itemName }: {wi
   getWindowManagerInstance().createAppWindow(conf);
 });
 
-ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, projectName: string, itemName: string}) => {
+ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, repositoryName: string, itemName: string}) => {
   console.log('open-by-bamju-editor', fileInfo);
 
-  const metaData = getInstance().detect(fileInfo.projectName, fileInfo.itemName);
+  const metaData = getInstance().detect(fileInfo.repositoryName, fileInfo.itemName);
   if (metaData == null) {
     e.send('show-information', {
       type: 'error',
-      message: `file not found. projectName${internalPath(fileInfo.projectName, fileInfo.itemName)}`
+      message: `file not found. internalPath=${internalPath(fileInfo.repositoryName, fileInfo.itemName)}`
     });
 
     return;
   }
 
-  const editorWindow = getWindowManagerInstance().getEditorWindow(fileInfo.projectName, fileInfo.itemName);
+  const editorWindow = getWindowManagerInstance().getEditorWindow(fileInfo.repositoryName, fileInfo.itemName);
   if (editorWindow == null) {
     getWindowManagerInstance().createEditorWindow(metaData, fileInfo.parentWindowID);
   } else {

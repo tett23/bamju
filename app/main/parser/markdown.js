@@ -72,7 +72,7 @@ export class Markdown implements Parser<MarkdownOption> {
     }
 
     const options = Object.assign({}, defaultOption, opt);
-    stack.push({ projectName: metaData.repositoryName, absolutePath: metaData.absolutePath });
+    stack.push({ repositoryName: metaData.repositoryName, absolutePath: metaData.absolutePath });
 
     const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;

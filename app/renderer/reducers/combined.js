@@ -123,7 +123,7 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
 const initialModalState:ModalState = {
   newFileDialog: {
     isOpened: false,
-    projectName: '',
+    repositoryName: '',
     formValue: '',
     message: ''
   }
@@ -137,7 +137,7 @@ export function modal(state: ModalState = initialModalState, action: ActionTypes
     const newState = deepCopy(state);
     newState.newFileDialog = {
       isOpened: true,
-      projectName: action.projectName,
+      repositoryName: action.repositoryName,
       formValue: action.formValue,
       message: '',
     };

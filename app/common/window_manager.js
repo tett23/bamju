@@ -156,9 +156,9 @@ export class WindowManager {
     return this._appWindows;
   }
 
-  getEditorWindow(projectName: string, itemPath: string): ?EditorWindow {
+  getEditorWindow(repositoryName: string, itemPath: string): ?EditorWindow {
     return this._editorWindows.find((w) => {
-      return w.metaData.projectName === projectName && w.metaData.path === itemPath;
+      return w.metaData.repositoryName === repositoryName && w.metaData.path === itemPath;
     });
   }
 

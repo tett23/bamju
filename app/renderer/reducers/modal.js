@@ -3,7 +3,7 @@
 export type ModalState = {
   newFileDialog: {
     isOpened: boolean,
-    projectName: string,
+    repositoryName: string,
     formValue: string,
     message: string
   }
