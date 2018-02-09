@@ -56,7 +56,7 @@ describe('repository events', () => {
     it('ファイルの内容が取得できる', async () => {
       const result = await openPage({ repositoryName: 'test', itemName: 'testItem.md' });
 
-      expect(isSimilarError(result)).not.toBe(false);
+      expect(isSimilarError(result)).toBe(false);
 
       expect(result[1]).toBe('hogehoge');
     });
@@ -72,13 +72,41 @@ describe('repository events', () => {
     it('全てのrepositoryの内容を取得できる', async () => {
       const result = ((await buffers()): { [string]: Buffer[] });
 
-      expect(isSimilarError(result)).not.toBe(false);
+      expect(isSimilarError(result)).toBe(false);
 
       expect(result.test).not.toBe(5);
       expect(result.test.length).toBe(5);
       expect(result.test.find((item) => {
         return item.path === '/foo/bar/baz/testItem.md';
       })).toBeTruthy();
+    });
+  });
+
+  describe('open-by-system-editor', () => {
+    it('ファイルを開くことができる', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      if (metaData == null) {
+        expect(true).toBe(false);
+        return;
+      }
+      const result = await openBySystemEditor(metaData);
+
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result).toBe(true);
+    });
+
+    it('ファイルが存在しない場合、エラーが返る', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      expect(metaData).not.toBeNull();
+      if (metaData == null) {
+        expect(true).toBe(false);
+        return;
+      }
+
+      metaData.absolutePath = 'not exist';
+      const result = await openBySystemEditor(metaData);
+      expect(isSimilarError(result)).toBe(true);
     });
   });
 });

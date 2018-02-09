@@ -1,5 +1,6 @@
 // @flow
 
+import fs from 'fs';
 import opn from 'opn';
 import path from '../common/path';
 import {
@@ -7,6 +8,7 @@ import {
   getInstance,
 } from '../common/repository_manager';
 import {
+  MetaData,
   resolveInternalPath,
 } from '../common/metadata';
 import {
@@ -22,6 +24,7 @@ import {
   type Message,
   MessageTypeSucceeded,
   MessageTypeFailed,
+  MessageTypeError,
 } from '../common/util';
 
 export async function openPage({ repositoryName, itemName }: {repositoryName: string, itemName: string}): Promise<[Buffer, string] | Message> {
@@ -66,10 +69,23 @@ export async function buffers(): Promise<{[string]: Buffer[]} | Message> {
   return ret;
 }
 
-// ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
-//   opn(absolutePath);
-// });
-//
+export async function openBySystemEditor({ absolutePath }: MetaData): Promise<boolean | Message> {
+  try {
+    fs.statSync(absolutePath);
+  } catch (e) {
+    return {
+      type: MessageTypeError,
+      message: `open-by-system-editor stat error: ${e.message}`
+    };
+  }
+
+  if (process.env.NODE_ENV !== 'test') {
+    opn(absolutePath);
+  }
+
+  return true;
+}
+
 // ipcMain.on('add-project', async (e, { absolutePath }) => {
 //   const repositoryName = path.basename(absolutePath);
 //   const [repository, message] = await getInstance().addRepository({
