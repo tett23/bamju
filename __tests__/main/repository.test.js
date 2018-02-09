@@ -167,13 +167,20 @@ describe('repository events', () => {
     });
 
     it('Repositoryが存在しない場合、エラーが返る', async () => {
-      const result = await removeRepository('/tmp/bamju/add-project');
+      const metaData = repository.getItemByPath('/foo');
+      const result = await closeItem(Object.assign(metaData.toBuffer(), {
+        repositoryName: 'hogehoge'
+      }));
 
       expect(isSimilarError(result)).toBe(true);
     });
 
     it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const result = await removeRepository('/tmp/bamju/add-project');
+      const metaData = repository.getItemByPath('/foo');
+      const result = await closeItem(Object.assign(metaData.toBuffer(), {
+        path: '/hogehoge',
+        name: 'hogehoge'
+      }));
 
       expect(isSimilarError(result)).toBe(true);
     });
