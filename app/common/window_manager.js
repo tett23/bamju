@@ -27,13 +27,23 @@ export function getInstance() {
   return _instance;
 }
 
-export default class WindowManager {
+export class WindowManager {
   _appWindows: Array<AppWindow>;
   _editorWindows: Array<EditorWindow>;
 
-  constructor() {
+  constructor(config: WindowConfig[]) {
     this._appWindows = [];
     this._editorWindows = [];
+
+    config.forEach((c) => {
+      this.createAppWindow(c);
+    });
+
+    const currentWindow = this._appWindows[0];
+    if (currentWindow != null) {
+      currentWindow.focus();
+    }
+
     if (process.platform === 'darwin') {
       const menuItems = buildMenu(MenuTypeInit, null);
       Menu.setApplicationMenu(menuItems);
@@ -166,3 +176,5 @@ export default class WindowManager {
     console.log('Manager updateTreeView after Promise.all');
   }
 }
+
+export default WindowManager;

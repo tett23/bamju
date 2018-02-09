@@ -2,8 +2,13 @@
 
 import { app } from 'electron';
 import devtoolsInstaller from 'electron-devtools-installer';
-import { RepositoryManager } from '../common/repository_manager';
-import { WindowManager } from '../main/window';
+import {
+  RepositoryManager
+} from '../common/repository_manager';
+import {
+  WindowManager,
+  getInstance as getWindowManagerInstance,
+} from '../common/window_manager';
 import {
   Config,
   defaultConfig,
@@ -27,23 +32,20 @@ app.on('ready', async () => {
 
   await Config.init();
 
-  console.log('a');
   const repositoryManager = new RepositoryManager(Config.bufferItems, Config.repositories);
-  console.log('b');
   await repositoryManager.loadRepositories();
-  console.log('c');
 
-  await WindowManager.loadWindows(Config.windows);
-  console.log('d');
+  const _ = new WindowManager(Config.windows);
 });
 
 app.on('before-quit', () => {
+  // TODO: configからWindowManagerを参照しないようにしたい
   Config.quit();
 });
 
 app.on('activate', async () => {
-  if (WindowManager.getWindows().length === 0) {
-    WindowManager.createAppWindow(defaultConfig.windows[0]);
+  if (getWindowManagerInstance().getAppWindows().length === 0) {
+    getWindowManagerInstance().createAppWindow(defaultConfig.windows[0]);
   }
 });
 
