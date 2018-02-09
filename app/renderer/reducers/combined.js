@@ -39,7 +39,7 @@ import { type TreeViewState } from './tree_view';
 import { type BrowserState } from './browser';
 import { type ModalState } from './modal';
 
-function initialTreeViewState(): TreeViewState {
+export function initialTreeViewState(): TreeViewState {
   return {
     repositories: {}
   };
@@ -84,18 +84,21 @@ export function initialBrowserState(): BrowserState {
   return {
     tabs: [
       {
-        id: '',
-        name: '',
-        path: '',
-        repositoryName: '',
-        repositoryPath: '',
-        absolutePath: '',
-        itemType: ItemTypeUndefined,
-        parentID: null,
-        childrenIDs: [],
-        isOpened: false,
-        isLoaded: false,
-        body: ''
+        buffer: {
+          id: '',
+          name: '',
+          path: '',
+          repositoryName: '',
+          repositoryPath: '',
+          absolutePath: '',
+          itemType: ItemTypeUndefined,
+          parentID: null,
+          childrenIDs: [],
+          isOpened: false,
+          isLoaded: false,
+          body: ''
+        },
+        content: ''
       }
     ]
   };
@@ -107,12 +110,12 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   switch (action.type) {
   case OPEN_PAGE: {
     return Object.assign({}, state, {
-      tabs: [action.buffer]
+      tabs: [{ buffer: action.buffer, content: action.content }]
     });
   }
   case BUFFER_UPDATED: {
     return Object.assign({}, state, {
-      tabs: [action.buffer]
+      tabs: [{ buffer: action.buffer, content: action.content }]
     });
   }
   default:
@@ -120,16 +123,18 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   }
 }
 
-const initialModalState:ModalState = {
-  newFileDialog: {
-    isOpened: false,
-    repositoryName: '',
-    formValue: '',
-    message: ''
-  }
-};
+export function initialModalState(): ModalState {
+  return {
+    newFileDialog: {
+      isOpened: false,
+      repositoryName: '',
+      formValue: '',
+      message: ''
+    }
+  };
+}
 
-export function modal(state: ModalState = initialModalState, action: ActionTypes): ModalState {
+export function modal(state: ModalState = initialModalState(), action: ActionTypes): ModalState {
   console.log(`reducer modal ${action.type}`, action, state);
 
   switch (action.type) {

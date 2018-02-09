@@ -11,16 +11,18 @@ export type page = {
   body: string
 };
 
-export function openPageByBuffer(buf: Buffer) {
+export function openPageByBuffer(buf: Buffer, content: string) {
   return {
     type: OPEN_PAGE,
-    buffer: buf
+    buffer: buf,
+    content,
   };
 }
 
-export function bufferUpdated(buf: Buffer) {
+export function bufferUpdated(buf: Buffer, content: string) {
   return {
     type: BUFFER_UPDATED,
-    buffer: buf
+    buffer: buf,
+    content,
   };
 }

@@ -3,54 +3,58 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import type { BrowserState } from '../reducers/browser';
+import {
+  ItemTypeUndefined,
+} from '../../common/metadata';
 import Tab from './Tab';
-import type { Buffer } from '../../common/buffer';
 import styles from './Browser.css';
 
-type browserType = {
-  tabs: Array<Buffer>
-};
-
 const browserDefault = {
-  tabs: []
+  tabs: [
+    {
+      buffer: {
+        id: '',
+        name: '',
+        path: '',
+        repositoryName: '',
+        repositoryPath: '',
+        absolutePath: '',
+        itemType: ItemTypeUndefined,
+        parentID: null,
+        childrenIDs: [],
+        isOpened: false,
+        isLoaded: false,
+        body: ''
+      },
+      content: ''
+    }
+  ]
 };
 
-const browser = ({ tabs }: browserType = browserDefault) => {
+const browser = ({ tabs }: BrowserState = browserDefault) => {
   console.log('refresh browser', tabs);
-  // console.log('refresh browser buf=', tabs[0].buf);
 
-  const t:Buffer = tabs[0];
+  const tab = tabs[0];
+
+  console.log('refresh browser2', tab);
 
   return (
     <div className={styles.browser}>
       <Tab
         className={styles.tab}
-        name={t.name}
-        path={t.path}
-        absolutePath={t.absolutePath}
-        body={t.body}
+        buffer={tab.buffer}
+        content={tab.content}
       />
     </div>
   );
 };
 
 const mapStateToProps = (state: {browser: BrowserState}) => {
-  console.log('Browser mapStateToProps', state);
-
-  const tabs = [];
-  state.browser.tabs.forEach((tab: Buffer) => {
-    tabs.push(tab);
-  });
-
-  return {
-    tabs
-  };
+  return state.browser;
 };
 
 
-const mapDispatchToProps = (dispatch) => {
-  console.log('Browser mapDispatchToProps', dispatch);
-
+const mapDispatchToProps = (_) => {
   return {};
 };
 

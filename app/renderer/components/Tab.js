@@ -33,11 +33,10 @@ const tabDefault = {
   body: ''
 };
 
-const tab = (buffer: Buffer = tabDefault) => {
+const tab = ({ buffer, content }: {buffer: Buffer, content: string} = { buffer: tabDefault, content: '' }) => {
   const {
-    name, repositoryName, path, absolutePath, body
+    name, repositoryName, path, absolutePath
   } = buffer;
-  console.log('refresh tab', body);
 
   const breadcrumbItems = [];
   breadcrumbItems.push((
@@ -68,7 +67,7 @@ const tab = (buffer: Buffer = tabDefault) => {
   });
 
   const html = {
-    __html: body
+    __html: content
   };
 
   return (
@@ -123,16 +122,14 @@ function contextmenu(e, buf: Buffer) {
 }
 
 const mapStateToProps = (state: {browser: BrowserState}) => {
-  console.log('Tab mapStateToProps', state);
-  const t:?Buffer = state.browser.tabs[0];
-
-  return t || tab.defaultProps;
+  return state.browser.tabs[0] || {
+    buffer: tabDefault,
+    content: ''
+  };
 };
 
 
-const mapDispatchToProps = (dispatch) => {
-  console.log('Tab mapDispatchToProps', dispatch);
-
+const mapDispatchToProps = (_) => {
   return {};
 };
 

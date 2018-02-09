@@ -41,17 +41,17 @@ export async function openPage({ repositoryName, itemName }: {repositoryName: st
     return mes;
   }
 
-  const [content, getContentMessage] = await metaData.getContent();
-  if (getContentMessage.type !== MessageTypeSucceeded) {
+  const [parseResult, parseMessage] = await metaData.parse();
+  if (parseResult == null || parseMessage.type !== MessageTypeSucceeded) {
     const mes = {
       type: MessageTypeFailed,
-      message: `open-page error: '${getContentMessage.message}'`,
+      message: `open-page error: '${parseMessage.message}'`,
     };
 
     return mes;
   }
 
-  const ret = [metaData.toBuffer(), content];
+  const ret = [metaData.toBuffer(), parseResult.content];
 
   return ret;
 }

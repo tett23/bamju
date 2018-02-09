@@ -7,7 +7,12 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
-import { appReducer } from './renderer/reducers/combined';
+import {
+  appReducer,
+  initialBrowserState,
+  initialTreeViewState,
+  initialModalState,
+} from './renderer/reducers/combined';
 import {
   openPageByBuffer,
   bufferUpdated
@@ -26,7 +31,11 @@ const { Window: WindowConfig } = require('./common/bamju_config');
 
 const store = createStore(
   appReducer,
-  undefined,
+  {
+    browser: initialBrowserState(),
+    treeView: initialTreeViewState(),
+    modal: initialModalState()
+  },
 );
 
 const root = document.getElementById('root');
@@ -49,18 +58,18 @@ ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   })();
 });
 
-ipcRenderer.on('open-page', (event, [buf, contents]: [?Buffer, string]) => {
+ipcRenderer.on('open-page', (event, [buf, contents]: [Buffer, string]) => {
   console.log('open-page', buf, contents);
   if (buf == null) {
     return;
   }
 
-  store.dispatch(openPageByBuffer(buf));
+  store.dispatch(openPageByBuffer(buf, contents));
 });
 
-ipcRenderer.on('buffer-updated', (event, buf: Buffer) => {
+ipcRenderer.on('buffer-updated', (event, [buf, contents]: [Buffer, string]) => {
   console.log('buffer-updated', buf);
-  store.dispatch(bufferUpdated(buf));
+  store.dispatch(bufferUpdated(buf, contents));
 });
 
 ipcRenderer.on('update-buffers', (event, repositories: {[string]: Buffer[]}) => {

@@ -9,25 +9,28 @@ import {
 // import type { ActionTypes } from './combined';
 
 export type BrowserState = {
-  tabs: Array<Buffer>
+  tabs: Array<{buffer: Buffer, content: string}>
 };
 
 export function initialBrowserState(): BrowserState {
   return {
     tabs: [
       {
-        id: '',
-        name: '',
-        path: '',
-        repositoryName: '',
-        repositoryPath: '',
-        absolutePath: '',
-        itemType: ItemTypeUndefined,
-        parentID: null,
-        childrenIDs: [],
-        isOpened: false,
-        isLoaded: false,
-        body: ''
+        buffer: {
+          id: '',
+          name: '',
+          path: '',
+          repositoryName: '',
+          repositoryPath: '',
+          absolutePath: '',
+          itemType: ItemTypeUndefined,
+          parentID: null,
+          childrenIDs: [],
+          isOpened: false,
+          isLoaded: false,
+          body: ''
+        },
+        content: ''
       }
     ]
   };

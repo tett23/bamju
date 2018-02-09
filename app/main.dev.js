@@ -32,6 +32,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 }
 
 ipcMain.on('open-page', async (e, req) => {
+  console.log('open-page', req);
   const result = await openPage(req);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
@@ -44,6 +45,7 @@ ipcMain.on('open-page', async (e, req) => {
 });
 
 ipcMain.on('buffers', async (e) => {
+  console.log('buffers');
   const result = await buffers();
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
@@ -58,6 +60,7 @@ ipcMain.on('buffers', async (e) => {
 // TODO: add-repository, remove-repository時のconfig更新
 
 ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
+  console.log('create-file', arg);
   const result = await createFile(arg);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
