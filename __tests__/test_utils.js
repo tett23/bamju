@@ -1,5 +1,5 @@
 // @flow
-/* eslint no-undef: 0 */
+/* eslint no-undef: 0, no-empty: 0 */
 
 import fs from 'fs';
 import path from '../app/common/path';
