@@ -1,4 +1,5 @@
 // @flow
+/* eslint flowtype/no-weak-types: 0 */
 
 export function sleep(t: number): Promise<void> {
   return new Promise((resolve) => {
@@ -29,5 +30,13 @@ export type Message = {
   type: MessageType,
   message: string
 };
+
+export function isSimilarError(mes: Message | any): boolean {
+  if (mes == null) {
+    return false;
+  }
+
+  return mes.type === MessageTypeError || mes.type === MessageTypeFailed;
+}
 
 export default { sleep };

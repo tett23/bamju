@@ -2,6 +2,13 @@
 // @flow
 
 import path from 'path';
+import { ipcMain } from 'electron';
+
+import {
+  openPage,
+  refreshTreeView,
+} from './main/repository';
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -14,6 +21,9 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p);
 }
 
-require('./main/app');
-require('./main/window');
-require('./main/repository');
+ipcMain.on('open-page', openPage);
+ipcMain.on('refresh-tree-view', refreshTreeView);
+
+// require('./main/app');
+// require('./main/window');
+// require('./main/repository');

@@ -312,7 +312,7 @@ export class MetaData {
     if (!this.isSimilarFile()) {
       return ['', {
         type: MessageTypeFailed,
-        message: `MetaData.updateContent itemType check. path=${this.path} itemType=${this.itemType}`
+        message: `MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`
       }];
     }
 
@@ -322,7 +322,7 @@ export class MetaData {
     } catch (e) {
       return ['', {
         type: MessageTypeSucceeded,
-        message: ''
+        message: `MetaData.getContent readFile error: ${e.message}`
       }];
     }
 
