@@ -65,6 +65,6 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   e.returnValue = result;
 });
 
-// require('./main/app');
+require('./main/app');
 // require('./main/window');
 // require('./main/repository');

@@ -44,13 +44,22 @@ app.on('activate', async () => {
 });
 
 async function installExtensions() {
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = [
-    'REACT_DEVELOPER_TOOLS',
-    'REDUX_DEVTOOLS'
-  ];
-
-  Promise.all(extensions.map((name) => {
-    return devtoolsInstaller.default(devtoolsInstaller[name], forceDownload);
-  })).catch(console.log);
+  // const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  // const extensions = [
+  //   'REACT_DEVELOPER_TOOLS',
+  //   'REDUX_DEVTOOLS'
+  // ];
+  //
+  // Promise.all(extensions.map(async (name) => {
+  //   console.log('aa');
+  //   const ret = await
+  //     devtoolsInstaller(name, forceDownload).then((r) => {
+  //       console.log('resolved', r);
+  //       return r;
+  //     }, (r) => {
+  //       console.log('rejected', r);
+  //     });
+  //   console.log('promise', ret);
+  //   return ret;
+  // })).catch(console.log);
 }
