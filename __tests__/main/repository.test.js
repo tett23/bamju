@@ -1,5 +1,3 @@
-// @flow
-
 import fs from 'fs';
 
 import {
@@ -8,6 +6,7 @@ import {
   openBySystemEditor,
   addRepository,
   removeRepository,
+  closeItem,
 } from '../../app/main/repository';
 import {
   type Message,
@@ -148,6 +147,32 @@ describe('repository events', () => {
     });
 
     it('absolutePathが存在しない場合、エラーが返る', async () => {
+      const result = await removeRepository('/tmp/bamju/add-project');
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+  });
+
+  describe('close-item', () => {
+    it('MetaDataを閉じられる', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      if (metaData == null) {
+        expect(true).toBe(false);
+        return;
+      }
+      const result: Buffer | Message = await closeItem(metaData.toBuffer());
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result.isOpened).toBe(false);
+    });
+
+    it('Repositoryが存在しない場合、エラーが返る', async () => {
+      const result = await removeRepository('/tmp/bamju/add-project');
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+
+    it('MetaDataが存在しない場合、エラーが返る', async () => {
       const result = await removeRepository('/tmp/bamju/add-project');
 
       expect(isSimilarError(result)).toBe(true);

@@ -118,39 +118,29 @@ export async function removeRepository(absolutePath: string): Promise<{[string]:
 
   return ret;
 }
-//
-// ipcMain.on('close-tree-view-item', async (e, { repositoryName, itemPath }) => {
-//   const repo = getInstance().find(repositoryName);
-//   if (repo == null) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: 'close-tree-view-item error',
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const metaData = repo.closeItem(itemPath);
-//   if (metaData == null) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: 'close-tree-view-item error',
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const ret = {
-//     repositoryName,
-//     metaData: metaData.toBuffer()
-//   };
-//
-//   e.sender.send('refresh-tree-view-item', ret);
-//   e.returnValue = ret;
-// });
-//
+
+export async function closeItem(buffer: Buffer): Promise<Buffer | Message> {
+  const repo = getInstance().find(buffer.repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `close-tree-view-item error: repositoryName=${buffer.repositoryName}`,
+    };
+    return mes;
+  }
+
+  const metaData = await repo.closeItem(buffer.path);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `close-tree-view-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
+    };
+    return mes;
+  }
+
+  return metaData.toBuffer();
+}
+
 // ipcMain.on('open-tree-view-item', async (e, { repositoryName, itemPath }) => {
 //   const repo = getInstance().find(repositoryName);
 //   if (repo == null) {
