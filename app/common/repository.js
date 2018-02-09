@@ -311,14 +311,14 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
 function createRootBuffer(repositoryName: string, absolutePath: string): Buffer {
   return {
     id: createMetaDataID(),
-    name: '/',
+    name: repositoryName,
     path: '/',
     repositoryName,
     repositoryPath: absolutePath,
     absolutePath,
     itemType: ItemTypeRepository,
     isLoaded: false,
-    isOpened: false,
+    isOpened: true,
     parentID: null,
     childrenIDs: [],
     body: '',
