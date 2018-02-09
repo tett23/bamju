@@ -16,4 +16,4 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 
 require('./main/app');
 require('./main/window');
-require('./main/project');
+require('./main/repository');
