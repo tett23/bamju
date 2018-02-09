@@ -332,6 +332,19 @@ export class MetaData {
     }];
   }
 
+  async open(): Promise<MetaData> {
+    this.isOpened = true;
+    // TODO: childrenIDsの更新
+
+    return this;
+  }
+
+  close(): MetaData {
+    this.isOpened = false;
+
+    return this;
+  }
+
   internalPath(): string {
     return internalPath(this.repositoryName, this.path);
   }
@@ -555,6 +568,24 @@ export function isValidItemName(name: string): boolean {
 
 export function internalPath(repositoryName: string, itemPath: string): string {
   return `${repositoryName}:${itemPath}`;
+}
+
+export function resolveInternalPath(itemPath: string): {repositoryName: ?string, path: string} {
+  const split = itemPath.split(':', 2);
+  let repositoryName: ?string;
+  let retPath: string;
+  if (split.length === 2) {
+    [repositoryName, retPath] = split;
+  } else {
+    [retPath] = split;
+  }
+
+  retPath = path.join('/', retPath);
+
+  return {
+    repositoryName,
+    path: retPath
+  };
 }
 
 function detectInner(pathString: string, metaData: MetaData): ?MetaData {

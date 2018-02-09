@@ -615,4 +615,16 @@ describe('MetaData', () => {
     // TODO: tableの中身のタグ解釈
     // TODO: Markdown.parseのcurrentの解釈
   });
+
+  describe('open', () => {
+    // TODO
+    it('', async () => {
+    });
+  });
+
+  describe('close', () => {
+    // TODO
+    it('', () => {
+    });
+  });
 });

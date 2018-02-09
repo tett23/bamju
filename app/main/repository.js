@@ -2,22 +2,60 @@
 
 import { ipcMain } from 'electron';
 import opn from 'opn';
-// import * as Project from '../common/project';
+import path from '../common/path';
+import {
+  RepositoryManager,
+  getInstance,
+} from '../common/repository_manager';
+import {
+  resolveInternalPath,
+} from '../common/metadata';
+import {
+  type Buffer
+} from '../common/buffer';
+import {
+  Config,
+  Window as WindowConfig,
+  findWindowConfig,
+  replaceWindowConfig
+} from '../common/bamju_config';
+import {
+  MessageTypeSucceeded,
+  MessageTypeFailed,
+} from '../common/util';
 
-const Project = require('../common/project');
-const {
-  Config, Window: WindowConfig, findWindowConfig, replaceWindowConfig
-} = require('../common/bamju_config');
+ipcMain.on('open-page', async (e, { repositoryName, itemName }) => {
+  const repo = getInstance().find(repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: '',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
 
-ipcMain.on('open-page', async (e, { windowID, projectName, itemName }) => {
-  const buf:?Project.Buffer = await openPage(e, { windowID, projectName, itemName });
+  const metaData = repo.detect(itemName);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: '',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
 
-  e.sender.send('open-page', buf);
-  e.returnValue = buf;
+  const content = await metaData.getContent();
+  const ret = [metaData, content];
+
+  e.sender.send('open-page', ret);
+  e.returnValue = ret;
 });
 
 ipcMain.on('refresh-tree-view', async (e) => {
-  const ret = Project.Manager.getBufferItems();
+  const ret = getInstance().toBuffers();
 
   e.sender.send('refresh-tree-view', ret);
   e.returnValue = ret;
@@ -27,127 +65,131 @@ ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
   opn(absolutePath);
 });
 
-ipcMain.on('add-project', async (e, { path }) => {
-  await Project.Manager.addProject(path);
-  const ret = Project.Manager.getBufferItems();
-
-  e.sender.send('refresh-tree-view', ret);
-  e.returnValue = ret;
-});
-
-ipcMain.on('remove-project', async (e, { path }) => {
-  await Project.Manager.removeProject(path);
-  const ret = Project.Manager.getBufferItems();
-
-  e.sender.send('refresh-tree-view', ret);
-  e.returnValue = ret;
-});
-
-ipcMain.on('close-tree-view-item', async (e, { projectName, path }) => {
-  const item:?Project.ProjectItem = Project.Manager.detect(projectName, path);
-  if (item == null) {
+ipcMain.on('add-project', async (e, { absolutePath }) => {
+  const repositoryName = path.basename(absolutePath);
+  const [repository, message] = await getInstance().addRepository({
+    repositoryName,
+    absolutePath,
+  }, []);
+  if (repository == null || message !== MessageTypeSucceeded) {
+    e.sender.send('message', message);
+    e.returnValue = null;
     return;
   }
 
-  item.close();
+  const ret = getInstance().toBuffers();
+
+  e.sender.send('refresh-tree-view', ret);
+  e.returnValue = ret;
+});
+
+ipcMain.on('remove-project', async (e, { absolutePath }) => {
+  const repositoryName = path.basename(absolutePath);
+  getInstance().removeRepository(repositoryName);
+
+  const ret = getInstance().toBuffers();
+
+  e.sender.send('refresh-tree-view', ret);
+  e.returnValue = ret;
+});
+
+ipcMain.on('close-tree-view-item', async (e, { repositoryName, itemPath }) => {
+  const repo = getInstance().find(repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'close-tree-view-item error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
+
+  const metaData = repo.closeItem(itemPath);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'close-tree-view-item error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
 
   const ret = {
-    projectName,
-    path,
-    item: item.toBufferItem()
+    repositoryName,
+    metaData: metaData.toBuffer()
   };
 
   e.sender.send('refresh-tree-view-item', ret);
   e.returnValue = ret;
 });
 
-ipcMain.on('open-tree-view-item', async (e, { projectName, path }) => {
-  const item:?Project.ProjectItem = Project.Manager.detect(projectName, path);
-  if (item == null) {
+ipcMain.on('open-tree-view-item', async (e, { repositoryName, itemPath }) => {
+  const repo = getInstance().find(repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'open-tree-view-item error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
     return;
   }
-  await item.open();
+
+  const metaData = await repo.openItem(itemPath);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'open-tree-view-item error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
 
   const ret = {
-    projectName,
-    path,
-    item: item.toBufferItem()
+    repositoryName,
+    metaData: metaData.toBuffer()
   };
 
   e.sender.send('refresh-tree-view-item', ret);
   e.returnValue = ret;
 });
 
-ipcMain.on('create-file', async (e, { projectName, path }: {windowID: string, projectName: string, path: string}) => {
-  const info = Project.resolveInternalPath(path);
-  info.projectName = info.projectName || projectName;
+ipcMain.on('create-file', async (e, { repositoryName, itemPath }: { repositoryName: string, itemPath: string}) => {
+  const info = resolveInternalPath(itemPath);
+  info.repositoryName = info.repositoryName || repositoryName;
 
-  const [projectItem, ret] = await Project.Manager.createFile(info.projectName, info.path);
-
-  if (ret.success && projectItem != null) {
-    const parseResult = await projectItem.toBuffer();
-    e.sender.send('open-page', parseResult.buffer);
-
-    await projectItem.open();
-
-    e.sender.send('refresh-tree-view', Project.Manager.getBufferItems());
-  }
-
-  e.sender.send('file-created', ret);
-  e.returnValue = ret;
-});
-
-async function openPage(e, { windowID, projectName, itemName }: {windowID: string, projectName: string, itemName: string}): Promise<?Project.Buffer> {
-  Project.Manager.unwatch();
-
-  try {
-    const benchID = `Project.openPage benchmark ${projectName} ${itemName}`;
-    console.time(benchID);
-    const parseResult:Project.ParseResult = await Project.Manager.getBuffer(projectName, itemName);
-    console.timeEnd(benchID);
-
-    if (parseResult.buffer.itemType !== Project.ItemTypeUndefined) {
-      const win:?WindowConfig = findWindowConfig(windowID);
-
-      if (win !== null && win !== undefined) {
-        win.tabs[0].buffer.projectName = parseResult.buffer.projectName;
-        win.tabs[0].buffer.path = parseResult.buffer.path;
-        replaceWindowConfig(win);
-      }
-    }
-
-    if (Config.followChange) {
-      watch(e, windowID, projectName, itemName, parseResult);
-    }
-
-    return parseResult.buffer;
-  } catch (err) {
-    console.log('ipcMain open-page', projectName, itemName, err);
-  }
-
-  return undefined;
-}
-
-function watch(e, windowID: string, projectName: string, itemName: string, parseResult: Project.ParseResult) {
-  if (parseResult.itemType === Project.ItemTypeUndefined) {
+  const repo = getInstance().find(repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: 'close-tree-view-item error',
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
     return;
   }
 
-  const { absolutePath } = parseResult.buffer;
+  const [metaData, message] = await repo.addFile(info.path, '');
+  if (metaData == null || message.type !== MessageTypeSucceeded) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: message.message,
+    };
+    e.sender.send('message', mes);
+    e.returnValue = null;
+    return;
+  }
 
-  // projectName, itemNameは（inline call stackの）一番上の要素のものを使う。子の要素を使うと、子のページが表示されてしまう
-  Project.Manager.watch(projectName, absolutePath, () => {
-    watchCallback(e, windowID, projectName, itemName);
-  });
+  const content = await metaData.getContent();
+  e.sender.send('open-page', [metaData, content]);
 
-  parseResult.children.forEach((item: Project.ParseResult) => {
-    watch(e, windowID, projectName, itemName, item);
-  });
-}
+  await metaData.open();
 
-async function watchCallback(e, windowID: string, projectName: string, itemName: string) {
-  const buf:?Project.Buffer = await openPage(e, { windowID, projectName, itemName });
-  console.log('call watchCallback', buf);
+  e.sender.send('refresh-tree-view', repo.toBuffers());
 
-  e.sender.send('open-page', buf);
-}
+  e.sender.send('file-created', metaData);
+  e.returnValue = metaData;
+});

@@ -229,6 +229,26 @@ export class Repository {
     return [ret, message];
   }
 
+  async openItem(itemName: string): Promise<?MetaData> {
+    const metaData = this.detect(itemName);
+    if (metaData == null) {
+      return null;
+    }
+
+    const ret = await metaData.open();
+
+    return ret;
+  }
+
+  closeItem(itemName: string): ?MetaData {
+    const metaData = this.detect(itemName);
+    if (metaData == null) {
+      return null;
+    }
+
+    return metaData.close();
+  }
+
   getItemByPath(itemPath: string): ?MetaData {
     return this.items.find((item) => {
       return item.path === itemPath;

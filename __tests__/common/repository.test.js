@@ -288,6 +288,18 @@ describe('Repository', () => {
     });
   });
 
+  describe('openItem', () => {
+    // TODO
+    it('', () => {
+    });
+  });
+
+  describe('closeItem', () => {
+    // TODO
+    it('', () => {
+    });
+  });
+
   describe('detect', () => {
     beforeEach(() => {
       const buffers = dummy({
