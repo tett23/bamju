@@ -43,4 +43,8 @@ export function isSimilarError(mes: Message | any): boolean {
   return mes.type === MessageTypeError || mes.type === MessageTypeFailed;
 }
 
+export function isSimilarMessage(mes: Message | any): boolean {
+  return mes.type != null;
+}
+
 export default { sleep };

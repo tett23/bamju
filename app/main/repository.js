@@ -163,71 +163,31 @@ export async function openItem(buffer: Buffer): Promise<Buffer | Message> {
   return metaData.toBuffer();
 }
 
-// ipcMain.on('open-tree-view-item', async (e, { repositoryName, itemPath }) => {
-//   const repo = getInstance().find(repositoryName);
-//   if (repo == null) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: 'open-tree-view-item error',
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const metaData = await repo.openItem(itemPath);
-//   if (metaData == null) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: 'open-tree-view-item error',
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const ret = {
-//     repositoryName,
-//     metaData: metaData.toBuffer()
-//   };
-//
-//   e.sender.send('refresh-tree-view-item', ret);
-//   e.returnValue = ret;
-// });
-//
-// ipcMain.on('create-file', async (e, { repositoryName, itemPath }: { repositoryName: string, itemPath: string}) => {
-//   const info = resolveInternalPath(itemPath);
-//   info.repositoryName = info.repositoryName || repositoryName;
-//
-//   const repo = getInstance().find(repositoryName);
-//   if (repo == null) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: 'close-tree-view-item error',
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const [metaData, message] = await repo.addFile(info.path, '');
-//   if (metaData == null || message.type !== MessageTypeSucceeded) {
-//     const mes = {
-//       type: MessageTypeFailed,
-//       message: message.message,
-//     };
-//     e.sender.send('message', mes);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const content = await metaData.getContent();
-//   e.sender.send('open-page', [metaData, content]);
-//
-//   await metaData.open();
-//
-//   e.sender.send('refresh-tree-view', repo.toBuffers());
-//
-//   e.sender.send('file-created', metaData);
-//   e.returnValue = metaData;
-// });
+export async function createFile({ repositoryName, path: itemPath }: {repositoryName: string, path: string}): Promise<Buffer | Message> {
+  const info = resolveInternalPath(itemPath);
+  if (info.repositoryName == null) {
+    info.repositoryName = repositoryName;
+  }
+
+  const repo = getInstance().find(info.repositoryName || '');
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `create-file repository not found error: repositoryName=${info.repositoryName || ''}`,
+    };
+    return mes;
+  }
+
+  const [metaData, message] = await repo.addFile(info.path, '');
+  if (metaData == null || message.type !== MessageTypeSucceeded) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `create-file error: ${message.message}`,
+    };
+    return mes;
+  }
+
+  await metaData.open();
+
+  return metaData.toBuffer();
+}

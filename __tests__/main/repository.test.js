@@ -8,6 +8,7 @@ import {
   removeRepository,
   closeItem,
   openItem,
+  createFile,
 } from '../../app/main/repository';
 import {
   type Message,
@@ -217,6 +218,40 @@ describe('repository events', () => {
       }));
 
       expect(isSimilarError(result)).toBe(true);
+    });
+  });
+
+  describe('create-file', () => {
+    it('ファイルの作成ができる', async () => {
+      const result = await createFile({
+        repositoryName: 'test',
+        path: '/hogehoge.md'
+      });
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result).toMatchObject({
+        repositoryName: 'test',
+        path: '/hogehoge.md'
+      });
+    });
+
+    it(':つきのパスが与えられたときはrepositoryNameを上書きする', async () => {
+      fs.mkdirSync('/tmp/bamju/create-file');
+      await manager.addRepository({
+        absolutePath: '/tmp/bamju/create-file',
+        repositoryName: 'create-file'
+      });
+
+      const result = await createFile({
+        repositoryName: 'test',
+        path: 'create-file:/hogehoge.md'
+      });
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result).toMatchObject({
+        repositoryName: 'create-file',
+        path: '/hogehoge.md'
+      });
     });
   });
 });
