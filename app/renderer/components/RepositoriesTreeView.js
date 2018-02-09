@@ -18,7 +18,7 @@ import {
   ItemTypeTSV,
   ItemTypeUndefined,
 } from '../../common/metadata';
-import styles from './ProjectsTreeView.css';
+import styles from './RepositoriesTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
 
 const {
@@ -29,13 +29,13 @@ type Props = {
   repositories: {[string]: Buffer[]}
 };
 
-class projectsTreeView extends React.Component<Props> {
+class repositoriesTreeView extends React.Component<Props> {
   static defaultProps = {
-    projects: []
+    repositories: {}
   };
 
   constructor(props) {
-    console.log('projectTreeView constructor', props);
+    console.log('repositoriesTreeView constructor', props);
     super(props);
   }
 
@@ -44,7 +44,7 @@ class projectsTreeView extends React.Component<Props> {
 
     e.preventDefault();
     e.stopPropagation();
-    console.log('projectsTreeView.onClick', item);
+    console.log('repositoriesTreeView.onClick', item);
 
     switch (item.itemType) {
     case ItemTypeRepository:
@@ -82,7 +82,7 @@ class projectsTreeView extends React.Component<Props> {
       }
 
       return ((
-        <ul className={styles.projectItem} key={item.absolutePath}>
+        <ul className={styles.repositoryItem} key={item.absolutePath}>
           <li
             role="menuitem"
             onClick={e => { return this.onClickItem(e, item); }}
@@ -105,7 +105,7 @@ class projectsTreeView extends React.Component<Props> {
   }
 
   render() {
-    console.log('projectsTreeView.render this', this);
+    console.log('repositoriesTreeView.render this', this);
     const items = Object.keys(this.props.repositories).map((repositoryName) => {
       return this.buildItems(this.props.repositories[repositoryName]);
     });
@@ -115,7 +115,7 @@ class projectsTreeView extends React.Component<Props> {
         <ul className={styles.treeViewItems}>{items}</ul>
         <div className={styles.menu}>
           <span className={styles.menuItem}>
-            <FontAwesome name="plus" onClick={addProject} />
+            <FontAwesome name="plus" onClick={addRepository} />
           </span>
         </div>
       </div>
@@ -157,7 +157,7 @@ function icon(item: Buffer) {
   }
 }
 
-function addProject(e) {
+function addRepository(e) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -248,7 +248,7 @@ function itemType(t: ItemType) {
 }
 
 const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[string]: Buffer[]}} => {
-  console.log('projectsTreeView mapStateToProps', state);
+  console.log('repositoriesTreeView mapStateToProps', state);
   if (state == null) {
     return {
       repositories: {}
@@ -262,7 +262,7 @@ const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[str
 
 
 const mapDispatchToProps = (dispatch) => {
-  console.log('projectsTreeView mapDispatchToProps', dispatch);
+  console.log('repositoriesTreeView mapDispatchToProps', dispatch);
 
   return {
     refreshTreeView: (repositories: {[string]: Buffer[]}) => {
@@ -272,6 +272,6 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 
-const ProjectsTreeView = connect(mapStateToProps, mapDispatchToProps)(projectsTreeView);
+const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);
 
-export default ProjectsTreeView;
+export default RepositoriesTreeView;

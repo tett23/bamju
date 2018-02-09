@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import ProjectsTreeView from '../components/ProjectsTreeView';
+import RepositoriesTreeView from '../components/RepositoriesTreeView';
 import Browser from '../components/Browser';
 import NewFileDialog from '../components/NewFileDialog';
 import styles from './App.css';
@@ -22,7 +22,7 @@ const app = ({ treeView, browser }: appState = defaultState) => {
 
   return (
     <div className={styles.app} data-tid="app">
-      <ProjectsTreeView treeView={treeView} />
+      <RepositoriesTreeView treeView={treeView} />
       <Browser tabs={[browser.tabs]} />
       <NewFileDialog />
     </div>
