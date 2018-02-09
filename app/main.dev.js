@@ -6,7 +6,7 @@ import { ipcMain } from 'electron';
 
 import {
   openPage,
-  refreshTreeView,
+  buffers,
   createFile,
 } from './main/repository';
 
@@ -26,9 +26,31 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p);
 }
 
-ipcMain.on('open-page', openPage);
-ipcMain.on('refresh-tree-view', refreshTreeView);
-ipcMain.on('create-file', async (e, arg: {repositoryName: string, itemPath: string}) => {
+ipcMain.on('open-page', (e, req) => {
+  const result = openPage(req);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('open-page', result);
+  e.returnValue = result;
+});
+
+ipcMain.on('buffers', async (e) => {
+  const result = buffers();
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('update-buffers', result);
+  e.returnValue = result;
+});
+
+ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
   const result = await createFile(arg);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);

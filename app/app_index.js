@@ -37,13 +37,11 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   (async () => {
-    window.windowID = conf.id;
-
     const projectName:string = conf.tabs[0].buffer.projectName || '';
     const itemName:string = conf.tabs[0].buffer.path || '';
 
-    ipcRenderer.sendSync('refresh-tree-view');
-    ipcRenderer.send('open-page', { windowID: window.windowID, projectName, itemName });
+    ipcRenderer.sendSync('buffers');
+    ipcRenderer.send('open-page', { projectName, itemName });
   })();
 });
 
@@ -61,14 +59,14 @@ ipcRenderer.on('buffer-updated', (event, buf: Project.Buffer) => {
   store.dispatch(bufferUpdated(buf));
 });
 
-ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
+ipcRenderer.on('update-buffers', (event, tv: Array<BufferItem>) => {
   console.log('refresh-tree-view', tv);
 
   store.dispatch(refreshTreeView(tv));
 });
 
-ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
-  console.log('refresh-tree-view-item', projectName, itemPath, item);
+ipcRenderer.on('update-buffer', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
+  console.log('update-buffer', projectName, itemPath, item);
 
   store.dispatch(openTreeViewItem(projectName, itemPath, item));
 });
