@@ -26,8 +26,8 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p);
 }
 
-ipcMain.on('open-page', (e, req) => {
-  const result = openPage(req);
+ipcMain.on('open-page', async (e, req) => {
+  const result = await openPage(req);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;

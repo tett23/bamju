@@ -42,6 +42,7 @@ export default class AppWindow implements Window {
       width: conf.rectangle.width,
       height: conf.rectangle.height
     });
+    this.browserWindow = browserWindow;
 
     browserWindow.loadURL(`file://${__dirname}/../app.html`);
 
@@ -101,8 +102,6 @@ export default class AppWindow implements Window {
 
       replaceWindowConfig(this.conf);
     };
-
-    this.browserWindow = browserWindow;
   }
 
   windowID(): string {

@@ -32,6 +32,8 @@ export class WindowManager {
   _editorWindows: Array<EditorWindow>;
 
   constructor(config: WindowConfig[]) {
+    _instance = this;
+
     this._appWindows = [];
     this._editorWindows = [];
 
@@ -48,8 +50,6 @@ export class WindowManager {
       const menuItems = buildMenu(MenuTypeInit, null);
       Menu.setApplicationMenu(menuItems);
     }
-
-    _instance = this;
   }
 
   createAppWindow(conf: WindowConfig) {
@@ -126,8 +126,7 @@ export class WindowManager {
     return false;
   }
 
-  _updateMenu(window: Window) {
-    console.log(this);
+  _updateMenu(window: Window) { /* eslint class-methods-use-this: 0 */
     const menuType: MenuType = window.getType();
 
     const newMenu = buildMenu(menuType, window);

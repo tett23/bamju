@@ -7,9 +7,11 @@ import {
 } from 'electron';
 
 import {
-  WindowManager,
   Window
-} from './main/window';
+} from './common/window';
+import {
+  getInstance as getWindowManagerInstance
+} from './common/window_manager';
 
 export const MenuTypeInit = 'init';
 export const MenuTypeApp = 'app';
@@ -170,7 +172,7 @@ function subMenuEdit(menuType: MenuType, window: Window): MenuItem {
         label: 'Save All...',
         accelerator: 'CmdOrCtrl+Alt+S',
         click: () => {
-          WindowManager.sendSaveEventAll();
+          getWindowManagerInstance().sendSaveEventAll();
         },
         enabled: isEnableEditorMenu,
       },

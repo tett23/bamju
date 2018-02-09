@@ -46,9 +46,9 @@ ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   })();
 });
 
-ipcRenderer.on('open-page', (event, buf: ?Buffer) => {
-  console.log('open-page', buf);
-  if (buf === undefined || buf === null) {
+ipcRenderer.on('open-page', (event, [buf, contents]: [?Buffer, string]) => {
+  console.log('open-page', buf, contents);
+  if (buf == null) {
     return;
   }
 
@@ -66,10 +66,10 @@ ipcRenderer.on('update-buffers', (event, repositories: {[string]: Buffer[]}) => 
   store.dispatch(refreshTreeView(repositories));
 });
 
-ipcRenderer.on('update-buffer', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: Buffer}) => {
-  console.log('update-buffer', projectName, itemPath, item);
+ipcRenderer.on('update-buffer', (event, { repositoryName, path: itemPath, item }: {repositoryName: string, path: string, item: Buffer}) => {
+  console.log('update-buffer', repositoryName, itemPath, item);
 
-  store.dispatch(openTreeViewItem(projectName, itemPath, item));
+  store.dispatch(openTreeViewItem(repositoryName, itemPath, item));
 });
 
 ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
