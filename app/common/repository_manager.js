@@ -1,6 +1,5 @@
 // @flow
 
-import path from './path';
 import {
   type Message,
   MessageTypeSucceeded,
@@ -9,7 +8,6 @@ import {
 } from './util';
 import {
   MetaData,
-  ItemTypeRepository,
 } from './metadata';
 import {
   Repository,
@@ -50,8 +48,9 @@ export class RepositoryManager {
 
   async loadRepositories(): Promise<Repository[]> {
     const promiseAll = this._repositories.map(async (repo) => {
-      const r = await repo.load();
-      return r;
+      await repo.load();
+
+      return repo;
     });
 
     const ret = await Promise.all(promiseAll);
