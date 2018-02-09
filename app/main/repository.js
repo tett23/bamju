@@ -60,7 +60,7 @@ export async function openPage({ repositoryName, itemName }: {repositoryName: st
   return ret;
 }
 
-export async function refreshTreeView(): Promise<{[string]: Array<Buffer>} | Message> {
+export async function buffers(): Promise<{[string]: Array<Buffer>} | Message> {
   const ret = getInstance().toBuffers();
 
   return ret;
