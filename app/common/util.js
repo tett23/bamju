@@ -36,6 +36,10 @@ export function isSimilarError(mes: Message | any): boolean {
     return false;
   }
 
+  if (mes.type == null) {
+    return true;
+  }
+
   return mes.type === MessageTypeError || mes.type === MessageTypeFailed;
 }
 
