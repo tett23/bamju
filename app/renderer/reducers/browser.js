@@ -27,6 +27,7 @@ export function initialBrowserState(): BrowserState {
         childrenIDs: [],
         isOpened: false,
         isLoaded: false,
+        body: ''
       }
     ]
   };

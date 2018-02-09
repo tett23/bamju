@@ -23,6 +23,9 @@ import {
 import {
   MetaData,
 } from './metadata';
+import {
+  type Buffer,
+} from './buffer';
 
 export default class AppWindow implements Window {
   browserWindow: BrowserWindow;

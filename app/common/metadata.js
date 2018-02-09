@@ -54,6 +54,7 @@ export class MetaData {
   childrenIDs: Array<MetaDataID>;
   isLoaded: boolean;
   isOpened: boolean;
+  body: string;
 
   constructor(buffer: Buffer) {
     this.id = buffer.id;
@@ -70,6 +71,7 @@ export class MetaData {
     this.childrenIDs = buffer.childrenIDs;
     this.isLoaded = buffer.isLoaded;
     this.isOpened = buffer.isOpened;
+    this.body = buffer.body;
   }
 
   async load(): Promise<[?MetaData, Message]> {
@@ -362,6 +364,7 @@ export class MetaData {
       childrenIDs: this.childrenIDs,
       isLoaded: this.isLoaded,
       isOpened: this.isOpened,
+      body: this.body,
     };
   }
 
@@ -399,6 +402,7 @@ export class MetaData {
       childrenIDs: [],
       isLoaded: false,
       isOpened: false,
+      body: '',
     });
     this.childrenIDs.push(ret.id);
     this.repository().addMetaData(ret);

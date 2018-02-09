@@ -321,6 +321,7 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
     isOpened: false,
     parentID: null,
     childrenIDs: [],
+    body: '',
   };
 }
 //

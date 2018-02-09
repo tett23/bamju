@@ -30,6 +30,7 @@ const tabDefault = {
   childrenIDs: [],
   isOpened: false,
   isLoaded: false,
+  body: ''
 };
 
 const tab = (buffer: Buffer = tabDefault) => {

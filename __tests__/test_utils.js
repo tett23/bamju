@@ -42,7 +42,8 @@ function mergeDummyData(obj: DummyBuffer = {}): Buffer {
     isLoaded: true,
     isOpened: false,
     parentID: null,
-    childrenIDs: []
+    childrenIDs: [],
+    body: ''
   }, obj);
 }
 
