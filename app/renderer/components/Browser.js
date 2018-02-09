@@ -3,35 +3,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import type { BrowserState } from '../reducers/browser';
-import {
-  ItemTypeUndefined,
-} from '../../common/metadata';
 import Tab from './Tab';
+import { initialBrowserState } from '../reducers/browser';
 import styles from './Browser.css';
 
-const browserDefault = {
-  tabs: [
-    {
-      buffer: {
-        id: '',
-        name: '',
-        path: '',
-        repositoryName: '',
-        repositoryPath: '',
-        absolutePath: '',
-        itemType: ItemTypeUndefined,
-        parentID: null,
-        childrenIDs: [],
-        isOpened: false,
-        isLoaded: false,
-        body: ''
-      },
-      content: ''
-    }
-  ]
-};
-
-const browser = ({ tabs }: BrowserState = browserDefault) => {
+const browser = ({ tabs }: BrowserState = initialBrowserState()) => {
   console.log('refresh browser', tabs);
 
   const tab = tabs[0];

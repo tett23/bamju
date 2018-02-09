@@ -9,10 +9,16 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
-  initialBrowserState,
-  initialTreeViewState,
-  initialModalState,
 } from './renderer/reducers/combined';
+import {
+  initialBrowserState,
+} from './renderer/reducers/browser';
+import {
+  initialTreeViewState,
+} from './renderer/reducers/tree_view';
+import {
+  initialModalState,
+} from './renderer/reducers/modal';
 import {
   openPageByBuffer,
   bufferUpdated
