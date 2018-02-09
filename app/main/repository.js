@@ -4,7 +4,6 @@ import fs from 'fs';
 import opn from 'opn';
 import path from '../common/path';
 import {
-  RepositoryManager,
   getInstance,
 } from '../common/repository_manager';
 import {
@@ -14,12 +13,6 @@ import {
 import {
   type Buffer
 } from '../common/buffer';
-import {
-  Config,
-  Window as WindowConfig,
-  findWindowConfig,
-  replaceWindowConfig
-} from '../common/bamju_config';
 import {
   type Message,
   MessageTypeSucceeded,
