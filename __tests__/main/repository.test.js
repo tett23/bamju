@@ -7,6 +7,7 @@ import {
   addRepository,
   removeRepository,
   closeItem,
+  openItem,
 } from '../../app/main/repository';
 import {
   type Message,
@@ -178,6 +179,39 @@ describe('repository events', () => {
     it('MetaDataが存在しない場合、エラーが返る', async () => {
       const metaData = repository.getItemByPath('/foo');
       const result = await closeItem(Object.assign(metaData.toBuffer(), {
+        path: '/hogehoge',
+        name: 'hogehoge'
+      }));
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+  });
+
+  describe('open-item', () => {
+    it('MetaDataを開ける', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      if (metaData == null) {
+        expect(true).toBe(false);
+        return;
+      }
+      const result: Buffer | Message = await openItem(metaData.toBuffer());
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result.isOpened).toBe(true);
+    });
+
+    it('Repositoryが存在しない場合、エラーが返る', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      const result = await openItem(Object.assign(metaData.toBuffer(), {
+        repositoryName: 'hogehoge'
+      }));
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+
+    it('MetaDataが存在しない場合、エラーが返る', async () => {
+      const metaData = repository.getItemByPath('/foo');
+      const result = await openItem(Object.assign(metaData.toBuffer(), {
         path: '/hogehoge',
         name: 'hogehoge'
       }));

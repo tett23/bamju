@@ -124,7 +124,7 @@ export async function closeItem(buffer: Buffer): Promise<Buffer | Message> {
   if (repo == null) {
     const mes = {
       type: MessageTypeFailed,
-      message: `close-tree-view-item error: repositoryName=${buffer.repositoryName}`,
+      message: `close-item error: repositoryName=${buffer.repositoryName}`,
     };
     return mes;
   }
@@ -133,7 +133,29 @@ export async function closeItem(buffer: Buffer): Promise<Buffer | Message> {
   if (metaData == null) {
     const mes = {
       type: MessageTypeFailed,
-      message: `close-tree-view-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
+      message: `close-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
+    };
+    return mes;
+  }
+
+  return metaData.toBuffer();
+}
+
+export async function openItem(buffer: Buffer): Promise<Buffer | Message> {
+  const repo = getInstance().find(buffer.repositoryName);
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `open-item error: repositoryName=${buffer.repositoryName}`,
+    };
+    return mes;
+  }
+
+  const metaData = await repo.openItem(buffer.path);
+  if (metaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `open-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
     };
     return mes;
   }
