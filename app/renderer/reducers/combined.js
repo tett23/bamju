@@ -1,8 +1,13 @@
 // @flow
 
 import { combineReducers } from 'redux';
-import type { BufferItem } from '../../common/project';
-import { deepCopy, deepMerge } from '../../common/util';
+import {
+  type Buffer
+} from '../../common/buffer';
+import {
+  deepCopy,
+  deepMerge
+} from '../../common/util';
 
 import {
   REFRESH_TREE_VIEW,
@@ -37,7 +42,7 @@ function initialTreeViewState(): TreeViewState {
   };
 }
 
-function updateBufferItem(source: Array<BufferItem>, projectName: string, path: string, update: BufferItem): Array<BufferItem> {
+function updateBufferItem(source: Buffer[], projectName: string, path: string, update: Buffer): Array<Buffer> {
   const ret = source.map((item) => {
     if (item.projectName === projectName && item.path === path) {
       return update;
@@ -52,8 +57,8 @@ function updateBufferItem(source: Array<BufferItem>, projectName: string, path: 
   return ret;
 }
 
-function findBufferItem(projects: Array<BufferItem>, projectName: string, path: string): ?BufferItem {
-  let ret:?BufferItem = null;
+function findBufferItem(projects: Buffer[], projectName: string, path: string): ?Buffer {
+  let ret:?Buffer = null;
   projects.some((item) => {
     if (item.projectName === projectName && item.path === path) {
       ret = item;
@@ -94,12 +99,17 @@ export function initialBrowserState(): BrowserState {
   return {
     tabs: [
       {
+        id: '',
         name: '',
-        projectName: '',
         path: '',
+        repositoryName: '',
+        repositoryPath: '',
         absolutePath: '',
-        itemType: 'undefined',
-        body: ''
+        itemType: ItemTypeUndefined,
+        parentID: null,
+        childrenIDs: [],
+        isOpened: false,
+        isLoaded: false,
       }
     ]
   };

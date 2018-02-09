@@ -1,6 +1,8 @@
 // @flow
 
-import type { Buffer } from '../../common/project';
+import {
+  type Buffer
+} from '../../common/buffer';
 
 export const OPEN_PAGE = 'OPEN_PAGE';
 export const BUFFER_UPDATED = 'BUFFER_UPDATED';

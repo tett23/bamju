@@ -1,6 +1,11 @@
 // @flow
 
-import type { Buffer } from '../../common/project';
+import {
+  ItemTypeUndefined
+} from '../../common/metadata';
+import {
+  type Buffer
+} from '../../common/buffer';
 // import type { ActionTypes } from './combined';
 
 export type BrowserState = {
@@ -11,12 +16,17 @@ export function initialBrowserState(): BrowserState {
   return {
     tabs: [
       {
+        id: '',
         name: '',
-        projectName: '',
         path: '',
+        repositoryName: '',
+        repositoryPath: '',
         absolutePath: '',
-        itemType: 'undefined',
-        body: ''
+        itemType: ItemTypeUndefined,
+        parentID: null,
+        childrenIDs: [],
+        isOpened: false,
+        isLoaded: false,
       }
     ]
   };

@@ -2,7 +2,7 @@
 
 import {
   type Buffer
-} from '../../common/project';
+} from '../../common/buffer';
 
 export const OPEN_BUFFER = 'OPEN_BUFFER';
 export const UPDATE_EDITOR_CONTENT = 'UPDATE_EDITOR_CONTENT';

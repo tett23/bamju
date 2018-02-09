@@ -14,7 +14,9 @@ import {
 } from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
 import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
-import type { BufferItem } from './common/project';
+import {
+  type Buffer
+} from './common/buffer';
 import './app.global.css';
 
 const Project = require('./common/project');
@@ -45,7 +47,7 @@ ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   })();
 });
 
-ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
+ipcRenderer.on('open-page', (event, buf: ?Buffer) => {
   console.log('open-page', buf);
   if (buf === undefined || buf === null) {
     return;
@@ -54,18 +56,18 @@ ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
   store.dispatch(openPageByBuffer(buf));
 });
 
-ipcRenderer.on('buffer-updated', (event, buf: Project.Buffer) => {
+ipcRenderer.on('buffer-updated', (event, buf: Buffer) => {
   console.log('buffer-updated', buf);
   store.dispatch(bufferUpdated(buf));
 });
 
-ipcRenderer.on('update-buffers', (event, tv: Array<BufferItem>) => {
+ipcRenderer.on('update-buffers', (event, tv: Buffer[]) => {
   console.log('refresh-tree-view', tv);
 
   store.dispatch(refreshTreeView(tv));
 });
 
-ipcRenderer.on('update-buffer', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
+ipcRenderer.on('update-buffer', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: Buffer}) => {
   console.log('update-buffer', projectName, itemPath, item);
 
   store.dispatch(openTreeViewItem(projectName, itemPath, item));

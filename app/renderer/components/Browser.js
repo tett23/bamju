@@ -4,7 +4,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import type { BrowserState } from '../reducers/browser';
 import Tab from './Tab';
-import type { Buffer } from '../../common/project';
+import type { Buffer } from '../../common/buffer';
 import styles from './Browser.css';
 
 type browserType = {

@@ -9,24 +9,32 @@ import type { BrowserState } from '../reducers/browser';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
+  ItemTypeUndefined,
+} from '../../common/metadata';
+import {
   type Buffer
-} from '../../common/project';
+} from '../../common/buffer';
 import styles from './Browser.css';
 
 const { Menu, MenuItem } = remote.require('electron');
 
 const tabDefault = {
+  id: '',
   name: '',
-  projectName: '',
   path: '',
+  repositoryName: '',
+  repositoryPath: '',
   absolutePath: '',
-  body: '',
-  itemType: 'undefined'
+  itemType: ItemTypeUndefined,
+  parentID: null,
+  childrenIDs: [],
+  isOpened: false,
+  isLoaded: false,
 };
 
 const tab = (buffer: Buffer = tabDefault) => {
   const {
-    name, projectName, path, absolutePath, body
+    name, repositoryName, path, absolutePath, body
   } = buffer;
   console.log('refresh tab', body);
 
@@ -34,9 +42,9 @@ const tab = (buffer: Buffer = tabDefault) => {
   breadcrumbItems.push((
     <Breadcrumb.Item
       key="/"
-      onClick={e => { return breadcrumbItemsOnClick(e, projectName, '/'); }}
+      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/'); }}
     >
-      {projectName}
+      {repositoryName}
     </Breadcrumb.Item>
   ));
 
@@ -51,7 +59,7 @@ const tab = (buffer: Buffer = tabDefault) => {
     breadcrumbItems.push((
       <Breadcrumb.Item
         key={breadcrumbPath}
-        onClick={e => { return breadcrumbItemsOnClick(e, projectName, p); }}
+        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p); }}
       >
         {item}
       </Breadcrumb.Item>
@@ -93,7 +101,7 @@ function contextmenu(e, buf: Buffer) {
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
         parentWindowID: window.windowID,
-        projectName: buf.projectName,
+        projectName: buf.repositoryName,
         itemName: buf.path
       });
     },
@@ -104,7 +112,7 @@ function contextmenu(e, buf: Buffer) {
     click: () => {
       ipcRenderer.send('open-page', {
         windowID: window.windowID,
-        projectName: buf.projectName,
+        projectName: buf.repositoryName,
         itemName: buf.path,
       });
     }

@@ -2,7 +2,7 @@
 
 import {
   type Buffer
-} from '../../common/project';
+} from '../../common/buffer';
 
 export type EditorState = {
   buffer: Buffer

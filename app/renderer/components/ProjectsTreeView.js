@@ -5,13 +5,19 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
 import type { TreeViewState } from '../reducers/tree_view';
-import type { BufferItem, ItemType } from '../../common/project';
 import {
+  type Buffer
+} from '../../common/buffer';
+import {
+  type ItemType,
   ItemTypeMarkdown,
   ItemTypeText,
   ItemTypeDirectory,
-  ItemTypeProject
-} from '../../common/project';
+  ItemTypeRepository,
+  ItemTypeCSV,
+  ItemTypeTSV,
+  ItemTypeUndefined,
+} from '../../common/metadata';
 import styles from './ProjectsTreeView.css';
 import { refreshTreeView } from '../actions/tree_view';
 
@@ -20,7 +26,7 @@ const {
 } = remote.require('electron');
 
 type Props = {
-  projects: Array<BufferItem>
+  repositories: {[string]: Buffer[]}
 };
 
 class projectsTreeView extends React.Component<Props> {
@@ -33,7 +39,7 @@ class projectsTreeView extends React.Component<Props> {
     super(props);
   }
 
-  onClickItem(e, item: BufferItem) {
+  onClickItem(e, item: Buffer) {
     console.log(this);
 
     e.preventDefault();
@@ -41,33 +47,38 @@ class projectsTreeView extends React.Component<Props> {
     console.log('projectsTreeView.onClick', item);
 
     switch (item.itemType) {
-    case 'project':
+    case ItemTypeRepository:
       return openFile(item);
-    case 'directory':
+    case ItemTypeDirectory:
       return openFile(item);
-    case 'markdown':
+    case ItemTypeMarkdown:
       return openFile(item);
-    case 'text':
+    case ItemTypeText:
       return openFile(item);
-    case 'csv':
+    case ItemTypeCSV:
       return openFile(item);
-    case 'tsv':
+    case ItemTypeTSV:
       return openFile(item);
     default:
     }
   }
 
-  buildItems(items: Array<BufferItem>): Array<*> {
+  buildItems(items: Buffer[]): Array<*> {
     if (items.length === 0) {
       return [];
     }
 
-    const ret:Array<*> = items.map((item: BufferItem) => {
+    const ret:Array<*> = items.map((item: Buffer) => {
       const spanClass = `${itemType(item.itemType)}`;
 
       let children = [];
       if (item.isOpened) {
-        children = this.buildItems(item.items);
+        const childBuffers = item.childrenIDs.map((childrenID) => {
+          return items.find((child) => {
+            return child.id === childrenID;
+          });
+        }).filter(Boolean);
+        children = this.buildItems(childBuffers);
       }
 
       return ((
@@ -95,7 +106,9 @@ class projectsTreeView extends React.Component<Props> {
 
   render() {
     console.log('projectsTreeView.render this', this);
-    const items = this.buildItems(this.props.projects);
+    const items = Object.keys(this.props.repositories).map((repositoryName) => {
+      return this.buildItems(this.props.repositories[repositoryName]);
+    });
 
     return (
       <div className={styles.treeView}>
@@ -110,18 +123,18 @@ class projectsTreeView extends React.Component<Props> {
   }
 }
 
-function toggleTreeView(e, item: BufferItem) {
+function toggleTreeView(e, item: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
   if (item.isOpened) {
-    ipcRenderer.send('close-tree-view-item', { projectName: item.projectName, path: item.path });
+    ipcRenderer.send('close-item', { repositoryName: item.repositoryName, path: item.path });
   } else {
-    ipcRenderer.send('open-tree-view-item', { projectName: item.projectName, path: item.path });
+    ipcRenderer.send('open-item', { repositoryName: item.repositoryName, path: item.path });
   }
 }
 
-function icon(item: BufferItem) {
+function icon(item: Buffer) {
   switch (item.itemType) {
   case 'project':
     return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
@@ -159,15 +172,15 @@ function addProject(e) {
   });
 }
 
-function openFile(item: BufferItem) {
-  if (item.itemType === 'undefined') {
+function openFile(item: Buffer) {
+  if (item.itemType === ItemTypeUndefined) {
     return;
   }
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: item.projectName, itemName: item.path });
+  ipcRenderer.send('open-page', { repositoryName: item.repositoryName, itemName: item.path });
 }
 
-function contextmenu(e, item: BufferItem) {
+function contextmenu(e, item: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -183,7 +196,7 @@ function contextmenu(e, item: BufferItem) {
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
         parentWindowID: window.windowID,
-        projectName: item.projectName,
+        repositoryName: item.repositoryName,
         itemName: item.path
       });
     },
@@ -192,7 +205,7 @@ function contextmenu(e, item: BufferItem) {
   menu.append(new MenuItem({
     label: 'open new window',
     click: () => {
-      ipcRenderer.send('open-new-window', { windowID: window.windowID, projectName: item.projectName, itemName: item.path });
+      ipcRenderer.send('open-new-window', { windowID: window.windowID, repositoryName: item.repositoryName, itemName: item.path });
     }
   }));
   if (item.path === '/') {
@@ -217,31 +230,33 @@ function contextmenu(e, item: BufferItem) {
 
 function itemType(t: ItemType) {
   switch (t) {
-  case 'project':
+  case ItemTypeRepository:
     return styles.itemTypeAvailable;
-  case 'directory':
+  case ItemTypeDirectory:
     return styles.itemTypeAvailable;
-  case 'markdown':
+  case ItemTypeMarkdown:
     return styles.itemTypeAvailable;
-  case 'text':
+  case ItemTypeText:
     return styles.itemTypeAvailable;
-  case 'csv':
+  case ItemTypeCSV:
     return styles.itemTypeAvailable;
-  case 'tsv':
+  case ItemTypeTSV:
     return styles.itemTypeAvailable;
   default:
     return styles.itemTypeUnavailable;
   }
 }
 
-const mapStateToProps = (state: {treeView: TreeViewState}): {projects: Array<BufferItem>} => {
+const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[string]: Buffer[]}} => {
   console.log('projectsTreeView mapStateToProps', state);
   if (state == null) {
-    return { projects: [] };
+    return {
+      repositories: {}
+    };
   }
 
   return {
-    projects: state.treeView.projects
+    repositories: state.treeView.repositories
   };
 };
 
@@ -250,8 +265,8 @@ const mapDispatchToProps = (dispatch) => {
   console.log('projectsTreeView mapDispatchToProps', dispatch);
 
   return {
-    refreshTreeView: (projects: Array<BufferItem>) => {
-      dispatch(refreshTreeView(projects));
+    refreshTreeView: (repositories: {[string]: Buffer[]}) => {
+      dispatch(refreshTreeView(repositories));
     }
   };
 };

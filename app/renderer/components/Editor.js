@@ -10,7 +10,7 @@ import type { EditorState } from '../reducers/editor';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
-} from '../../common/project';
+} from '../../common/metadata';
 import {
   updateEditorContent
 } from '../actions/editor';
