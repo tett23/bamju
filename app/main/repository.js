@@ -86,31 +86,38 @@ export async function openBySystemEditor({ absolutePath }: MetaData): Promise<bo
   return true;
 }
 
-export async function addProject(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
+export async function addRepository(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
   const repositoryName = path.basename(absolutePath);
   const [repository, message] = await getInstance().addRepository({
     repositoryName,
     absolutePath,
   }, []);
-  if (repository == null || message !== MessageTypeSucceeded) {
+  if (repository == null || message.type !== MessageTypeSucceeded) {
     return {
       type: MessageTypeFailed,
-      message: `add-project error: ${message.message}`
+      message: `add-repository error: '${message.message}'`
     };
   }
 
   return getInstance().toBuffers();
 }
-//
-// ipcMain.on('remove-project', async (e, { absolutePath }) => {
-//   const repositoryName = path.basename(absolutePath);
-//   getInstance().removeRepository(repositoryName);
-//
-//   const ret = getInstance().toBuffers();
-//
-//   e.sender.send('refresh-tree-view', ret);
-//   e.returnValue = ret;
-// });
+
+export async function removeRepository(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
+  const repositoryName = path.basename(absolutePath);
+  const repo = getInstance().find(repositoryName);
+  if (repo == null) {
+    return {
+      type: MessageTypeFailed,
+      message: `remove-repository error: repository not found. repositoryName=${repositoryName}`
+    };
+  }
+
+  getInstance().removeRepository(repositoryName);
+
+  const ret = getInstance().toBuffers();
+
+  return ret;
+}
 //
 // ipcMain.on('close-tree-view-item', async (e, { repositoryName, itemPath }) => {
 //   const repo = getInstance().find(repositoryName);

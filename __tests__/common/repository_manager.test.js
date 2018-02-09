@@ -10,8 +10,9 @@ import {
   ItemTypeDirectory,
 } from '../../app/common/metadata';
 import {
+  MessageTypeSucceeded,
   MessageTypeFailed,
-  MessageTypeSucceeded
+  MessageTypeError,
 } from '../../app/common/util';
 
 
@@ -187,15 +188,13 @@ describe('RepositoryManager', () => {
       expect(result.type).toBe(MessageTypeFailed);
     });
 
-    it('absolutePathが実際に存在しない場合Failedのメッセージが返る', () => {
-      const testFunc = () => {
-        manager.addRepository({
-          repositoryName: 'foo',
-          absolutePath: '/tmp/bamju/foo'
-        });
-      };
+    it('absolutePathが実際に存在しない場合Errorのメッセージが返る', () => {
+      const [_, message] = manager.addRepository({
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      });
 
-      expect(testFunc).toThrowError();
+      expect(message.type).toBe(MessageTypeError);
     });
   });
 

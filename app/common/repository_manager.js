@@ -3,8 +3,9 @@
 import path from './path';
 import {
   type Message,
-  MessageTypeFailed,
   MessageTypeSucceeded,
+  MessageTypeFailed,
+  MessageTypeError,
 } from './util';
 import {
   MetaData,
@@ -99,7 +100,15 @@ export class RepositoryManager {
       }];
     }
 
-    const repo = new Repository(items, conf);
+    let repo: Repository;
+    try {
+      repo = new Repository(items, conf);
+    } catch (e) {
+      return [null, {
+        type: MessageTypeError,
+        message: `RepositoryManager.addRepository error: absolutePath=${conf.absolutePath}. ${e.message}`
+      }];
+    }
 
     this._repositories.push(repo);
 

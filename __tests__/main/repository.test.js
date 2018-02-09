@@ -6,7 +6,8 @@ import {
   openPage,
   buffers,
   openBySystemEditor,
-  addProject,
+  addRepository,
+  removeRepository,
 } from '../../app/main/repository';
 import {
   type Message,
@@ -114,24 +115,40 @@ describe('repository events', () => {
     });
   });
 
-  describe('add-project', () => {
+  describe('add-repository', () => {
     it('Repositoryの追加ができる', async () => {
-      fs.mkdirSync('/tmp/bamju/add-project');
-      const result = (await addProject('/tmp/bamju/add-project'): {[string]: Buffer[]});
+      fs.mkdirSync('/tmp/bamju/add-repository');
+      const result = (await addRepository('/tmp/bamju/add-repository'): {[string]: Buffer[]});
 
       expect(isSimilarError(result)).toBe(false);
 
-      expect(result['add-project']).toBe(true);
+      expect(result['add-repository'] != null).toBe(true);
     });
 
     it('RepositoryManagerに存在するabsolutePathの場合、エラーが返る', async () => {
-      const result = await addProject('/tmp/bamju/test');
+      const result = await addRepository('/tmp/bamju/test');
 
       expect(isSimilarError(result)).toBe(true);
     });
 
     it('absolutePathが存在しない場合、エラーが返る', async () => {
-      const result = await addProject('/tmp/bamju/add-project');
+      const result = await addRepository('/tmp/bamju/add-repository');
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+  });
+
+  describe('remove-project', () => {
+    it('Repositoryの削除ができる', async () => {
+      const result = (await removeRepository('/tmp/bamju/test'): {[string]: Buffer[]});
+
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result.test).not.toBe(expect.anything());
+    });
+
+    it('absolutePathが存在しない場合、エラーが返る', async () => {
+      const result = await removeRepository('/tmp/bamju/add-project');
 
       expect(isSimilarError(result)).toBe(true);
     });
