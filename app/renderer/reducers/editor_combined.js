@@ -1,7 +1,12 @@
 // @flow
 
 import { combineReducers } from 'redux';
-import type { BufferItem } from '../../common/project';
+import {
+  type Buffer
+} from '../../common/buffer';
+import {
+  ItemTypeUndefined
+} from '../../common/metadata';
 import { deepCopy, deepMerge } from '../../common/util';
 
 import {
@@ -16,11 +21,17 @@ import { type EditorState } from './editor';
 export function initialEditorState(): EditorState {
   return {
     buffer: {
+      id: '',
       name: '',
-      projectName: '',
       path: '',
+      repositoryName: '',
+      repositoryPath: '',
       absolutePath: '',
-      itemType: 'undefined',
+      itemType: ItemTypeUndefined,
+      parentID: null,
+      childrenIDs: [],
+      isOpened: false,
+      isLoaded: false,
       body: ''
     }
   };

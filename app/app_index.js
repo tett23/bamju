@@ -19,7 +19,6 @@ import {
 } from './common/buffer';
 import './app.global.css';
 
-const Project = require('./common/project');
 const { Window: WindowConfig } = require('./common/bamju_config');
 
 const store = createStore(
@@ -61,10 +60,10 @@ ipcRenderer.on('buffer-updated', (event, buf: Buffer) => {
   store.dispatch(bufferUpdated(buf));
 });
 
-ipcRenderer.on('update-buffers', (event, tv: Buffer[]) => {
-  console.log('refresh-tree-view', tv);
+ipcRenderer.on('update-buffers', (event, repositories: {[string]: Buffer[]}) => {
+  console.log('refresh-tree-view', repositories);
 
-  store.dispatch(refreshTreeView(tv));
+  store.dispatch(refreshTreeView(repositories));
 });
 
 ipcRenderer.on('update-buffer', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: Buffer}) => {

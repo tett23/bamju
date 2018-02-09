@@ -18,10 +18,10 @@ export function refreshTreeView(repositories: {[string]: Buffer[]}) {
   };
 }
 
-export function openTreeViewItem(projectName: string, path: string, update: Buffer) {
+export function openTreeViewItem(repositoryName: string, path: string, update: Buffer) {
   return {
     type: REFRESH_TREE_VIEW_ITEM,
-    projectName,
+    repositoryName,
     path,
     item: update
   };

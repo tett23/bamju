@@ -2,6 +2,9 @@
 
 import { combineReducers } from 'redux';
 import {
+  ItemTypeUndefined
+} from '../../common/metadata';
+import {
   type Buffer
 } from '../../common/buffer';
 import {
@@ -38,40 +41,22 @@ import { type ModalState } from './modal';
 
 function initialTreeViewState(): TreeViewState {
   return {
-    projects: []
+    repositories: {}
   };
 }
 
-function updateBufferItem(source: Buffer[], projectName: string, path: string, update: Buffer): Array<Buffer> {
-  const ret = source.map((item) => {
-    if (item.projectName === projectName && item.path === path) {
+function updateBufferItem(source: {[string]: Buffer[]}, repositoryName: string, path: string, update: Buffer): {[string]: Buffer[]} {
+  const repo = source[repositoryName];
+  const newItems = repo.map((item) => {
+    if (item.path === path) {
       return update;
     }
 
-    const r = Object.assign({}, item);
-    r.items = updateBufferItem(item.items, projectName, path, update);
-
-    return r;
+    return item;
   });
 
-  return ret;
-}
-
-function findBufferItem(projects: Buffer[], projectName: string, path: string): ?Buffer {
-  let ret:?Buffer = null;
-  projects.some((item) => {
-    if (item.projectName === projectName && item.path === path) {
-      ret = item;
-      return true;
-    }
-
-    ret = findBufferItem(item.items, projectName, path);
-    if (ret != null) {
-      return true;
-    }
-
-    return false;
-  });
+  const ret = deepCopy(source);
+  ret[repositoryName] = deepCopy(newItems);
 
   return ret;
 }
@@ -82,13 +67,13 @@ export function treeView(state: TreeViewState = initialTreeViewState(), action: 
   switch (action.type) {
   case REFRESH_TREE_VIEW: {
     return Object.assign({}, state, {
-      projects: action.projects
+      repositories: action.repositories
     });
   }
   case REFRESH_TREE_VIEW_ITEM: {
-    const newProjects = updateBufferItem(deepCopy(state.projects), action.projectName, action.path, action.item);
+    const newRepositories = updateBufferItem(deepCopy(state.repositories), action.repositoryName, action.path, action.item);
 
-    return Object.assign({}, state, { projects: newProjects });
+    return Object.assign({}, state, { repositories: newRepositories });
   }
   default:
     return state;
@@ -110,6 +95,7 @@ export function initialBrowserState(): BrowserState {
         childrenIDs: [],
         isOpened: false,
         isLoaded: false,
+        body: ''
       }
     ]
   };
