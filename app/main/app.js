@@ -27,10 +27,14 @@ app.on('ready', async () => {
 
   await Config.init();
 
+  console.log('a');
   const repositoryManager = new RepositoryManager(Config.bufferItems, Config.repositories);
-  repositoryManager.loadRepositories();
+  console.log('b');
+  await repositoryManager.loadRepositories();
+  console.log('c');
 
-  WindowManager.loadWindows(Config.windows);
+  await WindowManager.loadWindows(Config.windows);
+  console.log('d');
 });
 
 app.on('before-quit', () => {

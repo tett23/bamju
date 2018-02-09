@@ -50,6 +50,8 @@ ipcMain.on('buffers', async (e) => {
   e.returnValue = result;
 });
 
+// TODO: add-repository, remove-repository時のconfig更新
+
 ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
   const result = await createFile(arg);
   if (isSimilarMessage(result)) {
