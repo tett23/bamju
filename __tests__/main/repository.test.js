@@ -1,11 +1,15 @@
-/* eslint no-undef: 0 */
 // @flow
+
+import fs from 'fs';
 
 import {
   openPage,
   buffers,
+  openBySystemEditor,
+  addProject,
 } from '../../app/main/repository';
 import {
+  type Message,
   isSimilarError,
 } from '../../app/common/util';
 import {
@@ -106,6 +110,29 @@ describe('repository events', () => {
 
       metaData.absolutePath = 'not exist';
       const result = await openBySystemEditor(metaData);
+      expect(isSimilarError(result)).toBe(true);
+    });
+  });
+
+  describe('add-project', () => {
+    it('Repositoryの追加ができる', async () => {
+      fs.mkdirSync('/tmp/bamju/add-project');
+      const result = (await addProject('/tmp/bamju/add-project'): {[string]: Buffer[]});
+
+      expect(isSimilarError(result)).toBe(false);
+
+      expect(result['add-project']).toBe(true);
+    });
+
+    it('RepositoryManagerに存在するabsolutePathの場合、エラーが返る', async () => {
+      const result = await addProject('/tmp/bamju/test');
+
+      expect(isSimilarError(result)).toBe(true);
+    });
+
+    it('absolutePathが存在しない場合、エラーが返る', async () => {
+      const result = await addProject('/tmp/bamju/add-project');
+
       expect(isSimilarError(result)).toBe(true);
     });
   });

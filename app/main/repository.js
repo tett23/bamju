@@ -86,23 +86,21 @@ export async function openBySystemEditor({ absolutePath }: MetaData): Promise<bo
   return true;
 }
 
-// ipcMain.on('add-project', async (e, { absolutePath }) => {
-//   const repositoryName = path.basename(absolutePath);
-//   const [repository, message] = await getInstance().addRepository({
-//     repositoryName,
-//     absolutePath,
-//   }, []);
-//   if (repository == null || message !== MessageTypeSucceeded) {
-//     e.sender.send('message', message);
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   const ret = getInstance().toBuffers();
-//
-//   e.sender.send('refresh-tree-view', ret);
-//   e.returnValue = ret;
-// });
+export async function addProject(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
+  const repositoryName = path.basename(absolutePath);
+  const [repository, message] = await getInstance().addRepository({
+    repositoryName,
+    absolutePath,
+  }, []);
+  if (repository == null || message !== MessageTypeSucceeded) {
+    return {
+      type: MessageTypeFailed,
+      message: `add-project error: ${message.message}`
+    };
+  }
+
+  return getInstance().toBuffers();
+}
 //
 // ipcMain.on('remove-project', async (e, { absolutePath }) => {
 //   const repositoryName = path.basename(absolutePath);
