@@ -60,7 +60,7 @@ export async function openPage({ repositoryName, itemName }: {repositoryName: st
   return ret;
 }
 
-export async function buffers(): Promise<{[string]: Array<Buffer>} | Message> {
+export async function buffers(): Promise<{[string]: Buffer[]} | Message> {
   const ret = getInstance().toBuffers();
 
   return ret;

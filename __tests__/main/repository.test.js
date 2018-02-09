@@ -1,12 +1,6 @@
 /* eslint no-undef: 0 */
 // @flow
 
-// import {
-//   ipcMain,
-//   BrowserWindow
-// } from 'electron';
-// import electron from 'electron-prebuilt';
-
 import {
   openPage,
   buffers,
@@ -20,6 +14,9 @@ import {
 import {
   Repository,
 } from '../../app/common/repository';
+import {
+  type Buffer,
+} from '../../app/common/buffer';
 
 import '../global_config.test';
 import {
@@ -30,13 +27,13 @@ import {
 let manager: RepositoryManager;
 let repository: Repository;
 beforeEach(() => {
-  const buffers = dummy({
+  const dummyItems = dummy({
     test: [
       '/foo/bar/baz/testItem.md'
     ]
   });
 
-  manager = new RepositoryManager(buffers, [{
+  manager = new RepositoryManager(dummyItems, [{
     repositoryName: 'test',
     absolutePath: '/tmp/bamju/test'
   }]);
@@ -58,7 +55,6 @@ describe('repository events', () => {
   describe('open-page', () => {
     it('ファイルの内容が取得できる', async () => {
       const result = await openPage({ repositoryName: 'test', itemName: 'testItem.md' });
-      console.log(result);
 
       expect(isSimilarError(result)).not.toBe(false);
 
@@ -74,14 +70,15 @@ describe('repository events', () => {
 
   describe('buffers', () => {
     it('全てのrepositoryの内容を取得できる', async () => {
-      const result = await buffers();
+      const result = ((await buffers()): { [string]: Buffer[] });
 
       expect(isSimilarError(result)).not.toBe(false);
 
+      expect(result.test).not.toBe(5);
       expect(result.test.length).toBe(5);
-      expect(result.test.find(() => {
-        '/foo/bar/baz/testItem.md';
-      })).toBeFalsy();
+      expect(result.test.find((item) => {
+        return item.path === '/foo/bar/baz/testItem.md';
+      })).toBeTruthy();
     });
   });
 });
