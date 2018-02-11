@@ -2,6 +2,10 @@
 /* eslint no-undef: 0, no-empty: 0 */
 
 import fs from 'fs';
+import 'raf/polyfill';
+import Enzyme from 'enzyme';
+import Adapter from 'enzyme-adapter-react-16';
+
 import path from '../app/common/path';
 
 import './global_config.test';
@@ -155,6 +159,16 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
   return ret;
 }
 
+Enzyme.configure({ adapter: new Adapter() });
+
+export function mountWithStore(component, store) {
+  const context = {
+    store,
+  };
+
+  return Enzyme.mount(component, { context });
+}
+
 it('dummy', () => {
   const items = dummy({
     test: [
@@ -164,5 +178,3 @@ it('dummy', () => {
 
   expect(items.test.length).toBe(4);
 });
-
-export default {};

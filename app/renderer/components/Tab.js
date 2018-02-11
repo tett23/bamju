@@ -1,8 +1,6 @@
 /* eslint react/no-danger: 0 */
 // @flow
 
-import 'raf/polyfill';
-
 import {
   ipcRenderer,
   remote,
@@ -26,8 +24,6 @@ import {
 import styles from './Browser.css';
 
 function tab({ buffer, content }: {buffer: Buffer, content: string} = tabDefault()) {
-  console.log('aaaaa');
-  console.log('tab', buffer, content);
   const {
     name, repositoryName, path, absolutePath
   } = buffer;
