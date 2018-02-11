@@ -28,35 +28,33 @@ type Props = {
   repositories: RepositoriesState
 };
 
-class repositoriesTreeView extends React.Component<Props> {
-  static defaultProps = {
-    repositories: {}
-  };
+const defaultProps = {
+  repositories: {}
+};
 
-  render() {
-    const items = Object.keys(this.props.repositories).map((repositoryName) => {
-      const repo = this.props.repositories[repositoryName];
-      const rootItem = repo.find((item) => {
-        return item.itemType === ItemTypeRepository;
-      });
-      if (rootItem == null) {
-        return null;
-      }
-
-      return buildItems(rootItem, repo);
+function repositoriesTreeView({ repositories }: Props = defaultProps) {
+  const items = Object.keys(repositories).map((repositoryName) => {
+    const repo = repositories[repositoryName];
+    const rootItem = repo.find((item) => {
+      return item.itemType === ItemTypeRepository;
     });
+    if (rootItem == null) {
+      return null;
+    }
 
-    return (
-      <div className={styles.treeView}>
-        <ul className={styles.treeViewItems}>{items}</ul>
-        <div className={styles.menu}>
-          <span className={styles.menuItem}>
-            <FontAwesome name="plus" onClick={addRepository} />
-          </span>
-        </div>
+    return buildItems(rootItem, repo);
+  });
+
+  return (
+    <div className={styles.treeView}>
+      <ul className={styles.treeViewItems}>{items}</ul>
+      <div className={styles.menu}>
+        <span className={styles.menuItem}>
+          <FontAwesome name="plus" onClick={addRepository} />
+        </span>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 function buildItems(item: Buffer, repository: Buffer[]) {
