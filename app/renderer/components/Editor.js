@@ -6,7 +6,10 @@ import AceEditor from 'react-ace';
 import 'brace/mode/markdown';
 import 'brace/mode/text';
 import 'brace/theme/monokai';
-import type { EditorState } from '../reducers/editor';
+import {
+  type EditorState,
+  initialEditorState,
+} from '../reducers/editor';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
@@ -19,11 +22,13 @@ import {
 } from '../actions/editor';
 
 type Props = {
-  contentUpdated: (string) => void
+  bufferUpdated: (Buffer, string) => void
 } & EditorState;
 
 class editor extends React.Component<Props> {
   editor: ?AceEditor;
+
+  static defaultProps = initialEditorState()
 
   handleOnChange() {
     if (this.editor) {
