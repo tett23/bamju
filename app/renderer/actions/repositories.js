@@ -4,23 +4,35 @@ import {
   type Buffer
 } from '../../common/buffer';
 
-export const REFRESH_TREE_VIEW = 'REFRESH_TREE_VIEW';
-export const UPDATE_BUFFER = 'UPDATE_BUFFER';
+export const RELOAD_REPOSITORIES = 'RELOAD_REPOSITORIES';
+export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
+export const ADD_BUFFERS = 'ADD_BUFFERS';
+export const REMOVE_BUFFERS = 'REMOVE_BUFFERS';
 
-export type page = {
-  body: string
-};
-
-export function refreshTreeView(repositories: {[string]: Buffer[]}) {
+export function reloadRepositories(repositories: {[string]: Buffer[]}) {
   return {
-    type: REFRESH_TREE_VIEW,
+    type: RELOAD_REPOSITORIES,
     repositories
   };
 }
 
-export function updateBuffer(buffer: Buffer) {
+export function updateBuffers(buffers: Buffer[]) {
   return {
-    type: UPDATE_BUFFER,
-    buffer,
+    type: UPDATE_BUFFERS,
+    buffers,
+  };
+}
+
+export function addBuffers(buffers: Buffer[]) {
+  return {
+    type: ADD_BUFFERS,
+    buffers,
+  };
+}
+
+export function removeBuffers(buffers: Buffer[]) {
+  return {
+    type: REMOVE_BUFFERS,
+    buffers,
   };
 }

@@ -36,6 +36,7 @@ beforeEach(() => {
 });
 
 describe('browser reducer', () => {
+  // TODO: Buffer渡さないでidだけ渡すようにする
   describe('OPEN_PAGE', () => {
     it('バッファを開くことができる', () => {
       store.dispatch(openPageByBuffer(buffer, 'hogehoge'));

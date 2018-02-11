@@ -16,8 +16,10 @@ import {
 } from '../../common/util';
 
 import {
-  refreshTreeView,
-  updateBuffer,
+  reloadRepositories,
+  updateBuffers,
+  addBuffers,
+  removeBuffers,
 } from '../actions/repositories';
 import {
   openPageByBuffer,
@@ -31,9 +33,9 @@ import {
 } from '../actions/modal';
 
 import {
-  treeView,
-  type TreeViewState,
-  initialTreeViewState,
+  repositories,
+  type RepositoriesState,
+  initialRepositoriesState,
 } from './repositories';
 import {
   browser,
@@ -50,8 +52,10 @@ type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype
 type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openPageByBuffer>
-| $ReturnType<typeof refreshTreeView>
-| $ReturnType<typeof updateBuffer>
+| $ReturnType<typeof reloadRepositories>
+| $ReturnType<typeof updateBuffers>
+| $ReturnType<typeof addBuffers>
+| $ReturnType<typeof removeBuffers>
 | $ReturnType<typeof openNewFileDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof updateMessage>
@@ -59,14 +63,14 @@ export type ActionTypes = $ReturnType<typeof openPageByBuffer>
 
 type State = {
   browser: BrowserState,
-  treeView: TreeViewState,
+  repositories: RepositoriesState,
   modal: ModalState
 };
 
 export function initialState(): State {
   return {
     browser: initialBrowserState(),
-    treeView: initialTreeViewState(),
+    repositories: initialRepositoriesState(),
     modal: initialModalState()
   };
 }
@@ -75,7 +79,7 @@ export function initialState(): State {
 export function appReducer(s: State, a: ActionTypes) {
   return {
     browser: browser(s.browser, a),
-    treeView: treeView(s.treeView, a),
+    repositories: repositories(s.repositories, a),
     modal: modal(s.modal, a),
   };
 }
