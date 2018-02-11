@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 import {
-  openPage,
+  openBuffer,
   buffers,
   openBySystemEditor,
   addRepository,
@@ -58,9 +58,9 @@ beforeEach(() => {
 });
 
 describe('repository events', () => {
-  describe('open-page', () => {
+  describe('open-buffer', () => {
     it('ファイルの内容が取得できる', async () => {
-      const result = await openPage({ repositoryName: 'test', itemName: 'testItem.md' });
+      const result = await openBuffer({ repositoryName: 'test', itemName: 'testItem.md' });
 
       expect(isSimilarError(result)).toBe(false);
 
@@ -68,7 +68,7 @@ describe('repository events', () => {
     });
 
     it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const result = await openPage({ repositoryName: 'test', itemName: 'not exist' });
+      const result = await openBuffer({ repositoryName: 'test', itemName: 'not exist' });
 
       expect(isSimilarError(result)).toBe(true);
     });
