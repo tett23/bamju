@@ -194,5 +194,5 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
 });
 
 require('./main/app');
-// require('./main/window');
+require('./main/window');
 // require('./main/repository');

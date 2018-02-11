@@ -12,7 +12,10 @@ import {
   ItemTypeText,
 } from '../../common/metadata';
 import {
-  updateEditorContent
+  type Buffer,
+} from '../../common/buffer';
+import {
+  bufferUpdated,
 } from '../actions/editor';
 
 type Props = {
@@ -24,7 +27,7 @@ class editor extends React.Component<Props> {
 
   handleOnChange() {
     if (this.editor) {
-      this.props.contentUpdated(this.editor.getValue());
+      this.props.bufferUpdated(this.props.buffer, this.editor.getValue());
     }
   }
 
@@ -33,8 +36,6 @@ class editor extends React.Component<Props> {
   }
 
   render() {
-    console.log('refresh editor', this.props);
-
     let mode;
     switch (this.props.buffer.itemType) {
     case ItemTypeMarkdown: {
@@ -54,7 +55,7 @@ class editor extends React.Component<Props> {
     return (
       <div>
         <AceEditor
-          value={this.props.buffer.body}
+          value={this.props.content}
           mode={mode}
           theme={theme}
           name="aceEditor"
@@ -72,22 +73,19 @@ class editor extends React.Component<Props> {
 }
 
 const mapStateToProps = (state: {editor: EditorState}): EditorState => {
-  console.log('Editor mapStateToProps', state);
   return state.editor;
 };
 
 
 const mapDispatchToProps = (dispatch) => {
-  console.log('Editor mapDispatchToProps', dispatch);
-
   return {
-    contentUpdated: (text: string) => {
-      dispatch(updateEditorContent(text));
+    bufferUpdated: (buffer: Buffer, content: string) => {
+      dispatch(bufferUpdated(buffer, content));
     }
   };
 };
 
 
-const Editor = connect(mapStateToProps, mapDispatchToProps)(editor);
+export const Editor = connect(mapStateToProps, mapDispatchToProps)(editor);
 
 export default Editor;

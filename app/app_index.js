@@ -62,6 +62,8 @@ ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   console.log('initialize', conf);
   ipcRenderer.sendSync('buffers');
 
+  window.windowID = conf.id;
+
   const tab = conf.tabs[0];
   if (tab != null) {
     ipcRenderer.send('open-page', { repositoryName: tab.buffer.repositoryName, itemName: tab.buffer.path });

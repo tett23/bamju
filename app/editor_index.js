@@ -28,8 +28,8 @@ if (root != null) {
   );
 }
 
-ipcRenderer.on('initialize', (event, buffer: Buffer) => {
-  store.dispatch(openBuffer(buffer));
+ipcRenderer.on('initialize', (event, [buffer, content]: [Buffer, string]) => {
+  store.dispatch(openBuffer(buffer, content));
 });
 
 ipcRenderer.on('send-buffer-information', (_) => {
