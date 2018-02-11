@@ -319,10 +319,10 @@ describe('Repository', () => {
 
       manager = new RepositoryManager(buffers, [{
         repositoryName: 'test',
-        absolutePath: '/tmp/bamju-test-test'
+        absolutePath: '/tmp/bamju/test'
       }], {
         repositoryName: 'test2',
-        absolutePath: '/tmp/bamju-test-test2'
+        absolutePath: '/tmp/bamju/test2'
       });
 
       repository = manager.find('test');
