@@ -18,7 +18,7 @@ import {
 import {
   refreshTreeView,
   updateBuffer,
-} from '../actions/tree_view';
+} from '../actions/repositories';
 import {
   openPageByBuffer,
   bufferUpdated
@@ -34,7 +34,7 @@ import {
   treeView,
   type TreeViewState,
   initialTreeViewState,
-} from './tree_view';
+} from './repositories';
 import {
   browser,
   type BrowserState,

@@ -6,7 +6,7 @@ import {
 import {
   REFRESH_TREE_VIEW,
   UPDATE_BUFFER,
-} from '../actions/tree_view';
+} from '../actions/repositories';
 
 import {
   deepCopy,
