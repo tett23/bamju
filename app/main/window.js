@@ -13,9 +13,6 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 import {
-  type Buffer,
-} from '../common/buffer';
-import {
   MessageTypeSucceeded,
   MessageTypeFailed,
 } from '../common/util';
@@ -75,21 +72,10 @@ ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {pa
   }
 });
 
-ipcMain.on('save-buffer', async (e, { buffer, content }: {buffer: Buffer, content: string}) => {
-  console.log('save-buffer', buffer);
+ipcMain.on('save-buffer', async (e, { metaDataID, content }: {metaDataID: MetaDataID, content: string}) => {
+  console.log('save-buffer', metaDataID, content);
 
-  const repo = getRepositoryManagerInstance().find(buffer.repositoryName);
-  if (repo == null) {
-    const mes = {
-      type: MessageTypeFailed,
-      message: 'save-buffer error',
-    };
-    e.sender.send('message', mes);
-    e.returnValue = null;
-    return;
-  }
-
-  const metaData = repo.getItemByPath(buffer.path);
+  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
   if (metaData == null) {
     const mes = {
       type: MessageTypeFailed,
@@ -124,6 +110,5 @@ ipcMain.on('save-buffer', async (e, { buffer, content }: {buffer: Buffer, conten
     return;
   }
 
-  const buf = metaData.toBuffer();
-  getWindowManagerInstance().sendSavedEventAll(buf, parseResult.content);
+  getWindowManagerInstance().sendSavedEventAll(metaData.id, parseResult.content);
 });

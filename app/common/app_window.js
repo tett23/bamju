@@ -19,6 +19,9 @@ import {
   getInstance as getWindowManagerInstance,
 } from './window_manager';
 import {
+  type MetaDataID,
+} from './metadata';
+import {
   type Buffer,
 } from './buffer';
 
@@ -109,8 +112,8 @@ export default class AppWindow implements Window {
     return this._menuType;
   }
 
-  sendSavedEvent(buffer: Buffer, content: string) {
-    this.browserWindow.webContents.send('buffer-updated', buffer, content);
+  sendSavedEvent(metaDataID: MetaDataID, content: string) {
+    this.browserWindow.webContents.send('buffer-updated', metaDataID, content);
   }
 
   async initializeRenderer() {

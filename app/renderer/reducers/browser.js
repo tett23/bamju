@@ -5,7 +5,7 @@ import {
 } from './combined';
 import {
   OPEN_BUFFER,
-  BUFFER_UPDATED,
+  BUFFER_CONTENT_UPDATED,
 } from '../actions/tab';
 
 import {
@@ -57,16 +57,17 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
       tabs: [{ buffer: action.buffer, content: action.content }]
     });
   }
-  case BUFFER_UPDATED: {
+  case BUFFER_CONTENT_UPDATED: {
+    const { metaDataID, content } = action;
     const idx = state.tabs.findIndex((buf) => {
-      return buf.buffer.id === action.buffer.id;
+      return buf.buffer.id === metaDataID;
     });
     if (idx === -1) {
       return state;
     }
 
     const newState = deepCopy(state);
-    newState.tabs[idx].content = action.content;
+    newState.tabs[idx].content = content;
 
     return newState;
   }

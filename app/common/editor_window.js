@@ -93,7 +93,7 @@ export default class EditorWindow implements Window {
 
   async initializeRenderer() {
     const content = await this.metaData.getContent();
-    this.browserWindow.webContents.send('initialize', content);
+    this.browserWindow.webContents.send('initialize', this.metaData.toBuffer(), content);
   }
 
   sendSaveEvent() {

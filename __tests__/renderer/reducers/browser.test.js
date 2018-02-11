@@ -1,3 +1,4 @@
+// @flow
 
 import { createStore } from 'redux';
 
@@ -7,7 +8,7 @@ import {
 } from '../../../app/renderer/reducers/browser';
 import {
   openBuffer,
-  bufferUpdated,
+  bufferContentUpdated,
 } from '../../../app/renderer/actions/tab';
 import {
   ItemTypeUndefined,
@@ -50,7 +51,7 @@ describe('browser reducer', () => {
   describe('BUFFER_UPDATED', () => {
     it('バッファを更新することができる', () => {
       store.dispatch(openBuffer(buffer, ''));
-      store.dispatch(bufferUpdated(buffer, 'hogehoge'));
+      store.dispatch(bufferContentUpdated(buffer.id, 'hogehoge'));
 
       const newState = store.getState();
 
@@ -59,8 +60,7 @@ describe('browser reducer', () => {
 
     it('バッファが存在しない場合は何も起きない', () => {
       store.dispatch(openBuffer(buffer, ''));
-      const newBuffer = Object.assign({}, buffer, { id: createMetaDataID() });
-      store.dispatch(bufferUpdated(newBuffer, 'hogehoge'));
+      store.dispatch(bufferContentUpdated(createMetaDataID(), 'hogehoge'));
 
       const newState = store.getState();
 

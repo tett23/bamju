@@ -29,11 +29,13 @@ if (root != null) {
 }
 
 ipcRenderer.on('initialize', (event, [buffer, content]: [Buffer, string]) => {
+  console.log('initialize', buffer, content);
   store.dispatch(openBuffer(buffer, content));
 });
 
 ipcRenderer.on('send-buffer-information', (_) => {
+  console.log('send-buffer-information');
   const state = store.getState();
 
-  ipcRenderer.send('save-buffer', state.editor.buffer);
+  ipcRenderer.send('save-buffer', state.editor.buffer.id, state.editor.content);
 });

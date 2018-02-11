@@ -110,9 +110,9 @@ export class WindowManager {
     }
   }
 
-  sendSavedEventAll(buffer: Buffer, content: string) {
+  sendSavedEventAll(metaDataID: MetaDataID, content: string) {
     this._appWindows.forEach((w) => {
-      w.sendSavedEvent(buffer, content);
+      w.sendSavedEvent(metaDataID, content);
     });
   }
 

@@ -23,7 +23,7 @@ import {
 } from '../actions/repositories';
 import {
   openBuffer,
-  bufferUpdated
+  bufferContentUpdated
 } from '../actions/tab';
 import {
   openNewFileDialog,
@@ -52,6 +52,7 @@ type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype
 type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof openBuffer>
+| $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
 | $ReturnType<typeof addBuffers>

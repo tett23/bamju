@@ -11,7 +11,6 @@ import {
   initialState,
 } from '../../../app/renderer/reducers/combined';
 import {
-  bufferUpdated,
   openBuffer,
 } from '../../../app/renderer/actions/tab';
 import {
@@ -38,7 +37,7 @@ beforeEach(() => {
 describe('<Tab />', () => {
   it('contentの内容が表示できる', () => {
     const tab = store.getState().browser.tabs[0];
-    store.dispatch(bufferUpdated(tab.buffer, 'hogehoge'));
+    store.dispatch(openBuffer(tab.buffer, 'hogehoge'));
 
     const component = mountWithStore(<Tab buffer={tab.buffer} content={tab.content} />, store);
 
@@ -48,7 +47,7 @@ describe('<Tab />', () => {
   it('Breadcrumbの内容が表示できる', () => {
     const tab = store.getState().browser.tabs[0];
     tab.buffer.path = '/foo/bar/baz';
-    store.dispatch(bufferUpdated(tab.buffer, 'hogehoge'));
+    store.dispatch(openBuffer(tab.buffer, 'hogehoge'));
 
     const component = mountWithStore(<Tab buffer={tab.buffer} content={tab.content} />, store);
 

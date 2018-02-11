@@ -22,7 +22,7 @@ import {
 } from './renderer/reducers/modal';
 import {
   openBuffer,
-  bufferUpdated
+  bufferContentUpdated,
 } from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
 import {
@@ -31,6 +31,9 @@ import {
   addBuffers,
   removeBuffers,
 } from './renderer/actions/repositories';
+import {
+  type MetaDataID
+} from './common/metadata';
 import {
   type Buffer
 } from './common/buffer';
@@ -79,13 +82,10 @@ ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {
   store.dispatch(openBuffer(buf, contents));
 });
 
-ipcRenderer.on('buffer-updated', (event, [buffer, content]: [Buffer, string]) => {
-  console.log('buffer-updated', buffer, content);
-  if (buffer == null) {
-    return;
-  }
+ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {
+  console.log('buffer-content-updated', metaDataID, content);
 
-  store.dispatch(bufferUpdated(buffer, content));
+  store.dispatch(bufferContentUpdated(metaDataID, content));
 });
 
 ipcRenderer.on('reload-repositories', (event, repositories: RepositoriesState) => {
