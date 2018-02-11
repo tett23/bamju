@@ -148,7 +148,7 @@ function addRepository(e) {
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
-      ipcRenderer.send('add-repository', directory);
+      ipcRenderer.send('add-repository', { absolutePath: directory });
     });
   });
 }
@@ -209,7 +209,7 @@ export function buildContextMenu(item: Buffer) {
         message: '削除しますか'
       });
       if (choice === 0) {
-        ipcRenderer.send('remove-repository', { path: item.absolutePath });
+        ipcRenderer.send('remove-repository', { absolutePath: item.absolutePath });
       }
     },
     enabled: item.itemType === ItemTypeRepository

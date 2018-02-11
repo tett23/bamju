@@ -83,6 +83,8 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
   const repository:Repository = (result: any);
   await getConfigInstance().addRepository(repository.toConfig());
 
+  await repository.load();
+
   const buffersResult = await buffers();
   if (isSimilarMessage(buffersResult)) {
     e.sender.send('message', buffersResult);
@@ -95,7 +97,7 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
 });
 
 ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
-  console.log('add-repository', arg);
+  console.log('remove-repository', arg);
   const result = await removeRepository(arg.absolutePath);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
@@ -162,6 +164,7 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
 });
 
 ipcMain.on('close-item', async (e, buf: Buffer) => {
+  console.log('close-item', buf);
   const result = await closeItem(buf);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
@@ -175,6 +178,7 @@ ipcMain.on('close-item', async (e, buf: Buffer) => {
 
 
 ipcMain.on('open-item', async (e, buf: Buffer) => {
+  console.log('open-item', buf);
   const result = await openItem(buf);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
