@@ -34,9 +34,10 @@ import {
 import {
   type Buffer
 } from './common/buffer';
+import {
+  type WindowConfig
+} from './common/window';
 import './app.global.css';
-
-const { Window: WindowConfig } = require('./common/bamju_config');
 
 const store = createStore(
   appReducer,

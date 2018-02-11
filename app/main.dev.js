@@ -21,7 +21,7 @@ import {
   type Buffer,
 } from './common/buffer';
 import {
-  Config
+  getInstance as getConfigInstance
 } from './common/bamju_config';
 import {
   type Message,
@@ -75,8 +75,6 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
     e.returnValue = result;
     return;
   }
-
-  Config.addRepository();
 
   const buffersResult = await buffers();
   if (isSimilarMessage(buffersResult)) {

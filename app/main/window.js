@@ -7,10 +7,10 @@ import {
 import {
 } from '../menu';
 import {
-  getInstance,
+  getInstance as getRepositoryManagerInstance,
 } from '../common/repository_manager';
 import {
-  internalPath,
+  type MetaDataID,
 } from '../common/metadata';
 import {
   type Buffer,
@@ -20,54 +20,56 @@ import {
   MessageTypeFailed,
 } from '../common/util';
 import {
-  Config,
-  type Window as WindowConfig,
-  findWindowConfig,
+  getInstance as getConfigInstance
 } from '../common/bamju_config';
 import {
   createWindowID,
+  type WindowID,
 } from '../common/window';
 import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';
 
-ipcMain.on('open-new-window', async (e, { windowID, repositoryName, itemName }: {windowID: string, repositoryName: string, itemName: string}) => {
-  console.log('open-new-window', repositoryName, itemName);
+ipcMain.on('open-new-window', async (e, { windowID, metaDataID }: {windowID: WindowID, metaDataID: MetaDataID}) => {
+  console.log('open-new-window', windowID, metaDataID);
 
-  let conf:?WindowConfig = findWindowConfig(windowID);
-  if (conf === null || conf === undefined) {
-    conf = Object.assign({}, Config.windows[0]);
+  let conf = getConfigInstance().findWindowConfig(windowID);
+  if (conf == null) {
+    conf = Object.assign({}, getConfigInstance().getConfig().windows[0]);
+  }
+
+  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
+  if (metaData == null) {
+    return;
   }
 
   conf.id = createWindowID();
   conf.rectangle.x += 50;
   conf.rectangle.y += 50;
   conf.tabs = [{
-    buffer: {
-      repositoryName,
-      path: itemName
-    }
+    buffer: metaData.toBuffer(),
+    content: '',
   }];
 
   getWindowManagerInstance().createAppWindow(conf);
 });
 
-ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string, repositoryName: string, itemName: string}) => {
-  console.log('open-by-bamju-editor', fileInfo);
+ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {parentWindowID: ?WindowID, metaDataID: MetaDataID}) => {
+  console.log('open-by-bamju-editor', parentWindowID, metaDataID);
 
-  const metaData = getInstance().detect(fileInfo.repositoryName, fileInfo.itemName);
+  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
   if (metaData == null) {
-    e.send('show-information', {
-      type: 'error',
-      message: `file not found. internalPath=${internalPath(fileInfo.repositoryName, fileInfo.itemName)}`
+    e.send('message', {
+      type: MessageTypeFailed,
+      message: `file not found. metaDataID=${metaDataID}`
     });
 
     return;
   }
 
-  const editorWindow = getWindowManagerInstance().getEditorWindow(fileInfo.repositoryName, fileInfo.itemName);
+  const editorWindow = getWindowManagerInstance().getEditorWindow(metaDataID);
   if (editorWindow == null) {
-    getWindowManagerInstance().createEditorWindow(metaData, fileInfo.parentWindowID);
+    getWindowManagerInstance().createEditorWindow(metaData, parentWindowID);
   } else {
     editorWindow.focus();
   }
@@ -76,7 +78,7 @@ ipcMain.on('open-by-bamju-editor', async (e, fileInfo: {parentWindowID: ?string,
 ipcMain.on('save-buffer', async (e, { buffer, content }: {buffer: Buffer, content: string}) => {
   console.log('save-buffer', buffer);
 
-  const repo = getInstance().find(buffer.repositoryName);
+  const repo = getRepositoryManagerInstance().find(buffer.repositoryName);
   if (repo == null) {
     const mes = {
       type: MessageTypeFailed,

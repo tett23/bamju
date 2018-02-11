@@ -9,13 +9,11 @@ import {
   MenuTypeApp,
 } from '../menu';
 import {
-  type Window as WindowConfig,
-  addWindowConfig,
-  removeWindowConfig,
-  replaceWindowConfig
+  getInstance as getConfigInstance
 } from '../common/bamju_config';
 import {
   Window,
+  type WindowConfig,
 } from './window';
 import {
   getInstance as getWindowManagerInstance,
@@ -50,7 +48,7 @@ export default class AppWindow implements Window {
         throw new Error('"browserWindow" is not defined');
       }
 
-      addWindowConfig(this.conf);
+      getConfigInstance().addWindow(this.conf);
 
       if (process.platform !== 'darwin') {
         const menuItems = buildMenu(MenuTypeApp, this);
@@ -71,7 +69,7 @@ export default class AppWindow implements Window {
     });
 
     browserWindow.on('closed', () => {
-      removeWindowConfig(this.conf.id);
+      getConfigInstance().removeWindow(this.conf.id);
       this.browserWindow = null;
       getWindowManagerInstance().removeWindow(this.windowID());
     });
@@ -97,7 +95,7 @@ export default class AppWindow implements Window {
         height: rectangle.height
       };
 
-      replaceWindowConfig(this.conf);
+      getConfigInstance().replaceWindow(this.conf);
     };
   }
 

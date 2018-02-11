@@ -7,16 +7,15 @@ import {
   MenuTypeInit,
 } from '../menu';
 import {
-  type Window as WindowConfig,
-} from './bamju_config';
-import {
   MetaData,
+  type MetaDataID,
 } from './metadata';
 import {
   type Buffer
 } from './buffer';
 import {
-  Window
+  Window,
+  type WindowConfig,
 } from './window';
 import AppWindow from './app_window';
 import EditorWindow from './editor_window';
@@ -156,9 +155,9 @@ export class WindowManager {
     return this._appWindows;
   }
 
-  getEditorWindow(repositoryName: string, itemPath: string): ?EditorWindow {
+  getEditorWindow(metaDataID: MetaDataID): ?EditorWindow {
     return this._editorWindows.find((w) => {
-      return w.metaData.repositoryName === repositoryName && w.metaData.path === itemPath;
+      return w.metaData.id === metaDataID;
     });
   }
 

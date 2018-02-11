@@ -103,8 +103,7 @@ export function buildTabContextMenu(buf: Buffer) {
       click: () => {
         ipcRenderer.send('open-by-bamju-editor', {
           parentWindowID: window.windowID,
-          repositoryName: buf.repositoryName,
-          itemName: buf.path
+          metaDataID: buf.id,
         });
       },
       enabled: isSimilarFile(buf.itemType)

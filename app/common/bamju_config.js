@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
 import {
-  getInstance,
+  getInstance as getRepositoryManagerInstance,
 } from './repository_manager';
 import {
   type RepositoryConfig,
@@ -47,6 +47,12 @@ export const defaultConfig:Config = {
   },
 };
 
+let _instance: BamjuConfig;
+
+export function getInstance() {
+  return _instance;
+}
+
 export class BamjuConfig {
   _configPath: string;
   _config: Config;
@@ -64,6 +70,8 @@ export class BamjuConfig {
     const json = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
     this._config = this._merge(json);
+
+    _instance = this;
   }
 
   getConfig(): Config {
@@ -85,7 +93,7 @@ export class BamjuConfig {
 
   async quit() {
     try {
-      this._config.bufferItems = getInstance().toBuffers();
+      this._config.bufferItems = getRepositoryManagerInstance().toBuffers();
     } catch (_) {
     }
 

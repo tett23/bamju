@@ -184,8 +184,7 @@ export function buildContextMenu(item: Buffer) {
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
         parentWindowID: window.windowID,
-        repositoryName: item.repositoryName,
-        itemName: item.path
+        metaDataID: item.id,
       });
     },
     enabled: isSimilarFile(item.itemType),
@@ -193,7 +192,10 @@ export function buildContextMenu(item: Buffer) {
   ret.push({
     label: 'open new window',
     click: () => {
-      ipcRenderer.send('open-new-window', { windowID: window.windowID, repositoryName: item.repositoryName, itemName: item.path });
+      ipcRenderer.send('open-new-window', {
+        windowID: window.windowID,
+        metaDataID: item.id,
+      });
     }
   });
   ret.push({

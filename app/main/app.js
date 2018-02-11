@@ -47,9 +47,9 @@ app.on('ready', async () => {
   const _ = new WindowManager(conf.windows);
 });
 
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
   // TODO: configからWindowManagerを参照しないようにしたい
-  config.quit();
+  await config.quit();
 });
 
 app.on('activate', async () => {
