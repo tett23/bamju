@@ -59,13 +59,13 @@ if (root != null) {
 }
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
-  (async () => {
-    const repositoryName :string = conf.tabs[0].buffer.repositoryName || '';
-    const itemName:string = conf.tabs[0].buffer.path || '';
+  console.log('initialize', conf);
+  ipcRenderer.sendSync('buffers');
 
-    ipcRenderer.sendSync('buffers');
-    ipcRenderer.send('open-page', { repositoryName, itemName });
-  })();
+  const tab = conf.tabs[0];
+  if (tab != null) {
+    ipcRenderer.send('open-page', { repositoryName: tab.buffer.repositoryName, itemName: tab.buffer.path });
+  }
 });
 
 ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {

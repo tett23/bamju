@@ -58,13 +58,6 @@ export default class AppWindow implements Window {
       browserWindow.show();
       browserWindow.focus();
 
-      let { repositoryName, path: itemName } = conf.tabs[0].buffer;
-      if (repositoryName === '') {
-        repositoryName = 'bamju-specifications';
-      }
-      if (itemName === '') {
-        itemName = 'index.md';
-      }
       this.initializeRenderer();
     });
 
