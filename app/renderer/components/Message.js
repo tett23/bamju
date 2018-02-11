@@ -43,7 +43,7 @@ function message(props: Props) {
         text="close"
         tabIndex={-1}
         onClick={() => { props.closeMessage(props.id); }}
-        onKeyUp={(e) => {
+        onKeyUp={e => {
           return checkKey(e, () => {
             props.closeMessage(props.id);
           }, props.closeAllMessages);
@@ -69,6 +69,10 @@ function messageType(type: MessageType) {
 }
 
 function checkKey(e, dispatchClose: ()=>void, dispatchCloseAllMessages: typeof closeAllMessages) {
+  if (e == null) {
+    return;
+  }
+
   e.preventDefault();
   e.stopPropagation();
 
