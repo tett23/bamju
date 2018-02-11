@@ -48,7 +48,6 @@ beforeEach(() => {
 
 describe('<RepositoriesTreeView />', () => {
   it('TreeViewの構築ができる', () => {
-    // const repositories = store.dispatch(reloadRepositories(repositories));
     const { repositories } = store.getState();
 
     const component = mountWithStore(<RepositoriesTreeView repositories={repositories} />, store);
