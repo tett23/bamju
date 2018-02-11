@@ -148,6 +148,28 @@ export class BamjuConfig {
     await this.update();
   }
 
+  async addRepository(repo: RepositoryConfig) {
+    const isExist = this._config.repositories.some((r) => {
+      return r.repositoryName === repo.repositoryName && r.absolutePath === repo.absolutePath;
+    });
+    if (isExist) {
+      return;
+    }
+
+    this._config.repositories.push(repo);
+  }
+
+  async removeRepository(repositoryName: string, absolutePath: string) {
+    const idx = this._config.repositories.findIndex((r) => {
+      return r.repositoryName === repositoryName && r.absolutePath === absolutePath;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    this._config.repositories.splice(idx, 1);
+  }
+
   _merge(values: Object): Config {
     return Object.assign({}, defaultConfig, this._config, values);
   }

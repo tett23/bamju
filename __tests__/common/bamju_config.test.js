@@ -11,10 +11,16 @@ const configPath = '/tmp/test/bamju_config.json';
 let config;
 beforeEach(() => {
   const configJSON = Object.assign(defaultConfig, {
+    repositories: [
+      {
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju/test'
+      }
+    ],
     config: {
       followChange: false,
       mkdirP: false
-    }
+    },
   });
 
   try {
@@ -203,6 +209,59 @@ describe('BamjuConfig', () => {
       await config.removeWindow('bar');
 
       expect(config.getConfig().windows.length).toBe(1);
+    });
+  });
+
+  describe('addRepository', () => {
+    it('Repositoryの追加ができる', async () => {
+      const repositoryConfig = {
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      };
+      await config.addRepository(repositoryConfig);
+
+      expect(config.getConfig().repositories.length).toBe(2);
+      expect(config.getConfig().repositories[1]).toMatchObject(repositoryConfig);
+    });
+
+    it('すでにWindowが存在している場合は何もしない', async () => {
+      const repositoryConfig = {
+        repositoryName: 'foo',
+        absolutePath: '/tmp/bamju/foo'
+      };
+      await config.addRepository(repositoryConfig);
+
+      expect(config.getConfig().repositories.length).toBe(2);
+      expect(config.getConfig().repositories[1]).toMatchObject(repositoryConfig);
+
+      await config.addRepository(repositoryConfig);
+
+      expect(config.getConfig().repositories.length).toBe(2);
+      expect(config.getConfig().repositories[1]).toMatchObject(repositoryConfig);
+    });
+  });
+
+  describe('removeRepository', () => {
+    it('Repositoryの削除ができる', async () => {
+      const repositoryConfig = {
+        absolutePath: '/tmp/bamju/test',
+        repositoryName: 'test'
+      };
+      await config.addRepository(repositoryConfig);
+
+      expect(config.getConfig().repositories.length).toBe(1);
+
+      await config.removeRepository(repositoryConfig.repositoryName, repositoryConfig.absolutePath);
+
+      expect(config.getConfig().repositories.length).toBe(0);
+    });
+
+    it('repositoryNameが存在しない場合は何もしない', async () => {
+      expect(config.getConfig().repositories.length).toBe(1);
+
+      await config.removeRepository('bar', '/tmp/bamju/bar');
+
+      expect(config.getConfig().repositories.length).toBe(1);
     });
   });
 });

@@ -7,6 +7,9 @@ import {
   getInstance,
 } from '../common/repository_manager';
 import {
+  Repository,
+} from '../common/repository';
+import {
   MetaData,
   resolveInternalPath,
 } from '../common/metadata';
@@ -79,7 +82,7 @@ export async function openBySystemEditor({ absolutePath }: MetaData): Promise<bo
   return true;
 }
 
-export async function addRepository(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
+export async function addRepository(absolutePath: string): Promise<Repository | Message> {
   const repositoryName = path.basename(absolutePath);
   const [repository, message] = await getInstance().addRepository({
     repositoryName,
@@ -92,10 +95,10 @@ export async function addRepository(absolutePath: string): Promise<{[string]: Bu
     };
   }
 
-  return getInstance().toBuffers();
+  return repository;
 }
 
-export async function removeRepository(absolutePath: string): Promise<{[string]: Buffer[]} | Message> {
+export async function removeRepository(absolutePath: string): Promise<?Repository | Message> {
   const repositoryName = path.basename(absolutePath);
   const repo = getInstance().find(repositoryName);
   if (repo == null) {
@@ -105,11 +108,7 @@ export async function removeRepository(absolutePath: string): Promise<{[string]:
     };
   }
 
-  getInstance().removeRepository(repositoryName);
-
-  const ret = getInstance().toBuffers();
-
-  return ret;
+  return getInstance().removeRepository(repositoryName);
 }
 
 export async function closeItem(buffer: Buffer): Promise<Buffer | Message> {

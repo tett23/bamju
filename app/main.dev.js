@@ -18,6 +18,9 @@ import {
   getInstance,
 } from './common/repository_manager';
 import {
+  Repository,
+} from './common/repository';
+import {
   type Buffer,
 } from './common/buffer';
 import {
@@ -76,6 +79,9 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
     return;
   }
 
+  const repository:Repository = (result: any);
+  await getConfigInstance().addRepository(repository.toConfig());
+
   const buffersResult = await buffers();
   if (isSimilarMessage(buffersResult)) {
     e.sender.send('message', buffersResult);
@@ -102,6 +108,9 @@ ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
     e.returnValue = result;
     return;
   }
+
+  const repository:Repository = (result: any);
+  await getConfigInstance().removeRepository(repository.name, repository.absolutePath);
 
   e.sender.send('reload-repositories', buffersResult);
   e.returnValue = result;
