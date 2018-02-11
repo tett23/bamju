@@ -2,7 +2,6 @@
 
 import { app } from 'electron';
 import expandHomeDir from 'expand-home-dir';
-import devtoolsInstaller from 'electron-devtools-installer';
 import {
   RepositoryManager
 } from '../common/repository_manager';
@@ -59,22 +58,14 @@ app.on('activate', async () => {
 });
 
 async function installExtensions() {
-  // const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  // const extensions = [
-  //   'REACT_DEVELOPER_TOOLS',
-  //   'REDUX_DEVTOOLS'
-  // ];
-  //
-  // Promise.all(extensions.map(async (name) => {
-  //   console.log('aa');
-  //   const ret = await
-  //     devtoolsInstaller(name, forceDownload).then((r) => {
-  //       console.log('resolved', r);
-  //       return r;
-  //     }, (r) => {
-  //       console.log('rejected', r);
-  //     });
-  //   console.log('promise', ret);
-  //   return ret;
-  // })).catch(console.log);
+  const installer = require('electron-devtools-installer'); // eslint-disable-line
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = [
+    'REACT_DEVELOPER_TOOLS',
+    'REDUX_DEVTOOLS'
+  ];
+
+  return Promise
+    .all(extensions.map(name => { return installer.default(installer[name], forceDownload); }))
+    .catch(console.log);
 }
