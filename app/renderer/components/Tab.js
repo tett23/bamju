@@ -4,7 +4,6 @@
 import {
   ipcRenderer,
   remote,
-  Menu,
 } from 'electron';
 import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
@@ -125,7 +124,8 @@ function contextmenu(e, buf: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
-  const menu = Menu.buildFromTemplate(buildTabContextMenu(buf));
+  const template = buildTabContextMenu(buf);
+  const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
