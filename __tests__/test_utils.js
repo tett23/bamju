@@ -37,7 +37,7 @@ export type DummyBuffer = {
   body?: string
 };
 
-function createDummyBuffer(obj: DummyBuffer = {}): Buffer {
+export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
   return Object.assign({}, {
     id: createMetaDataID(),
     name: 'test',
@@ -67,7 +67,7 @@ function createByPath(repositoryName: string, itemPath:string): Buffer {
   const repositoryPath = path.join('/tmp/bamju', repositoryName);
   const absolutePath = path.join(repositoryPath, itemPath).replace(/\/$/, '');
 
-  return createDummyBuffer({
+  return dummyBuffer({
     name,
     path: itemPath,
     repositoryName,
