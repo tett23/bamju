@@ -13,7 +13,6 @@ import {
   removeBuffers
 } from '../../../app/renderer/actions/repositories';
 import {
-  ItemTypeUndefined,
   createMetaDataID,
 } from '../../../app/common/metadata';
 import {
