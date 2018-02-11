@@ -32,15 +32,18 @@ import {
 
 import {
   treeView,
-  type TreeViewState
+  type TreeViewState,
+  initialTreeViewState,
 } from './tree_view';
 import {
   browser,
-  type BrowserState
+  type BrowserState,
+  initialBrowserState,
 } from './browser';
 import {
   modal,
-  type ModalState
+  type ModalState,
+  initialModalState,
 } from './modal';
 
 type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
@@ -60,10 +63,16 @@ type State = {
   modal: ModalState
 };
 
+export function initialState(): State {
+  return {
+    browser: initialBrowserState(),
+    treeView: initialTreeViewState(),
+    modal: initialModalState()
+  };
+}
 
 // なぜかcombineReducerが動かないので無理矢理
 export function appReducer(s: State, a: ActionTypes) {
-  console.log('appReducer', s, a);
   return {
     browser: browser(s.browser, a),
     treeView: treeView(s.treeView, a),

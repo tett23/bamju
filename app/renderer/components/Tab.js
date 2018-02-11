@@ -1,39 +1,33 @@
 /* eslint react/no-danger: 0 */
 // @flow
 
-import { ipcRenderer, remote } from 'electron';
+import 'raf/polyfill';
+
+import {
+  ipcRenderer,
+  remote,
+  Menu,
+  MenuItem,
+} from 'electron';
 import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import type { BrowserState } from '../reducers/browser';
+import {
+  type BrowserState,
+  tabDefault,
+} from '../reducers/browser';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
-  ItemTypeUndefined,
 } from '../../common/metadata';
 import {
   type Buffer
 } from '../../common/buffer';
 import styles from './Browser.css';
 
-const { Menu, MenuItem } = remote.require('electron');
-
-const tabDefault = {
-  id: '',
-  name: '',
-  path: '',
-  repositoryName: '',
-  repositoryPath: '',
-  absolutePath: '',
-  itemType: ItemTypeUndefined,
-  parentID: null,
-  childrenIDs: [],
-  isOpened: false,
-  isLoaded: false,
-  body: ''
-};
-
-const tab = ({ buffer, content }: {buffer: Buffer, content: string} = { buffer: tabDefault, content: '' }) => {
+function tab({ buffer, content }: {buffer: Buffer, content: string} = tabDefault()) {
+  console.log('aaaaa');
+  console.log('tab', buffer, content);
   const {
     name, repositoryName, path, absolutePath
   } = buffer;
@@ -76,7 +70,7 @@ const tab = ({ buffer, content }: {buffer: Buffer, content: string} = { buffer: 
       <div className="markdown-body" name={name} dangerouslySetInnerHTML={html} />
     </div>
   );
-};
+}
 
 function breadcrumbItemsOnClick(e, repo: string, path: string) {
   e.preventDefault();
@@ -122,10 +116,7 @@ function contextmenu(e, buf: Buffer) {
 }
 
 const mapStateToProps = (state: {browser: BrowserState}) => {
-  return state.browser.tabs[0] || {
-    buffer: tabDefault,
-    content: ''
-  };
+  return state.browser.tabs[0] || tabDefault();
 };
 
 
