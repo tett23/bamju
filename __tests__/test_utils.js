@@ -18,7 +18,9 @@ import {
   createMetaDataID,
   ItemTypeUndefined,
   ItemTypeDirectory,
+  ItemTypeRepository,
   detectItemType,
+  isSimilarDirectory,
   type MetaDataID,
 } from '../app/common/metadata';
 
@@ -67,7 +69,7 @@ export function createDummyBufferByPath(repositoryName: string, itemPath:string)
   const repositoryPath = path.join('/tmp/bamju', repositoryName);
   const absolutePath = path.join(repositoryPath, itemPath).replace(/\/$/, '');
 
-  return dummyBuffer({
+  const ret = dummyBuffer({
     name,
     path: itemPath,
     repositoryName,
@@ -75,6 +77,12 @@ export function createDummyBufferByPath(repositoryName: string, itemPath:string)
     absolutePath,
     itemType: detectItemType(itemPath)
   });
+
+  if (ret.path === '/') {
+    ret.itemType = ItemTypeRepository;
+  }
+
+  return ret;
 }
 
 export function dummy(items: dummyType): {[string]: Array<Buffer>} {
@@ -141,7 +149,7 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
     }
 
     sorted.forEach((buf) => {
-      if (buf.itemType === ItemTypeDirectory) {
+      if (isSimilarDirectory(buf.itemType)) {
         try {
           fs.mkdirSync(buf.absolutePath);
         } catch (_) {
