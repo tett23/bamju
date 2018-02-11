@@ -64,7 +64,7 @@ describe('repository events', () => {
 
       expect(isSimilarError(result)).toBe(false);
 
-      expect(result[1]).toBe('hogehoge');
+      expect(result[1]).toBe('<p>hogehoge</p>\n');
     });
 
     it('MetaDataが存在しない場合、エラーが返る', async () => {
