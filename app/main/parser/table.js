@@ -1,10 +1,10 @@
 // @flow
 
 import { promisify } from 'util';
+// $FlowFixMe
 import CSVParser from 'csv-parse';
 
 import {
-  type Parser,
   type StackItems,
 } from './parser'; /* eslint flowtype-errors/show-errors: 0 */
 import {
@@ -23,7 +23,7 @@ const defaultOption = {
   delimiter: ','
 };
 
-export class Table implements Parser<TableOption> {
+export class Table {
   static async parse(metaData: MetaData, text: string, _: StackItems = [], options: TableOption = defaultOption): Promise<ParseResult> {
     const csv = await (promisify(CSVParser))(text, { delimiter: options.delimiter });
 

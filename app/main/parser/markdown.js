@@ -21,7 +21,6 @@ import {
   MessageTypeSucceeded,
 } from '../../common/util';
 import {
-  type Parser,
   type StackItem,
   type StackItems,
 } from './parser';
@@ -65,7 +64,7 @@ type ParseInlineToken = {
   text: ?string
 };
 
-export class Markdown implements Parser<MarkdownOption> {
+export class Markdown {
   static async parse(metaData: MetaData, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
     if (md === '') {
       return emptyFileBuffer();
@@ -74,8 +73,10 @@ export class Markdown implements Parser<MarkdownOption> {
     const options = Object.assign({}, defaultOption, opt);
     stack.push({ repositoryName: metaData.repositoryName, absolutePath: metaData.absolutePath });
 
+    // $FlowFixMe
     const renderer:marked.Renderer = new marked.Renderer(options);
     options.renderer = opt.renderer || renderer;
+    // $FlowFixMe
     renderer.inlineLink = renderInlineLink;
     const lexer:marked.Lexer = new marked.Lexer(options);
     lexer.rules.inlineLink1 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]\{(.+?)\}/;
@@ -86,6 +87,7 @@ export class Markdown implements Parser<MarkdownOption> {
     lexer.rules.inlineLink6 = /^\s*\[\[inline\|(.+?):(.+?)\]\]/;
     lexer.rules.inlineLink7 = /^\s*\[\[inline\|(.+?)\]\]\{(.+?)\}/;
     lexer.rules.inlineLink8 = /^\s*\[\[inline\|(.+?)\]\]/;
+    // $FlowFixMe
     lexer.token = markedLexerToken;
     const parser:marked.Parser = new marked.Parser(options);
     parser.tok = markedParserTok;
@@ -110,9 +112,11 @@ export class Markdown implements Parser<MarkdownOption> {
 
       return ret;
     }));
+    // $FlowFixMe
     tokens.links = {};
     // console.log('Markdown.parse', tokens);
 
+    // $FlowFixMe
     const parsed:string = parser.parse(tokens);
 
     const p5 = async (html: string): Promise<string> => {
