@@ -8,6 +8,7 @@ import {
 } from './util';
 import {
   MetaData,
+  type MetaDataID,
 } from './metadata';
 import {
   Repository,
@@ -70,6 +71,17 @@ export class RepositoryManager {
 
   isExist(repositoryName: string): boolean {
     return this.find(repositoryName) != null;
+  }
+
+  getItemByID(metaDataID: MetaDataID): ?MetaData {
+    let ret = null;
+    this._repositories.some((repo) => {
+      ret = repo.getItemByID(metaDataID);
+
+      return false;
+    });
+
+    return ret;
   }
 
   detect(repositoryName: string, itemName: string, current: ?MetaData = null): ?MetaData {

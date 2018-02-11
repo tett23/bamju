@@ -6,26 +6,22 @@ import {
   RepositoryManager,
 } from '../../app/common/repository_manager';
 import {
-  ItemTypeMarkdown,
   ItemTypeDirectory,
 } from '../../app/common/metadata';
 import {
-  MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
 } from '../../app/common/util';
 
-
+import '../global_config.test';
 import {
   dummy,
 } from '../test_utils';
 
-jest.setTimeout(500);
-
 let manager: RepositoryManager;
 beforeEach(() => {
   const dummyBuffers = dummy({
-    test: ['foo']
+    test: ['/foo']
   });
 
   manager = new RepositoryManager(dummyBuffers, [{
@@ -126,6 +122,16 @@ describe('RepositoryManager', () => {
 
     it('repositoryが存在しない場合はfalseを返す', () => {
       expect(manager.isExist('hgoe')).toBe(false);
+    });
+  });
+  describe('getItemByID', () => {
+    it('MetaDataを取得できる', () => {
+      const metaData = manager.find('test').getItemByPath('/foo');
+      expect(manager.getItemByID(metaData.id).id).toBe(metaData.id);
+    });
+
+    it('MetaDataが存在しない場合はnullを返す', () => {
+      expect(manager.getItemByID('hogehoge')).not.toBe(expect.anything);
     });
   });
 
