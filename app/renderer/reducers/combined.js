@@ -31,6 +31,11 @@ import {
   updateMessage,
   updateFormValue
 } from '../actions/modal';
+import {
+  addMessage,
+  closeMessage,
+  closeAllMessages
+} from '../actions/messages';
 
 import {
   repositories,
@@ -47,6 +52,11 @@ import {
   type ModalState,
   initialModalState,
 } from './modal';
+import {
+  messages,
+  type MessagesState,
+  initialMessagesState,
+} from './messages';
 
 type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
 type $ReturnType<F> = __ReturnType<*, F>;
@@ -60,19 +70,24 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof openNewFileDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof updateMessage>
-| $ReturnType<typeof updateFormValue>;
+| $ReturnType<typeof updateFormValue>
+| $ReturnType<typeof addMessage>
+| $ReturnType<typeof closeMessage>
+| $ReturnType<typeof closeAllMessages>;
 
 type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
-  modal: ModalState
+  modal: ModalState,
+  messages: MessagesState
 };
 
 export function initialState(): State {
   return {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState()
+    modal: initialModalState(),
+    messages: initialMessagesState(),
   };
 }
 
@@ -82,6 +97,7 @@ export function appReducer(s: State, a: ActionTypes) {
     browser: browser(s.browser, a),
     repositories: repositories(s.repositories, a),
     modal: modal(s.modal, a),
+    messages: messages(s.messages, a)
   };
 }
 

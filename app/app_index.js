@@ -21,6 +21,9 @@ import {
   initialModalState,
 } from './renderer/reducers/modal';
 import {
+  initialMessagesState,
+} from './renderer/reducers/messages';
+import {
   openBuffer,
   bufferContentUpdated,
 } from './renderer/actions/tab';
@@ -31,6 +34,7 @@ import {
   addBuffers,
   removeBuffers,
 } from './renderer/actions/repositories';
+import { addMessage } from './renderer/actions/messages';
 import {
   type MetaDataID
 } from './common/metadata';
@@ -50,7 +54,8 @@ const store = createStore(
   {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState()
+    modal: initialModalState(),
+    messages: initialMessagesState()
   },
 );
 
@@ -126,6 +131,8 @@ ipcRenderer.on('file-created', (event, result: {success: boolean, message: strin
 
 ipcRenderer.on('message', (_, message: Message) => {
   console.log('message', message);
+
+  store.dispatch(addMessage(message));
 });
 
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {

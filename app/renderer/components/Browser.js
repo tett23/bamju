@@ -8,11 +8,7 @@ import { initialBrowserState } from '../reducers/browser';
 import styles from './Browser.css';
 
 const browser = ({ tabs }: BrowserState = initialBrowserState()) => {
-  console.log('refresh browser', tabs);
-
   const tab = tabs[0];
-
-  console.log('refresh browser2', tab);
 
   return (
     <div className={styles.browser}>
