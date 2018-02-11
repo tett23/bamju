@@ -3,7 +3,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import type { BrowserState } from '../reducers/browser';
-import Tab from './Tab';
+import { Tab } from './Tab';
 import { initialBrowserState } from '../reducers/browser';
 import styles from './Browser.css';
 
