@@ -8,10 +8,10 @@ export const ADD_MESSAGE = 'ADD_MESSAGE';
 export const CLOSE_MESSAGE = 'CLOSE_MESSAGE';
 export const CLOSE_ALL_MESSAGES = 'CLOSE_ALL_MESSAGES';
 
-export function addMessage(message: Message, id: Symbol = Symbol('message')) {
+export function addMessage(message: Message) {
   return {
     type: ADD_MESSAGE,
-    id,
+    id: Symbol('addMessage'),
     message
   };
 }
