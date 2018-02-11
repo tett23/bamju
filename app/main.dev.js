@@ -40,7 +40,8 @@ if (process.env.NODE_ENV === 'production') {
 if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
   require('electron-debug')();
   const p = path.join(__dirname, '..', 'app', 'node_modules');
-  require('module').globalPaths.push(p);
+  // $FlowFixMe
+  require('module').globalPaths.push(p); // eslint-disable-line
 }
 
 ipcMain.on('open-page', async (e, req) => {
