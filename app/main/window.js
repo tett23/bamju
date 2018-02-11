@@ -72,14 +72,14 @@ ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {pa
   }
 });
 
-ipcMain.on('save-buffer', async (e, { metaDataID, content }: {metaDataID: MetaDataID, content: string}) => {
+ipcMain.on('save-buffer', async (e, [metaDataID, content]: [MetaDataID, string]) => {
   console.log('save-buffer', metaDataID, content);
 
   const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
   if (metaData == null) {
     const mes = {
       type: MessageTypeFailed,
-      message: 'save-buffer error',
+      message: `save-buffer error: metaData not found metaDataID=${metaDataID}`,
     };
     e.sender.send('message', mes);
     e.returnValue = null;
@@ -90,7 +90,7 @@ ipcMain.on('save-buffer', async (e, { metaDataID, content }: {metaDataID: MetaDa
   if (message.type !== MessageTypeSucceeded) {
     const mes = {
       type: MessageTypeFailed,
-      message: `save-buffer error: ${message.message}`,
+      message: `save-buffer updateContent error: ${message.message}`,
     };
     e.sender.send('message', mes);
     e.returnValue = null;
@@ -100,10 +100,10 @@ ipcMain.on('save-buffer', async (e, { metaDataID, content }: {metaDataID: MetaDa
   e.returnValue = message;
 
   const [parseResult, parseMessage] = await metaData.parse();
-  if (parseResult == null || parseMessage !== MessageTypeSucceeded) {
+  if (parseResult == null || parseMessage.type !== MessageTypeSucceeded) {
     const mes = {
       type: MessageTypeFailed,
-      message: `save-buffer error: ${parseMessage.message}`,
+      message: `save-buffer metaData.parse error: ${parseMessage.message}`,
     };
     e.sender.send('message', mes);
     e.returnValue = null;

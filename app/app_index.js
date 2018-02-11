@@ -38,6 +38,9 @@ import {
   type Buffer
 } from './common/buffer';
 import {
+  type Message
+} from './common/util';
+import {
   type WindowConfig
 } from './common/window';
 import './app.global.css';
@@ -119,6 +122,10 @@ ipcRenderer.on('file-created', (event, result: {success: boolean, message: strin
   } else {
     store.dispatch(updateMessage(result.message));
   }
+});
+
+ipcRenderer.on('message', (_, message: Message) => {
+  console.log('message', message);
 });
 
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {

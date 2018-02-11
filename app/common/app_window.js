@@ -113,7 +113,7 @@ export default class AppWindow implements Window {
   }
 
   sendSavedEvent(metaDataID: MetaDataID, content: string) {
-    this.browserWindow.webContents.send('buffer-updated', metaDataID, content);
+    this.browserWindow.webContents.send('buffer-content-updated', [metaDataID, content]);
   }
 
   async initializeRenderer() {
