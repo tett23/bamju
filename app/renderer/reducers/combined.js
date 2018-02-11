@@ -22,7 +22,7 @@ import {
   removeBuffers,
 } from '../actions/repositories';
 import {
-  openPageByBuffer,
+  openBuffer,
   bufferUpdated
 } from '../actions/tab';
 import {
@@ -51,7 +51,7 @@ import {
 type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
 type $ReturnType<F> = __ReturnType<*, F>;
 
-export type ActionTypes = $ReturnType<typeof openPageByBuffer>
+export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
 | $ReturnType<typeof addBuffers>

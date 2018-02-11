@@ -6,7 +6,7 @@ import {
   browser,
 } from '../../../app/renderer/reducers/browser';
 import {
-  openPageByBuffer,
+  openBuffer,
   bufferUpdated,
 } from '../../../app/renderer/actions/tab';
 import {
@@ -39,7 +39,7 @@ describe('browser reducer', () => {
   // TODO: Buffer渡さないでidだけ渡すようにする
   describe('OPEN_PAGE', () => {
     it('バッファを開くことができる', () => {
-      store.dispatch(openPageByBuffer(buffer, 'hogehoge'));
+      store.dispatch(openBuffer(buffer, 'hogehoge'));
 
       const newState = store.getState();
 
@@ -49,7 +49,7 @@ describe('browser reducer', () => {
 
   describe('BUFFER_UPDATED', () => {
     it('バッファを更新することができる', () => {
-      store.dispatch(openPageByBuffer(buffer, ''));
+      store.dispatch(openBuffer(buffer, ''));
       store.dispatch(bufferUpdated(buffer, 'hogehoge'));
 
       const newState = store.getState();
@@ -58,7 +58,7 @@ describe('browser reducer', () => {
     });
 
     it('バッファが存在しない場合は何も起きない', () => {
-      store.dispatch(openPageByBuffer(buffer, ''));
+      store.dispatch(openBuffer(buffer, ''));
       const newBuffer = Object.assign({}, buffer, { id: createMetaDataID() });
       store.dispatch(bufferUpdated(newBuffer, 'hogehoge'));
 

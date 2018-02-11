@@ -12,7 +12,7 @@ import {
 } from '../../../app/renderer/reducers/combined';
 import {
   bufferUpdated,
-  openPageByBuffer,
+  openBuffer,
 } from '../../../app/renderer/actions/tab';
 import {
   ItemTypeMarkdown,
@@ -75,7 +75,7 @@ describe('<Tab />', () => {
       ].forEach((itemType) => {
         const { buffer } = initialState().browser.tabs[0];
         buffer.itemType = itemType;
-        store.dispatch(openPageByBuffer(buffer, ''));
+        store.dispatch(openBuffer(buffer, ''));
         const contextMenu = buildTabContextMenu(buffer);
 
         expect(contextMenu[1].enabled).toBe(true);
@@ -88,7 +88,7 @@ describe('<Tab />', () => {
       ].forEach((itemType) => {
         const { buffer } = initialState().browser.tabs[0];
         buffer.itemType = itemType;
-        store.dispatch(openPageByBuffer(buffer, ''));
+        store.dispatch(openBuffer(buffer, ''));
         const contextMenu = buildTabContextMenu(buffer);
 
         expect(contextMenu[1].enabled).toBe(false);
