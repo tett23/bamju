@@ -288,6 +288,15 @@ describe('Repository', () => {
     });
   });
 
+  describe('toConfig', () => {
+    it('RepositoryConfigの取得ができる', () => {
+      expect(repository.toConfig()).toMatchObject({
+        repositoryName: 'test',
+        absolutePath: '/tmp/bamju/test'
+      });
+    });
+  });
+
   describe('openItem', () => {
     // TODO
     it('', () => {

@@ -260,6 +260,13 @@ export class Repository {
       return item.toBuffer();
     });
   }
+
+  toConfig(): RepositoryConfig {
+    return {
+      absolutePath: this.absolutePath,
+      repositoryName: this.name,
+    };
+  }
 }
 
 async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<MetaData>, Message]> {
