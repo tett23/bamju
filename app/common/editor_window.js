@@ -18,6 +18,9 @@ import {
 import {
   MetaData,
 } from './metadata';
+import {
+  isSimilarError,
+} from './util';
 
 export default class EditorWindow implements Window {
   browserWindow: BrowserWindow;
@@ -92,8 +95,14 @@ export default class EditorWindow implements Window {
   }
 
   async initializeRenderer() {
-    const content = await this.metaData.getContent();
-    this.browserWindow.webContents.send('initialize', this.metaData.toBuffer(), content);
+    const [content, message] = await this.metaData.getContent();
+
+    if (isSimilarError(message)) {
+      this.browserWindow.webContents.send('message', message);
+      return;
+    }
+
+    this.browserWindow.webContents.send('initialize', [this.metaData.toBuffer(), content]);
   }
 
   sendSaveEvent() {

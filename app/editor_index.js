@@ -6,7 +6,10 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import EditorRoot from './renderer/containers/EditorRoot';
-import editorReducer from './renderer/reducers/editor_combined';
+import {
+  appReducer,
+  initialState,
+} from './renderer/reducers/editor_combined';
 import { openBuffer } from './renderer/actions/editor';
 import {
   type Buffer
@@ -14,8 +17,8 @@ import {
 import './app.global.css';
 
 const store = createStore(
-  editorReducer,
-  undefined,
+  appReducer,
+  initialState(),
 );
 
 const root = document.getElementById('root');

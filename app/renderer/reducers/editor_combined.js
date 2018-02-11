@@ -1,6 +1,5 @@
 // @flow
 
-import { combineReducers } from 'redux';
 import {
   openBuffer,
   bufferUpdated,
@@ -18,13 +17,19 @@ export type ActionTypes =
   $ReturnType<typeof openBuffer> |
   $ReturnType<typeof bufferUpdated>;
 
-export const appReducer = combineReducers({
-  editor,
-});
+type State = {
+  editor: EditorState
+};
 
-export function initialState() {
+export function initialState(): State {
   return {
     editor: initialEditorState()
+  };
+}
+
+export function appReducer(s: State, a: ActionTypes) {
+  return {
+    editor: editor(s.editor, a),
   };
 }
 
