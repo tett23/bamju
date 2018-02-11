@@ -48,7 +48,6 @@ export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
     path: '',
     absolutePath: '',
     itemType: ItemTypeUndefined,
-    items: [],
     isLoaded: true,
     isOpened: false,
     parentID: null,
@@ -125,6 +124,9 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
 
         return;
       } else if (parentPath === '/') {
+        ret[repositoryName][i].parentID = ret[repositoryName].find((item) => {
+          return item.itemType === ItemTypeRepository;
+        }).id;
         return;
       }
 
@@ -177,12 +179,12 @@ export function mountWithStore(component, store) {
   return Enzyme.mount(component, { context });
 }
 
-it('dummy', () => {
-  const items = dummy({
-    test: [
-      'foo/bar/baz.md'
-    ]
-  });
-
-  expect(items.test.length).toBe(4);
-});
+// it('dummy', () => {
+//   const items = dummy({
+//     test: [
+//       'foo/bar/baz.md'
+//     ]
+//   });
+//
+//   expect(items.test.length).toBe(4);
+// });
