@@ -1,11 +1,11 @@
-/* eslint global-require: 0 */
+/* eslint global-require: 0, flowtype/no-weak-types: 0 */
 // @flow
 
 import path from 'path';
 import { ipcMain } from 'electron';
 
 import {
-  openPage,
+  openBuffer,
   buffers,
   createFile,
   closeItem,
@@ -13,9 +13,13 @@ import {
 } from './main/repository';
 
 import {
+  getInstance,
+} from './common/repository_manager';
+import {
   type Buffer,
 } from './common/buffer';
 import {
+  type Message,
   isSimilarMessage,
 } from './common/util';
 
@@ -33,14 +37,14 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 
 ipcMain.on('open-page', async (e, req) => {
   console.log('open-page', req);
-  const result = await openPage(req);
+  const result = await openBuffer(req);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
     return;
   }
 
-  e.sender.send('open-page', result);
+  e.sender.send('open-buffer', result);
   e.returnValue = result;
 });
 
@@ -53,7 +57,7 @@ ipcMain.on('buffers', async (e) => {
     return;
   }
 
-  e.sender.send('update-buffers', result);
+  e.sender.send('reload-repositories', result);
   e.returnValue = result;
 });
 
@@ -61,18 +65,45 @@ ipcMain.on('buffers', async (e) => {
 
 ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
   console.log('create-file', arg);
-  const result = await createFile(arg);
-  if (isSimilarMessage(result)) {
+  const result:Buffer | Message = await createFile(arg);
+  if (result == null || isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
     return;
   }
 
-  e.sender.send('open-page', result);
-  e.sender.send('refresh-tree-view', result);
+  if (result.id == null) {
+    return;
+  }
 
-  e.sender.send('file-created', result);
-  e.returnValue = result;
+  const buffer:Buffer = (result: any);
+
+  const openPageResult = await openBuffer({ repositoryName: buffer.repositoryName, itemName: buffer.path });
+  if (!isSimilarMessage(openPageResult)) {
+    e.sender.send('open-buffer', openPageResult);
+  }
+
+  const repo = getInstance().find(buffer.repositoryName);
+  if (repo == null) {
+    e.returnValue = null;
+    return;
+  }
+
+  let tmp = buffer;
+  const updated = [buffer];
+  while (tmp.parentID != null) {
+    const parent = repo.getItemByID(tmp.parentID);
+    if (parent == null) {
+      break;
+    }
+
+    updated.push(parent);
+    tmp = parent;
+  }
+  e.sender.send('update-buffers', updated);
+
+  e.sender.send('file-created', buffer);
+  e.returnValue = buffer;
 });
 
 ipcMain.on('close-item', async (e, buf: Buffer) => {
@@ -83,7 +114,7 @@ ipcMain.on('close-item', async (e, buf: Buffer) => {
     return;
   }
 
-  e.sender.send('update-buffer', result);
+  e.sender.send('update-buffers', [result]);
   e.returnValue = result;
 });
 
@@ -96,7 +127,7 @@ ipcMain.on('open-item', async (e, buf: Buffer) => {
     return;
   }
 
-  e.sender.send('update-buffer', result);
+  e.sender.send('update-buffers', [result]);
   e.returnValue = result;
 });
 

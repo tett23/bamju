@@ -11,18 +11,18 @@ import { initialRepositoriesState, type RepositoriesState } from '../reducers/re
 import { type ModalState } from '../reducers/modal';
 
 type appState = {
-  treeView: RepositoriesState,
+  repositories: RepositoriesState,
   browser: BrowserState,
   modal: ModalState
 };
 
-const app = ({ treeView, browser }: appState = defaultState) => {
+const app = ({ repositories, browser }: appState = defaultState) => {
   console.log('init app');
-  console.log('create app VDOM', treeView, browser);
+  console.log('create app VDOM', repositories, browser);
 
   return (
     <div className={styles.app} data-tid="app">
-      <RepositoriesTreeView treeView={treeView} />
+      <RepositoriesTreeView repositories={repositories} />
       <Browser tabs={[browser.tabs]} />
       <NewFileDialog />
     </div>
@@ -31,7 +31,7 @@ const app = ({ treeView, browser }: appState = defaultState) => {
 
 // FIXME: いらない気がする
 const defaultState = {
-  treeView: initialRepositoriesState(),
+  repositories: initialRepositoriesState(),
   browser: initialBrowserState()
 };
 

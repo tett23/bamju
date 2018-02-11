@@ -20,7 +20,7 @@ import {
   MessageTypeError,
 } from '../common/util';
 
-export async function openPage({ repositoryName, itemName }: {repositoryName: string, itemName: string}): Promise<[Buffer, string] | Message> {
+export async function openBuffer({ repositoryName, itemName }: {repositoryName: string, itemName: string}): Promise<[Buffer, string] | Message> {
   const repo = getInstance().find(repositoryName);
   if (repo == null) {
     const mes = {

@@ -14,20 +14,23 @@ import {
   initialBrowserState,
 } from './renderer/reducers/browser';
 import {
-  initialTreeViewState,
-} from './renderer/reducers/tree_view';
+  initialRepositoriesState,
+  type RepositoriesState,
+} from './renderer/reducers/repositories';
 import {
   initialModalState,
 } from './renderer/reducers/modal';
 import {
-  openPageByBuffer,
+  openBuffer,
   bufferUpdated
 } from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
 import {
-  refreshTreeView,
-  updateBuffer,
-} from './renderer/actions/tree_view';
+  reloadRepositories,
+  updateBuffers,
+  addBuffers,
+  removeBuffers,
+} from './renderer/actions/repositories';
 import {
   type Buffer
 } from './common/buffer';
@@ -39,7 +42,7 @@ const store = createStore(
   appReducer,
   {
     browser: initialBrowserState(),
-    treeView: initialTreeViewState(),
+    repositories: initialRepositoriesState(),
     modal: initialModalState()
   },
 );
@@ -64,30 +67,45 @@ ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   })();
 });
 
-ipcRenderer.on('open-page', (event, [buf, contents]: [Buffer, string]) => {
-  console.log('open-page', buf, contents);
+ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {
+  console.log('open-buffer', buf, contents);
   if (buf == null) {
     return;
   }
 
-  store.dispatch(openPageByBuffer(buf, contents));
+  store.dispatch(openBuffer(buf, contents));
 });
 
-ipcRenderer.on('buffer-updated', (event, [buf, contents]: [Buffer, string]) => {
-  console.log('buffer-updated', buf);
-  store.dispatch(bufferUpdated(buf, contents));
+ipcRenderer.on('buffer-updated', (event, [buffer, content]: [Buffer, string]) => {
+  console.log('buffer-updated', buffer, content);
+  if (buffer == null) {
+    return;
+  }
+
+  store.dispatch(bufferUpdated(buffer, content));
 });
 
-ipcRenderer.on('update-buffers', (event, repositories: {[string]: Buffer[]}) => {
-  console.log('update-buffers', repositories);
-
-  store.dispatch(refreshTreeView(repositories));
+ipcRenderer.on('reload-repositories', (event, repositories: RepositoriesState) => {
+  console.log('reload-repositories', repositories);
+  store.dispatch(reloadRepositories(repositories));
 });
 
-ipcRenderer.on('update-buffer', (event, buffer: Buffer) => {
-  console.log('update-buffer', buffer);
+ipcRenderer.on('update-buffers', (event, buffers: Buffer[]) => {
+  console.log('update-buffers', buffers);
 
-  store.dispatch(updateBuffer(buffer));
+  store.dispatch(updateBuffers(buffers));
+});
+
+ipcRenderer.on('add-buffers', (event, buffers: Buffer[]) => {
+  console.log('add-buffers', buffers);
+
+  store.dispatch(addBuffers(buffers));
+});
+
+ipcRenderer.on('remove-buffers', (event, buffers: Buffer[]) => {
+  console.log('remove-buffers', buffers);
+
+  store.dispatch(removeBuffers(buffers));
 });
 
 ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
