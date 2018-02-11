@@ -1,10 +1,9 @@
-/* eslint no-underscore-dangle: 0 */
+/* eslint no-empty: 0 */
 // @flow
 
 import fs from 'fs';
 import path from 'path';
 import mkdirp from 'mkdirp';
-import expandHomeDir from 'expand-home-dir';
 import {
   getInstance,
 } from './repository_manager';
@@ -14,44 +13,23 @@ import {
 import {
   type Buffer,
 } from './buffer';
+import {
+  type WindowConfig,
+  type WindowID,
+} from './window';
 
-export type BamjuConfig = {
-  repositories: Array<RepositoryConfig>,
-  windows: Windows,
-  followChange: boolean,
+export type Config = {
+  repositories: RepositoryConfig[],
+  windows: WindowConfig[],
   config: {
+    followChange: boolean,
     mkdirP: boolean
   },
-  bufferItems: {[string]: Array<Buffer>},
-  init: () => Promise<void>,
-  update: ({}) => Promise<void>,
-  quit: () => void
+  bufferItems: {[string]: Buffer[]}
 };
 
-export type Window = {
-  id: string,
-  rectangle: {
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  },
-  tabs: [{
-    buffer: {
-      repositoryName: string,
-      path: string
-    }
-  }]
-};
-export type Windows = Array<Window>;
-
-export const defaultConfig:BamjuConfig = {
-  repositories: [
-    {
-      repositoryName: 'bamju-specifications',
-      absolutePath: '/Users/tett23/projects/bamju-specifications',
-    }
-  ],
+export const defaultConfig:Config = {
+  repositories: [],
   windows: [{
     id: 'init',
     rectangle: {
@@ -60,139 +38,122 @@ export const defaultConfig:BamjuConfig = {
       width: 1024,
       height: 728
     },
-    tabs: [
-      {
-        buffer: {
-          repositoryName: '',
-          path: ''
-        }
-      }
-    ]
+    tabs: []
   }],
   bufferItems: {},
-  followChange: true,
   config: {
+    followChange: true,
     mkdirP: true
   },
-  init(): Promise<void> {
-    return loadConfigFile().then((conf) => {
-      return merge(conf);
-    }).catch(() => {});
-  },
-  update(values: {}) {
-    merge(values);
-
-    return updateConfigFile();
-  },
-  quit() {
-    Config.bufferItems = getInstance().toBuffers();
-
-    fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
-    _quit = true;
-  }
 };
 
-let _quit:boolean = false;
+export class BamjuConfig {
+  _configPath: string;
+  _config: Config;
+  _quit: boolean;
 
-function merge(values: {}) {
-  Object.keys(values).forEach((k: string) => {
-    Config[k] = values[k];
-  });
-}
+  constructor(configPath: string) {
+    this._configPath = configPath;
+    this._quit = false;
+    try {
+      fs.statSync(configPath);
+    } catch (e) {
+      fs.writeFileSync(configPath, '{}');
+    }
 
-let p:string = '~/.config/bamju/config.json';
-if (process.platform === 'windows') {
-  p = '~\\AppData\\Local\\bamju\\config.json';
-}
-const configPath:string = expandHomeDir(p);
+    const json = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
-async function updateConfigFile(): Promise<void> {
-  if (_quit) {
-    return;
+    this._config = this._merge(json);
   }
 
-  try {
-    fs.statSync(path.dirname(configPath));
-  } catch (e) {
-    await mkdirp(path.dirname(configPath), 0o755);
+  getConfig(): Config {
+    return this._config;
   }
 
-  fs.writeFileSync(configPath, JSON.stringify(Config, null, 2), { mode: 0o644 });
-}
-
-async function loadConfigFile(): Promise<BamjuConfig> {
-  try {
-    fs.statSync(configPath);
-    await fs.statSync(configPath);
-  } catch (e) {
-    console.log('loadConfigFile error: ', e);
-    return defaultConfig;
+  toJSON(): string {
+    return JSON.stringify(this._config, null, 2);
   }
 
-  const conf:string = fs.readFileSync(configPath, 'utf8');
-
-  const json = JSON.parse(conf);
-
-  return Object.assign({}, defaultConfig, json);
-}
-
-export function findWindowConfig(id: string): ?Window {
-  const ret:?Window = Config.windows.find((item: Window): boolean => {
-    return id === item.id;
-  });
-  if (ret === null || ret === undefined) {
-    return ret;
-  }
-
-  return Object.assign({}, ret);
-}
-
-export async function replaceWindowConfig(win: Window): Promise<void> {
-  const u:Array<Window> = [];
-  Config.windows.concat([]).forEach((c: Window) => {
-    if (c.id === win.id) {
-      u.push(Object.assign({}, win));
+  async update(values: Object = {}) {
+    if (this._quit) {
       return;
     }
 
-    u.push(c);
-  });
-
-  await Config.update({
-    windows: u
-  });
-}
-
-export async function addWindowConfig(win: Window): Promise<void> {
-  const c:?Window = findWindowConfig(win.id);
-  if (c) {
-    return;
+    this._config = this._merge(values);
+    await this._updateConfigFile();
   }
 
-  const u:Array<Window> = Config.windows.concat([]);
-  u.push(Object.assign({}, win));
+  async quit() {
+    try {
+      this._config.bufferItems = getInstance().toBuffers();
+    } catch (_) {
+    }
 
-  await Config.update({
-    windows: u
-  });
-}
+    await this._updateConfigFile();
 
-export async function removeWindowConfig(id: string): Promise<void> {
-  const u:Array<Window> = [];
-  Config.windows.concat([]).forEach((c: Window) => {
-    if (c.id === id) {
+    this._quit = true;
+  }
+
+  findWindowConfig(id: string): ?WindowConfig {
+    return this._config.windows.find((item) => {
+      return id === item.id;
+    });
+  }
+
+  async replaceWindow(win: WindowConfig): Promise<void> {
+    const idx = this._config.windows.findIndex((w) => {
+      return w.id === win.id;
+    });
+    if (idx === -1) {
+      this._config.windows.push(win);
       return;
     }
 
-    u.push(c);
-  });
+    this._config.windows[idx] = win;
 
-  await Config.update({
-    windows: u
-  });
+    await this.update();
+  }
+
+  async addWindow(win: WindowConfig): Promise<void> {
+    const c = this.findWindowConfig(win.id);
+    if (c) {
+      return;
+    }
+
+    this._config.windows.push(win);
+    await this.update();
+  }
+
+  async removeWindow(id: WindowID): Promise<void> {
+    const idx = this._config.windows.findIndex((w) => {
+      return w.id === id;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    this._config.windows.splice(idx, 1);
+
+    await this.update();
+  }
+
+  _merge(values: Object): Config {
+    return Object.assign({}, defaultConfig, this._config, values);
+  }
+
+  async _updateConfigFile() {
+    if (this._quit) {
+      return;
+    }
+
+    try {
+      fs.statSync(path.dirname(this._configPath));
+    } catch (e) {
+      await mkdirp(path.dirname(this._configPath), 0o755);
+    }
+
+    fs.writeFileSync(this._configPath, this.toJSON(), { mode: 0o644 });
+  }
 }
 
-export const Config:BamjuConfig = Object.assign({}, defaultConfig);
-Config.init();
-
-export default Config;
+export default BamjuConfig;

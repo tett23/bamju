@@ -7,6 +7,8 @@ import { ipcMain } from 'electron';
 import {
   openBuffer,
   buffers,
+  addRepository,
+  removeRepository,
   createFile,
   closeItem,
   openItem,
@@ -18,6 +20,9 @@ import {
 import {
   type Buffer,
 } from './common/buffer';
+import {
+  Config
+} from './common/bamju_config';
 import {
   type Message,
   isSimilarMessage,
@@ -62,7 +67,49 @@ ipcMain.on('buffers', async (e) => {
 });
 
 // TODO: add-repository, remove-repository時のconfig更新
+ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
+  console.log('add-repository', arg);
+  const result = await addRepository(arg.absolutePath);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
 
+  Config.addRepository();
+
+  const buffersResult = await buffers();
+  if (isSimilarMessage(buffersResult)) {
+    e.sender.send('message', buffersResult);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('reload-repositories', buffersResult);
+  e.returnValue = result;
+});
+
+ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
+  console.log('add-repository', arg);
+  const result = await removeRepository(arg.absolutePath);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  const buffersResult = await buffers();
+  if (isSimilarMessage(buffersResult)) {
+    e.sender.send('message', buffersResult);
+    e.returnValue = result;
+    return;
+  }
+
+  e.sender.send('reload-repositories', buffersResult);
+  e.returnValue = result;
+});
+
+// TODO: windowの更新
 ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
   console.log('create-file', arg);
   const result:Buffer | Message = await createFile(arg);

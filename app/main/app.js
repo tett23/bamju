@@ -1,6 +1,7 @@
 // @flow
 
 import { app } from 'electron';
+import expandHomeDir from 'expand-home-dir';
 import devtoolsInstaller from 'electron-devtools-installer';
 import {
   RepositoryManager
@@ -10,10 +11,16 @@ import {
   getInstance as getWindowManagerInstance,
 } from '../common/window_manager';
 import {
-  Config,
+  BamjuConfig,
   defaultConfig,
 } from '../common/bamju_config';
 
+
+let p:string = '~/.config/bamju/config.json';
+if (process.platform === 'windows') {
+  p = '~\\AppData\\Local\\bamju\\config.json';
+}
+const configPath:string = expandHomeDir(p);
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
@@ -23,6 +30,7 @@ app.on('window-all-closed', () => {
   }
 });
 
+let config;
 
 app.on('ready', async () => {
   if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
@@ -30,17 +38,18 @@ app.on('ready', async () => {
   }
   console.log('event app ready');
 
-  await Config.init();
+  config = new BamjuConfig(configPath);
+  const conf = config.getConfig();
 
-  const repositoryManager = new RepositoryManager(Config.bufferItems, Config.repositories);
+  const repositoryManager = new RepositoryManager(conf.bufferItems, conf.repositories);
   await repositoryManager.loadRepositories();
 
-  const _ = new WindowManager(Config.windows);
+  const _ = new WindowManager(conf.windows);
 });
 
 app.on('before-quit', () => {
   // TODO: configからWindowManagerを参照しないようにしたい
-  Config.quit();
+  config.quit();
 });
 
 app.on('activate', async () => {
