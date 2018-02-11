@@ -12,6 +12,7 @@ import {
 import {
   MetaData,
   resolveInternalPath,
+  type MetaDataID
 } from '../common/metadata';
 import {
   type Buffer
@@ -111,48 +112,52 @@ export async function removeRepository(absolutePath: string): Promise<?Repositor
   return getInstance().removeRepository(repositoryName);
 }
 
-export async function closeItem(buffer: Buffer): Promise<Buffer | Message> {
-  const repo = getInstance().find(buffer.repositoryName);
-  if (repo == null) {
-    const mes = {
-      type: MessageTypeFailed,
-      message: `close-item error: repositoryName=${buffer.repositoryName}`,
-    };
-    return mes;
-  }
-
-  const metaData = await repo.closeItem(buffer.path);
+export async function closeItem(metaDataID: MetaDataID): Promise<Buffer | Message> {
+  const metaData = getInstance().getItemByID(metaDataID);
   if (metaData == null) {
     const mes = {
       type: MessageTypeFailed,
-      message: `close-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
+      message: `close-item error: metaDataID=${metaDataID}`,
     };
     return mes;
   }
 
-  return metaData.toBuffer();
+  const repo = metaData.repository();
+
+  const newMetaData = await repo.closeItem(metaData.id);
+  if (newMetaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `close-item error: repositoryName=${metaData.repositoryName} path=${metaData.path}`,
+    };
+    return mes;
+  }
+
+  return newMetaData.toBuffer();
 }
 
-export async function openItem(buffer: Buffer): Promise<Buffer | Message> {
-  const repo = getInstance().find(buffer.repositoryName);
-  if (repo == null) {
-    const mes = {
-      type: MessageTypeFailed,
-      message: `open-item error: repositoryName=${buffer.repositoryName}`,
-    };
-    return mes;
-  }
-
-  const metaData = await repo.openItem(buffer.path);
+export async function openItem(metaDataID: MetaDataID): Promise<Buffer | Message> {
+  const metaData = getInstance().getItemByID(metaDataID);
   if (metaData == null) {
     const mes = {
       type: MessageTypeFailed,
-      message: `open-item error: repositoryName=${buffer.repositoryName} path=${buffer.path}`,
+      message: `open-item error: metaDataID=${metaDataID}`,
     };
     return mes;
   }
 
-  return metaData.toBuffer();
+  const repo = metaData.repository();
+
+  const newMetaData = await repo.openItem(metaData.id);
+  if (newMetaData == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `open-item error: repositoryName=${metaData.repositoryName} path=${metaData.path}`,
+    };
+    return mes;
+  }
+
+  return newMetaData.toBuffer();
 }
 
 export async function createFile({ repositoryName, path: itemPath }: {repositoryName: string, path: string}): Promise<Buffer | Message> {

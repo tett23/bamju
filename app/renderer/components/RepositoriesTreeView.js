@@ -107,9 +107,9 @@ function toggleTreeView(e, buffer: Buffer) {
   e.stopPropagation();
 
   if (buffer.isOpened) {
-    ipcRenderer.send('close-item', buffer);
+    ipcRenderer.send('close-item', buffer.id);
   } else {
-    ipcRenderer.send('open-item', buffer);
+    ipcRenderer.send('open-item', buffer.id);
   }
 }
 

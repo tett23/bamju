@@ -229,8 +229,8 @@ export class Repository {
     return [ret, message];
   }
 
-  async openItem(itemName: string): Promise<?MetaData> {
-    const metaData = this.detect(itemName);
+  async openItem(id: MetaDataID): Promise<?MetaData> {
+    const metaData = this.getItemByID(id);
     if (metaData == null) {
       return null;
     }
@@ -240,8 +240,8 @@ export class Repository {
     return ret;
   }
 
-  closeItem(itemName: string): ?MetaData {
-    const metaData = this.detect(itemName);
+  closeItem(id: MetaDataID): ?MetaData {
+    const metaData = this.getItemByID(id);
     if (metaData == null) {
       return null;
     }

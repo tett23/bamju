@@ -167,7 +167,7 @@ describe('repository events', () => {
         expect(true).toBe(false);
         return;
       }
-      const result: Buffer | Message = await closeItem(metaData.toBuffer());
+      const result: Buffer | Message = await closeItem(metaData.id);
       expect(isSimilarError(result)).toBe(false);
 
       expect(result.isOpened).toBe(false);
@@ -175,19 +175,15 @@ describe('repository events', () => {
 
     it('Repositoryが存在しない場合、エラーが返る', async () => {
       const metaData = repository.getItemByPath('/foo');
-      const result = await closeItem(Object.assign(metaData.toBuffer(), {
-        repositoryName: 'hogehoge'
-      }));
+      const { id } = metaData;
+      metaData.id = 'hogehoge';
+      const result = await closeItem(id);
 
       expect(isSimilarError(result)).toBe(true);
     });
 
     it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      const result = await closeItem(Object.assign(metaData.toBuffer(), {
-        path: '/hogehoge',
-        name: 'hogehoge'
-      }));
+      const result = await closeItem('hogehoge');
 
       expect(isSimilarError(result)).toBe(true);
     });
@@ -200,7 +196,7 @@ describe('repository events', () => {
         expect(true).toBe(false);
         return;
       }
-      const result: Buffer | Message = await openItem(metaData.toBuffer());
+      const result: Buffer | Message = await openItem(metaData.id);
       expect(isSimilarError(result)).toBe(false);
 
       expect(result.isOpened).toBe(true);
@@ -208,19 +204,15 @@ describe('repository events', () => {
 
     it('Repositoryが存在しない場合、エラーが返る', async () => {
       const metaData = repository.getItemByPath('/foo');
-      const result = await openItem(Object.assign(metaData.toBuffer(), {
-        repositoryName: 'hogehoge'
-      }));
+      const { id } = metaData;
+      metaData.id = 'hogehoge';
+      const result = await openItem(id);
 
       expect(isSimilarError(result)).toBe(true);
     });
 
     it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      const result = await openItem(Object.assign(metaData.toBuffer(), {
-        path: '/hogehoge',
-        name: 'hogehoge'
-      }));
+      const result = await openItem('hogehoge');
 
       expect(isSimilarError(result)).toBe(true);
     });

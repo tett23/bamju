@@ -21,6 +21,9 @@ import {
   Repository,
 } from './common/repository';
 import {
+  type MetaDataID,
+} from './common/metadata';
+import {
   type Buffer,
 } from './common/buffer';
 import {
@@ -163,9 +166,9 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   e.returnValue = buffer;
 });
 
-ipcMain.on('close-item', async (e, buf: Buffer) => {
-  console.log('close-item', buf);
-  const result = await closeItem(buf);
+ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
+  console.log('close-item', metaDataID);
+  const result = await closeItem(metaDataID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
@@ -177,9 +180,9 @@ ipcMain.on('close-item', async (e, buf: Buffer) => {
 });
 
 
-ipcMain.on('open-item', async (e, buf: Buffer) => {
-  console.log('open-item', buf);
-  const result = await openItem(buf);
+ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
+  console.log('open-item', metaDataID);
+  const result = await openItem(metaDataID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
