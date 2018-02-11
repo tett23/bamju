@@ -59,7 +59,7 @@ type dummyType = {
   [string]: Array<string>
 }
 
-function createByPath(repositoryName: string, itemPath:string): Buffer {
+export function createDummyBufferByPath(repositoryName: string, itemPath:string): Buffer {
   let name = path.basename(itemPath);
   if (itemPath === '/') {
     name = '/';
@@ -93,11 +93,11 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
         });
 
         if (!isExist) {
-          repositoryBuffers.push(createByPath(repositoryName, parentPath));
+          repositoryBuffers.push(createDummyBufferByPath(repositoryName, parentPath));
         }
       });
 
-      repositoryBuffers.push(createByPath(repositoryName, path.join('/', itemPath)));
+      repositoryBuffers.push(createDummyBufferByPath(repositoryName, path.join('/', itemPath)));
     });
 
     ret[repositoryName] = repositoryBuffers;
