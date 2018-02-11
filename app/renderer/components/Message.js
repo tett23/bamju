@@ -11,12 +11,13 @@ import {
   MessageTypeFailed,
   MessageTypeWarning,
   MessageTypeSucceeded,
+  isSimilarError,
 } from '../../common/util';
 import {
   closeMessage,
   closeAllMessages,
 } from '../actions/messages';
-import Button from './Button';
+import { Button } from './Button';
 import styles from './Message.css';
 
 type Props = {
@@ -28,6 +29,12 @@ type Props = {
 
 function message(props: Props) {
   const messageClass = [styles.message, messageType(props.message.type)].join(' ');
+
+  if (!isSimilarError(props.message)) {
+    setTimeout(() => {
+      props.closeMessage(props.id);
+    }, 10000);
+  }
 
   return (
     <div role="alert" className={messageClass}>
