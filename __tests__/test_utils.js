@@ -17,7 +17,6 @@ import {
   type ItemType,
   createMetaDataID,
   ItemTypeUndefined,
-  ItemTypeDirectory,
   ItemTypeRepository,
   detectItemType,
   isSimilarDirectory,
@@ -171,7 +170,7 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
 
 Enzyme.configure({ adapter: new Adapter() });
 
-export function mountWithStore(component, store) {
+export function mountWithStore(component: React.Component, store: Store) {
   const context = {
     store,
   };
