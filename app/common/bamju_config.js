@@ -94,6 +94,9 @@ export class BamjuConfig {
   async quit() {
     try {
       this._config.bufferItems = getRepositoryManagerInstance().toBuffers();
+      this._config.repositories = getRepositoryManagerInstance().getRepositories().map((repo) => {
+        return repo.toConfig();
+      });
     } catch (_) {
     }
 
