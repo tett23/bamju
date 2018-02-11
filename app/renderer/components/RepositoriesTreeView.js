@@ -4,7 +4,7 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import type { TreeViewState } from '../reducers/tree_view';
+import type { RepositoriesState } from '../reducers/repositories';
 import {
   type Buffer
 } from '../../common/buffer';
@@ -16,17 +16,16 @@ import {
   ItemTypeRepository,
   ItemTypeCSV,
   ItemTypeTSV,
+  ItemTypeHTML,
   ItemTypeUndefined,
+  isSimilarFile,
+  isSimilarDirectory,
 } from '../../common/metadata';
 import styles from './RepositoriesTreeView.css';
-import { refreshTreeView } from '../actions/tree_view';
-
-const {
-  Menu, MenuItem, dialog
-} = remote.require('electron');
+import { reloadRepositories } from '../actions/repositories';
 
 type Props = {
-  repositories: {[string]: Buffer[]}
+  repositories: RepositoriesState
 };
 
 class repositoriesTreeView extends React.Component<Props> {
@@ -34,13 +33,7 @@ class repositoriesTreeView extends React.Component<Props> {
     repositories: {}
   };
 
-  constructor(props) {
-    console.log('repositoriesTreeView constructor', props);
-    super(props);
-  }
-
   render() {
-    console.log('repositoriesTreeView.render this', this);
     const items = Object.keys(this.props.repositories).map((repositoryName) => {
       const repo = this.props.repositories[repositoryName];
       const rootItem = repo.find((item) => {
@@ -81,7 +74,7 @@ function buildItems(item: Buffer, repository: Buffer[]) {
   }
 
   const ret = (
-    <ul className={styles.repositoryItem} key={item.absolutePath}>
+    <ul className={styles.repositoryItem} key={item.id}>
       <li
         role="menuitem"
         onClick={e => { return onClickItem(e, item); }}
@@ -105,22 +98,9 @@ function buildItems(item: Buffer, repository: Buffer[]) {
 function onClickItem(e, item: Buffer) {
   e.preventDefault();
   e.stopPropagation();
-  console.log('repositoriesTreeView.onClick', item);
 
-  switch (item.itemType) {
-  case ItemTypeRepository:
+  if (isSimilarFile(item.itemType) || isSimilarDirectory(item.itemType)) {
     return openFile(item);
-  case ItemTypeDirectory:
-    return openFile(item);
-  case ItemTypeMarkdown:
-    return openFile(item);
-  case ItemTypeText:
-    return openFile(item);
-  case ItemTypeCSV:
-    return openFile(item);
-  case ItemTypeTSV:
-    return openFile(item);
-  default:
   }
 }
 
@@ -153,6 +133,8 @@ function icon(item: Buffer) {
     return <FontAwesome name="file-text" />;
   case ItemTypeTSV:
     return <FontAwesome name="file-text" />;
+  case ItemTypeHTML:
+    return <FontAwesome name="file-text" />;
   default:
     return <FontAwesome name="question-circle" />;
   }
@@ -164,7 +146,7 @@ function addRepository(e) {
 
   const w = remote.getCurrentWindow();
 
-  dialog.showOpenDialog(w, {
+  remote.require('electron').dialog.showOpenDialog(w, {
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
@@ -185,14 +167,21 @@ function contextmenu(e, item: Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
-  const menu = new Menu();
-  menu.append(new MenuItem({
+  const template = buildContextMenu(item);
+  const menu = remote.require('electron').Menu.buildFromTemplate(template);
+
+  menu.popup(remote.getCurrentWindow());
+}
+
+export function buildContextMenu(item: Buffer) {
+  const ret = [];
+  ret.push({
     label: 'edit on system editor',
     click: () => {
       ipcRenderer.send('open-by-system-editor', item.absolutePath);
     }
-  }));
-  menu.append(new MenuItem({
+  });
+  ret.push({
     label: 'edit on bamju editor',
     click: () => {
       ipcRenderer.send('open-by-bamju-editor', {
@@ -201,54 +190,43 @@ function contextmenu(e, item: Buffer) {
         itemName: item.path
       });
     },
-    enabled: item.itemType === ItemTypeMarkdown || item.itemType === ItemTypeText
-  }));
-  menu.append(new MenuItem({
+    enabled: isSimilarFile(item.itemType),
+  });
+  ret.push({
     label: 'open new window',
     click: () => {
       ipcRenderer.send('open-new-window', { windowID: window.windowID, repositoryName: item.repositoryName, itemName: item.path });
     }
-  }));
-  if (item.path === '/') {
-    menu.append(new MenuItem({
-      label: 'remove',
-      click: () => {
-        const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
-          type: 'question',
-          buttons: ['Yes', 'No'],
-          title: '削除しますか',
-          message: '削除しますか'
-        });
-        if (choice === 0) {
-          ipcRenderer.send('remove-repository', { path: item.absolutePath });
-        }
+  });
+  ret.push({
+    label: 'remove',
+    click: () => {
+      const { dialog } = remote.require('electron');
+      const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: '削除しますか',
+        message: '削除しますか'
+      });
+      if (choice === 0) {
+        ipcRenderer.send('remove-repository', { path: item.absolutePath });
       }
-    }));
-  }
+    },
+    enabled: item.itemType === ItemTypeRepository
+  });
 
-  menu.popup(remote.getCurrentWindow());
+  return ret;
 }
 
 function itemType(t: ItemType) {
-  switch (t) {
-  case ItemTypeRepository:
+  if (isSimilarFile(t) || isSimilarDirectory(t)) {
     return styles.itemTypeAvailable;
-  case ItemTypeDirectory:
-    return styles.itemTypeAvailable;
-  case ItemTypeMarkdown:
-    return styles.itemTypeAvailable;
-  case ItemTypeText:
-    return styles.itemTypeAvailable;
-  case ItemTypeCSV:
-    return styles.itemTypeAvailable;
-  case ItemTypeTSV:
-    return styles.itemTypeAvailable;
-  default:
-    return styles.itemTypeUnavailable;
   }
+
+  return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[string]: Buffer[]}} => {
+const mapStateToProps = (state: {repositories: RepositoriesState}): {repositories: RepositoriesState} => {
   if (state == null) {
     return {
       repositories: {}
@@ -256,20 +234,18 @@ const mapStateToProps = (state: {treeView: TreeViewState}): {repositories: {[str
   }
 
   return {
-    repositories: state.treeView.repositories
+    repositories: state.repositories
   };
 };
 
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    refreshTreeView: (repositories: {[string]: Buffer[]}) => {
-      dispatch(refreshTreeView(repositories));
+    reloadRepositories: (repositories: {[string]: Buffer[]}) => {
+      dispatch(reloadRepositories(repositories));
     }
   };
 };
 
 
-const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);
-
-export default RepositoriesTreeView;
+export const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);
