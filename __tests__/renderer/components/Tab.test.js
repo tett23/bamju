@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { createStore } from 'redux';
 
+import '../../global_config.test';
 import { mountWithStore } from '../../test_utils';
 
 import {
@@ -41,4 +42,5 @@ describe('<Tab />', () => {
   });
 
   // TODO itemTypeによるcontext
+  // TODO breadcrumbのテスト. bootstrapの依存をなくす
 });
