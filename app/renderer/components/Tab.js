@@ -10,6 +10,9 @@ import {
 import * as React from 'react';
 import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
+
+import path from '../../common/path';
+
 import {
   type BrowserState,
   tabDefault,
@@ -25,7 +28,7 @@ import styles from './Browser.css';
 
 function tab({ buffer, content }: {buffer: Buffer, content: string} = tabDefault()) {
   const {
-    name, repositoryName, path, absolutePath
+    name, repositoryName, path: itemPath, absolutePath
   } = buffer;
 
   const breadcrumbItems = [];
@@ -39,7 +42,7 @@ function tab({ buffer, content }: {buffer: Buffer, content: string} = tabDefault
   ));
 
   let breadcrumbPath:string = '';
-  path.split('/').forEach((item: string) => {
+  path.split(itemPath).forEach((item: string) => {
     if (item === '') {
       return;
     }
@@ -68,11 +71,11 @@ function tab({ buffer, content }: {buffer: Buffer, content: string} = tabDefault
   );
 }
 
-function breadcrumbItemsOnClick(e, repo: string, path: string) {
+function breadcrumbItemsOnClick(e, repo: string, itemPath: string) {
   e.preventDefault();
   e.stopPropagation();
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: path });
+  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: itemPath });
 }
 
 function contextmenu(e, buf: Buffer) {
