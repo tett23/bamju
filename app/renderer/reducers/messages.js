@@ -14,7 +14,7 @@ import {
 } from '../../common/util';
 
 export type MessagesState = Array<{
-  id: Symbol,
+  id: string,
   message: Message
 }>;
 

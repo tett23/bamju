@@ -12,7 +12,7 @@ import {
 import styles from './Message.css';
 
 type Props = {
-  id: Symbol,
+  id: string,
   message: MessageType,
   closeMessage: typeof closeMessage,
   closeAllMessages: typeof closeAllMessages

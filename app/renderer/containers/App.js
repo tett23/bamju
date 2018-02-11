@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { RepositoriesTreeView } from '../components/RepositoriesTreeView';
 import Browser from '../components/Browser';
 import NewFileDialog from '../components/NewFileDialog';
+import { Messages } from '../components/Messages';
 import styles from './App.css';
 import { initialBrowserState, type BrowserState } from '../reducers/browser';
 import { initialRepositoriesState, type RepositoriesState } from '../reducers/repositories';
@@ -25,6 +26,7 @@ const app = ({ repositories, browser }: appState = defaultState) => {
       <RepositoriesTreeView repositories={repositories} />
       <Browser tabs={[browser.tabs]} />
       <NewFileDialog />
+      <Messages />
     </div>
   );
 };

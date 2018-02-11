@@ -11,12 +11,12 @@ export const CLOSE_ALL_MESSAGES = 'CLOSE_ALL_MESSAGES';
 export function addMessage(message: Message) {
   return {
     type: ADD_MESSAGE,
-    id: Symbol('addMessage'),
+    id: `${Math.random()}`,
     message
   };
 }
 
-export function closeMessage(id: Symbol) {
+export function closeMessage(id: string) {
   return {
     type: CLOSE_MESSAGE,
     id
