@@ -157,7 +157,7 @@ function subMenuEdit(menuType: MenuType, window: Window): MenuItem {
         label: 'Save',
         accelerator: 'CmdOrCtrl+S',
         click: () => {
-          WindowManager.sendSaveEvent(window.windowID());
+          getWindowManagerInstance().sendSaveEvent(window.windowID());
         },
         enabled: isEnableEditorMenu,
       },

@@ -162,10 +162,10 @@ export class WindowManager {
     });
   }
 
-  async updateTreeView(tv: MetaData[]): Promise<void> {
+  async reloadRepositories(repositories: {[string]: Buffer[]}): Promise<void> {
     const p: Array<Promise<void>> = this._appWindows.map(async (item: AppWindow): Promise<void> => {
       console.log('Manager updateTreeView before updateTreeView await');
-      await item.updateTreeView(tv);
+      await item.reloadRepositories(repositories);
       console.log('Manager updateTreeView after updateTreeView await');
     });
     console.log('Manager updateTreeView create promise array');
