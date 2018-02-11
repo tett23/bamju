@@ -21,6 +21,9 @@ import {
   initialModalState,
 } from './renderer/reducers/modal';
 import {
+  initialMessagesState,
+} from './renderer/reducers/messages';
+import {
   openBuffer,
   bufferContentUpdated,
 } from './renderer/actions/tab';
@@ -50,7 +53,8 @@ const store = createStore(
   {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState()
+    modal: initialModalState(),
+    messages: initialMessagesState()
   },
 );
 
@@ -63,6 +67,33 @@ if (root != null) {
     root
   );
 }
+
+import { addMessage } from './renderer/actions/messages';
+
+store.dispatch(addMessage({
+  type: 'info',
+  message: 'info'
+}));
+store.dispatch(addMessage({
+  type: 'debug',
+  message: 'debug'
+}));
+store.dispatch(addMessage({
+  type: 'succeeded',
+  message: 'succeeded'
+}));
+store.dispatch(addMessage({
+  type: 'failed',
+  message: 'failed'
+}));
+store.dispatch(addMessage({
+  type: 'error',
+  message: 'error'
+}));
+store.dispatch(addMessage({
+  type: 'warning',
+  message: 'warning'
+}));
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
   console.log('initialize', conf);

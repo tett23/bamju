@@ -1,0 +1,96 @@
+.messages {
+  z-index: 10000;
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+}
+
+.messages p {
+  margin: 0;
+  padding: 0;
+}
+
+.message {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  width: 30rem;
+}
+
+.succeeded {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.succeeded hr {
+  border-color: #155724;
+}
+
+.failed {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.failed hr {
+  border-color: #721c24;
+}
+
+.info {
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.info hr {
+  border-color: #0c5460;
+}
+
+.debug {
+  color: #383d41;
+  background-color: #e2e3e5;
+  border-color: #d6d8db;
+}
+
+.debug hr {
+  border-color: #383d41;
+}
+
+.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.error hr {
+  border-color: #721c24;
+}
+
+.warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.warning hr {
+  border-color: #856404;
+}
+
+.message hr {
+  margin: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 0;
+  border-top: 1px solid rgba(0,0,0,.1);
+}
+
+.messageTitle {
+  font-variant: small-caps;
+  font-size: 2rem;
+}
+
+.closeButton {
+  float: right;
+}

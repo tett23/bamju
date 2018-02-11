@@ -3,28 +3,37 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import {
-  type Message as MessageType
+  type Message as _Message,
+  type MessageType,
+  MessageTypeInfo,
+  MessageTypeDebug,
+  MessageTypeError,
+  MessageTypeFailed,
+  MessageTypeWarning,
+  MessageTypeSucceeded,
 } from '../../common/util';
 import {
   closeMessage,
   closeAllMessages,
 } from '../actions/messages';
+import Button from './Button';
 import styles from './Message.css';
 
 type Props = {
   id: string,
-  message: MessageType,
+  message: _Message,
   closeMessage: typeof closeMessage,
   closeAllMessages: typeof closeAllMessages
 };
 
 function message(props: Props) {
-  const messageClass = [styles.message, message.type];
+  const messageClass = [styles.message, messageType(props.message.type)].join(' ');
 
   return (
-    <div className={messageClass}>
-      <div
-        role="button"
+    <div role="alert" className={messageClass}>
+      <Button
+        className={styles.closeButton}
+        text="close"
         tabIndex={-1}
         onClick={() => { props.closeMessage(props.id); }}
         onKeyUp={(e) => {
@@ -32,12 +41,24 @@ function message(props: Props) {
             props.closeMessage(props.id);
           }, props.closeAllMessages);
         }}
-      >
-        close
-      </div>
+      />
+      <p className={styles.messageTitle}>{props.message.type}</p>
+      <hr />
       <p className={styles.messageBody}>{props.message.message}</p>
     </div>
   );
+}
+
+function messageType(type: MessageType) {
+  switch (type) {
+  case MessageTypeInfo: return styles.info;
+  case MessageTypeDebug: return styles.debug;
+  case MessageTypeError: return styles.error;
+  case MessageTypeFailed: return styles.failed;
+  case MessageTypeWarning: return styles.warning;
+  case MessageTypeSucceeded: return styles.succeeded;
+  default: return styles.info;
+  }
 }
 
 function checkKey(e, dispatchClose: ()=>void, dispatchCloseAllMessages: typeof closeAllMessages) {
