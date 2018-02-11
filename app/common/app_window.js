@@ -21,9 +21,6 @@ import {
   getInstance as getWindowManagerInstance,
 } from './window_manager';
 import {
-  MetaData,
-} from './metadata';
-import {
   type Buffer,
 } from './buffer';
 
@@ -129,7 +126,7 @@ export default class AppWindow implements Window {
     this.browserWindow.webContents.send('initialize', this.conf);
   }
 
-  async updateTreeView(tv: MetaData[]): Promise<void> {
-    this.browserWindow.webContents.send('refresh-tree-view', tv);
+  async reloadRepositories(tv: {[string]: Buffer[]}): Promise<void> {
+    this.browserWindow.webContents.send('reload-repositories', tv);
   }
 }
