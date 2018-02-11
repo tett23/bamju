@@ -18,22 +18,26 @@ import {
   createMetaDataID,
   ItemTypeUndefined,
   ItemTypeDirectory,
-  detectItemType
+  detectItemType,
+  type MetaDataID,
 } from '../app/common/metadata';
 
-type DummyBuffer = {
+export type DummyBuffer = {
+  id?: string,
   name?: string,
   path?: string,
   repositoryName?: string,
+  repositoryPath?: string,
   absolutePath?: string,
   itemType?: ItemType,
-  projectPath?: string,
   isLoaded?: boolean,
   isOpened?: boolean,
-  items?: Array<Buffer>
+  childrenIDs?: MetaDataID[],
+  parentID?: ?MetaDataID,
+  body?: string
 };
 
-function mergeDummyData(obj: DummyBuffer = {}): Buffer {
+function createDummyBuffer(obj: DummyBuffer = {}): Buffer {
   return Object.assign({}, {
     id: createMetaDataID(),
     name: 'test',
@@ -49,10 +53,6 @@ function mergeDummyData(obj: DummyBuffer = {}): Buffer {
     childrenIDs: [],
     body: ''
   }, obj);
-}
-
-function createDummyBuffer(item: DummyBuffer): Buffer {
-  return mergeDummyData(item);
 }
 
 type dummyType = {
