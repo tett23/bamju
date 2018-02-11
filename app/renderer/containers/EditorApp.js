@@ -3,11 +3,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Editor } from '../components/Editor';
+import { Messages } from '../components/Messages';
 
 const app = () => {
   return (
     <div data-tid="app">
       <Editor />
+      <Messages />
     </div>
   );
 };
