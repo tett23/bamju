@@ -1,61 +1,36 @@
 // @flow
 
-import { combineReducers } from 'redux';
-import type { BufferItem } from '../../common/project';
-import { deepCopy, deepMerge } from '../../common/util';
-
 import {
-  OPEN_BUFFER,
-  UPDATE_EDITOR_CONTENT,
   openBuffer,
-  updateEditorContent
+  bufferUpdated,
 } from '../actions/editor';
-
-import { type EditorState } from './editor';
-
-export function initialEditorState(): EditorState {
-  return {
-    buffer: {
-      name: '',
-      projectName: '',
-      path: '',
-      absolutePath: '',
-      itemType: 'undefined',
-      body: ''
-    }
-  };
-}
-
-export function editor(state: EditorState = initialEditorState(), action: ActionTypes): EditorState {
-  console.log(`reducer editor ${action.type}`, action, state);
-
-  switch (action.type) {
-  case OPEN_BUFFER: {
-    const newState = deepCopy(state);
-    newState.buffer = action.buffer;
-
-    return newState;
-  }
-  case UPDATE_EDITOR_CONTENT: {
-    const newState = deepCopy(state);
-    newState.buffer.body = action.text;
-
-    return newState;
-  }
-  default:
-    return state;
-  }
-}
+import {
+  type EditorState,
+  editor,
+  initialEditorState,
+} from './editor';
 
 type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
 type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes =
   $ReturnType<typeof openBuffer> |
-  $ReturnType<typeof updateEditorContent>;
+  $ReturnType<typeof bufferUpdated>;
 
-export const appReducer = combineReducers({
-  editor,
-});
+type State = {
+  editor: EditorState
+};
+
+export function initialState(): State {
+  return {
+    editor: initialEditorState()
+  };
+}
+
+export function appReducer(s: State, a: ActionTypes) {
+  return {
+    editor: editor(s.editor, a),
+  };
+}
 
 export default appReducer;

@@ -6,25 +6,33 @@ import AceEditor from 'react-ace';
 import 'brace/mode/markdown';
 import 'brace/mode/text';
 import 'brace/theme/monokai';
-import type { EditorState } from '../reducers/editor';
+import {
+  type EditorState,
+  initialEditorState,
+} from '../reducers/editor';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
-} from '../../common/project';
+} from '../../common/metadata';
 import {
-  updateEditorContent
+  type Buffer,
+} from '../../common/buffer';
+import {
+  bufferUpdated,
 } from '../actions/editor';
 
 type Props = {
-  contentUpdated: (string) => void
+  bufferUpdated: (Buffer, string) => void
 } & EditorState;
 
 class editor extends React.Component<Props> {
   editor: ?AceEditor;
 
+  static defaultProps = initialEditorState()
+
   handleOnChange() {
     if (this.editor) {
-      this.props.contentUpdated(this.editor.getValue());
+      this.props.bufferUpdated(this.props.buffer, this.editor.getValue());
     }
   }
 
@@ -33,8 +41,6 @@ class editor extends React.Component<Props> {
   }
 
   render() {
-    console.log('refresh editor', this.props);
-
     let mode;
     switch (this.props.buffer.itemType) {
     case ItemTypeMarkdown: {
@@ -54,7 +60,7 @@ class editor extends React.Component<Props> {
     return (
       <div>
         <AceEditor
-          value={this.props.buffer.body}
+          value={this.props.content}
           mode={mode}
           theme={theme}
           name="aceEditor"
@@ -72,22 +78,19 @@ class editor extends React.Component<Props> {
 }
 
 const mapStateToProps = (state: {editor: EditorState}): EditorState => {
-  console.log('Editor mapStateToProps', state);
   return state.editor;
 };
 
 
 const mapDispatchToProps = (dispatch) => {
-  console.log('Editor mapDispatchToProps', dispatch);
-
   return {
-    contentUpdated: (text: string) => {
-      dispatch(updateEditorContent(text));
+    bufferUpdated: (buffer: Buffer, content: string) => {
+      dispatch(bufferUpdated(buffer, content));
     }
   };
 };
 
 
-const Editor = connect(mapStateToProps, mapDispatchToProps)(editor);
+export const Editor = connect(mapStateToProps, mapDispatchToProps)(editor);
 
 export default Editor;

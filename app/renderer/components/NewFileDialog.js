@@ -11,7 +11,7 @@ import styles from './NewFileDialog.css';
 type Props= {
   formValue: string,
   isOpened: boolean,
-  projectName: string,
+  repositoryName: string,
   message: string,
   closeDialog: typeof closeDialog,
   updateFormValue: typeof updateFormValue
@@ -55,7 +55,7 @@ class newFileDialog extends React.Component<Props> {
               value={this.props.formValue}
               onClick={cancelPropagation}
               onChange={e => { return this.handleChange(e); }}
-              onKeyUp={e => { return checkEnter(e, this.props.projectName, this.props.closeDialog); }}
+              onKeyUp={e => { return checkEnter(e, this.props.repositoryName, this.props.closeDialog); }}
               placeholder="input file name"
             />
             <p className={styles.error}>{this.props.message}</p>
@@ -81,13 +81,13 @@ function checkEsc(e, dispatchClose: typeof closeDialog) {
   return true;
 }
 
-function checkEnter(e, projectName: string, dispatchClose: typeof closeDialog) {
+function checkEnter(e, repositoryName: string, dispatchClose: typeof closeDialog) {
   e.stopPropagation();
 
   if (e.key === 'Enter') {
     ipcRenderer.send('create-file', {
       windowID: window.windowID,
-      projectName,
+      repositoryName,
       path: e.target.value
     });
   } else if (e.key === 'Escape') {

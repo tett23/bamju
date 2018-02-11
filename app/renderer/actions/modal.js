@@ -11,10 +11,10 @@ export function closeDialog() {
   };
 }
 
-export function openNewFileDialog(projectName: string, formValue: string) {
+export function openNewFileDialog(repositoryName: string, formValue: string) {
   return {
     type: OPEN_NEW_FILE_DIALOG,
-    projectName,
+    repositoryName,
     formValue
   };
 }

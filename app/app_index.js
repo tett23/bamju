@@ -7,22 +7,51 @@ import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
-import { appReducer } from './renderer/reducers/combined';
 import {
-  openPageByBuffer,
-  bufferUpdated
+  appReducer,
+} from './renderer/reducers/combined';
+import {
+  initialBrowserState,
+} from './renderer/reducers/browser';
+import {
+  initialRepositoriesState,
+  type RepositoriesState,
+} from './renderer/reducers/repositories';
+import {
+  initialModalState,
+} from './renderer/reducers/modal';
+import {
+  openBuffer,
+  bufferContentUpdated,
 } from './renderer/actions/tab';
 import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
-import { refreshTreeView, openTreeViewItem } from './renderer/actions/tree_view';
-import type { BufferItem } from './common/project';
+import {
+  reloadRepositories,
+  updateBuffers,
+  addBuffers,
+  removeBuffers,
+} from './renderer/actions/repositories';
+import {
+  type MetaDataID
+} from './common/metadata';
+import {
+  type Buffer
+} from './common/buffer';
+import {
+  type Message
+} from './common/util';
+import {
+  type WindowConfig
+} from './common/window';
 import './app.global.css';
-
-const Project = require('./common/project');
-const { Window: WindowConfig } = require('./common/bamju_config');
 
 const store = createStore(
   appReducer,
-  undefined,
+  {
+    browser: initialBrowserState(),
+    repositories: initialRepositoriesState(),
+    modal: initialModalState()
+  },
 );
 
 const root = document.getElementById('root');
@@ -36,41 +65,53 @@ if (root != null) {
 }
 
 ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
-  (async () => {
-    window.windowID = conf.id;
+  console.log('initialize', conf);
+  ipcRenderer.sendSync('buffers');
 
-    const projectName:string = conf.tabs[0].buffer.projectName || '';
-    const itemName:string = conf.tabs[0].buffer.path || '';
+  window.windowID = conf.id;
 
-    ipcRenderer.sendSync('refresh-tree-view');
-    ipcRenderer.send('open-page', { windowID: window.windowID, projectName, itemName });
-  })();
+  const tab = conf.tabs[0];
+  if (tab != null) {
+    ipcRenderer.send('open-page', { repositoryName: tab.buffer.repositoryName, itemName: tab.buffer.path });
+  }
 });
 
-ipcRenderer.on('open-page', (event, buf: ?Project.Buffer) => {
-  console.log('open-page', buf);
-  if (buf === undefined || buf === null) {
+ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {
+  console.log('open-buffer', buf, contents);
+  if (buf == null) {
     return;
   }
 
-  store.dispatch(openPageByBuffer(buf));
+  store.dispatch(openBuffer(buf, contents));
 });
 
-ipcRenderer.on('buffer-updated', (event, buf: Project.Buffer) => {
-  console.log('buffer-updated', buf);
-  store.dispatch(bufferUpdated(buf));
+ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {
+  console.log('buffer-content-updated', metaDataID, content);
+
+  store.dispatch(bufferContentUpdated(metaDataID, content));
 });
 
-ipcRenderer.on('refresh-tree-view', (event, tv: Array<BufferItem>) => {
-  console.log('refresh-tree-view', tv);
-
-  store.dispatch(refreshTreeView(tv));
+ipcRenderer.on('reload-repositories', (event, repositories: RepositoriesState) => {
+  console.log('reload-repositories', repositories);
+  store.dispatch(reloadRepositories(repositories));
 });
 
-ipcRenderer.on('refresh-tree-view-item', (event, { projectName, path: itemPath, item }: {projectName: string, path: string, item: BufferItem}) => {
-  console.log('refresh-tree-view-item', projectName, itemPath, item);
+ipcRenderer.on('update-buffers', (event, buffers: Buffer[]) => {
+  console.log('update-buffers', buffers);
 
-  store.dispatch(openTreeViewItem(projectName, itemPath, item));
+  store.dispatch(updateBuffers(buffers));
+});
+
+ipcRenderer.on('add-buffers', (event, buffers: Buffer[]) => {
+  console.log('add-buffers', buffers);
+
+  store.dispatch(addBuffers(buffers));
+});
+
+ipcRenderer.on('remove-buffers', (event, buffers: Buffer[]) => {
+  console.log('remove-buffers', buffers);
+
+  store.dispatch(removeBuffers(buffers));
 });
 
 ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
@@ -83,10 +124,14 @@ ipcRenderer.on('file-created', (event, result: {success: boolean, message: strin
   }
 });
 
+ipcRenderer.on('message', (_, message: Message) => {
+  console.log('message', message);
+});
+
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, projectName: repo, itemName: name });
+  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: name });
 };
 
 window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {
