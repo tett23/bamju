@@ -6,6 +6,7 @@ import { ipcMain } from 'electron';
 
 import {
   openBuffer,
+  openBySystemEditor,
   buffers,
   addRepository,
   removeRepository,
@@ -58,6 +59,18 @@ ipcMain.on('open-page', async (e, req) => {
 
   e.sender.send('open-buffer', result);
   e.returnValue = result;
+});
+
+ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
+  console.log('open-by-system-editor', absolutePath);
+  const result = openBySystemEditor(absolutePath);
+  if (isSimilarMessage(result)) {
+    e.sender.send('message', result);
+    e.returnValue = result;
+    return;
+  }
+
+  e.returnValue = true;
 });
 
 ipcMain.on('buffers', async (e) => {

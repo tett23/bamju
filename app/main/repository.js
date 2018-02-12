@@ -10,7 +10,6 @@ import {
   Repository,
 } from '../common/repository';
 import {
-  MetaData,
   resolveInternalPath,
   type MetaDataID
 } from '../common/metadata';
@@ -66,7 +65,7 @@ export async function buffers(): Promise<{[string]: Buffer[]} | Message> {
   return ret;
 }
 
-export async function openBySystemEditor({ absolutePath }: MetaData): Promise<boolean | Message> {
+export async function openBySystemEditor(absolutePath: string): Promise<boolean | Message> {
   try {
     fs.statSync(absolutePath);
   } catch (e) {
