@@ -11,6 +11,7 @@ import {
   initialState,
 } from './renderer/reducers/editor_combined';
 import { openBuffer } from './renderer/actions/editor';
+import { addMessage } from './renderer/actions/messages';
 import {
   type Buffer
 } from './common/buffer';
@@ -34,33 +35,6 @@ if (root != null) {
   );
 }
 
-import { addMessage } from './renderer/actions/messages';
-
-store.dispatch(addMessage({
-  type: 'info',
-  message: 'info'
-}));
-store.dispatch(addMessage({
-  type: 'debug',
-  message: 'debug'
-}));
-store.dispatch(addMessage({
-  type: 'succeeded',
-  message: 'succeeded'
-}));
-store.dispatch(addMessage({
-  type: 'failed',
-  message: 'failed'
-}));
-store.dispatch(addMessage({
-  type: 'error',
-  message: 'error'
-}));
-store.dispatch(addMessage({
-  type: 'warning',
-  message: 'warning'
-}));
-
 ipcRenderer.on('initialize', (event, [buffer, content]: [Buffer, string]) => {
   console.log('initialize', buffer, content);
   store.dispatch(openBuffer(buffer, content));
@@ -75,4 +49,6 @@ ipcRenderer.on('send-buffer-information', (_) => {
 
 ipcRenderer.on('message', (_, message: Message) => {
   console.log('message', message);
+
+  store.dispatch(addMessage(message));
 });
