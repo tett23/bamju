@@ -298,14 +298,50 @@ describe('Repository', () => {
   });
 
   describe('openItem', () => {
-    // TODO
-    it('', () => {
+    it('isOpenedがtrueになる', async () => {
+      let metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(false);
+      metaData = await repository.openItem(metaData.id);
+      expect(metaData.isOpened).toBe(true);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(true);
+    });
+
+    it('親のisOpenedもtrueになる', async () => {
+      expect(repository.getItemByPath('/').isOpened).toBe(false);
+      expect(repository.getItemByPath('/foo').isOpened).toBe(false);
+      expect(repository.getItemByPath('/foo/bar').isOpened).toBe(false);
+
+      const metaData = repository.getItemByPath('/foo/bar');
+      await repository.openItem(metaData.id);
+
+      expect(repository.getItemByPath('/').isOpened).toBe(true);
+      expect(repository.getItemByPath('/foo').isOpened).toBe(true);
+      expect(repository.getItemByPath('/foo/bar').isOpened).toBe(true);
     });
   });
 
   describe('closeItem', () => {
-    // TODO
-    it('', () => {
+    it('isOpenedがfalseになる', () => {
+      let metaData = repository.getItemByPath('/foo');
+      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(false);
+    });
+
+    it('すでにisOpened == falseの場合、もう一度closeItemしてもfalseのままになる', () => {
+      let metaData = repository.getItemByPath('/foo');
+      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(false);
+
+      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(false);
     });
   });
 

@@ -237,6 +237,16 @@ export class Repository {
     }
 
     const ret = await metaData.open();
+    let parentID = metaData.parentID;
+    while (parentID != null) {
+      const parent = await this.openItem(parentID);
+      if (parent == null) {
+        parentID = null;
+        continue;
+      }
+
+      parentID = parent.parentID;
+    }
 
     return ret;
   }
