@@ -614,6 +614,7 @@ describe('MetaData', () => {
 
     // TODO: tableの中身のタグ解釈
     // TODO: Markdown.parseのcurrentの解釈
+    // TODO: aa.md が aaa.md にもマッチする問題
   });
 
   describe('open', () => {
