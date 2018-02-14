@@ -29,7 +29,7 @@ import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
-} from '../actions/modal';
+} from '../actions/modals';
 import {
   addMessage,
   closeMessage,
@@ -76,7 +76,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
-  modal: ModalsState,
+  modals: ModalsState,
   messages: MessagesState
 };
 
@@ -84,7 +84,7 @@ export function initialState(): State {
   return {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalsState(),
+    modals: initialModalsState(),
     messages: initialMessagesState(),
   };
 }
@@ -94,7 +94,7 @@ export function appReducer(s: State, a: ActionTypes) {
   return {
     browser: browser(s.browser, a),
     repositories: repositories(s.repositories, a),
-    modal: modals(s.modal, a),
+    modals: modals(s.modals, a),
     messages: messages(s.messages, a)
   };
 }

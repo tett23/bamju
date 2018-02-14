@@ -18,8 +18,8 @@ import {
   type RepositoriesState,
 } from './renderer/reducers/repositories';
 import {
-  initialModalState,
-} from './renderer/reducers/modal';
+  initialModalsState,
+} from './renderer/reducers/modals';
 import {
   initialMessagesState,
 } from './renderer/reducers/messages';
@@ -27,7 +27,7 @@ import {
   openBuffer,
   bufferContentUpdated,
 } from './renderer/actions/tab';
-import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
+import { closeDialog } from './renderer/actions/modals';
 import {
   reloadRepositories,
   updateBuffers,
@@ -54,7 +54,7 @@ const store = createStore(
   {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState(),
+    modals: initialModalsState(),
     messages: initialMessagesState()
   },
 );

@@ -4,8 +4,8 @@ import React from 'react';
 import { ipcRenderer } from 'electron';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import type { ModalState } from '../reducers/modal';
-import { closeDialog, updateFormValue } from '../actions/modal';
+import type { ModalsState } from '../reducers/modals';
+import { closeDialog } from '../actions/modals';
 import styles from './NewFileDialog.css';
 
 type Props= {

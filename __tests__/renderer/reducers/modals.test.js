@@ -10,7 +10,7 @@ import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
-} from '../../../app/renderer/actions/modal';
+} from '../../../app/renderer/actions/modals';
 
 let store;
 beforeEach(() => {
@@ -31,7 +31,7 @@ describe('modal reducer', () => {
       const newState = store.getState();
 
       expect(newState.length).toBe(1);
-      expect(newState[0].argument).toMatchObject(arg);
+      expect(newState[0]).toMatchObject(arg);
     });
   });
 
