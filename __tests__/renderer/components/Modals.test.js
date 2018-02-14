@@ -31,13 +31,13 @@ describe('<Modals />', () => {
     }));
     const component = mountWithStore(<Modals modals={store.getState().modals} />, store);
 
-    expect(component.find('.inputDialog').length).toBe(1);
+    expect(component.find('.dialogs').length).toBe(1);
   });
 
   it('modalsが空のときは何も表示されない', () => {
     const component = mountWithStore(<Modals />, store);
 
-    expect(component.find('.modals').children().length).toBe(0);
+    expect(component.find('.dialogs').children().length).toBe(0);
   });
 
   it('背景のonClickで全てのDialogが破棄される', () => {
@@ -48,9 +48,26 @@ describe('<Modals />', () => {
     const component = mountWithStore(<Modals />, store);
 
     expect(store.getState().modals.length).toBe(1);
-    expect(component.find('.modals').children().length).toBe(1);
+    expect(component.find('.dialogs').children().length).toBe(1);
 
     component.find('.modals').simulate('click');
+
+    expect(store.getState().modals.length).toBe(0);
+  });
+
+  it('Escが押されると全てのDialogが破棄される', () => {
+    store.dispatch(openInputDialog({
+      label: 'hogehoge',
+      onEnter: () => {}
+    }));
+    const component = mountWithStore(<Modals />, store);
+
+    expect(store.getState().modals.length).toBe(1);
+    expect(component.find('.dialogs').children().length).toBe(1);
+
+    component.find('.modals').simulate('keyUp', {
+      key: 'Escape'
+    });
 
     expect(store.getState().modals.length).toBe(0);
   });

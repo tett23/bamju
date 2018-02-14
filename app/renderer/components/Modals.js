@@ -35,10 +35,21 @@ function modals(props: Props) {
     }
   });
 
+  let background;
+  if (items.length >= 1) {
+    background = <div className={styles.background} />;
+  }
+
   return (
     <div
       className={styles.modals}
       role="none"
+      onKeyUp={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        checkEscape(e, props.closeAllDialog);
+      }}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -46,9 +57,18 @@ function modals(props: Props) {
         props.closeAllDialog();
       }}
     >
-      {items}
+      {background}
+      <div className={styles.dialogs}>
+        {items}
+      </div>
     </div>
   );
+}
+
+function checkEscape(e, close) {
+  if (e.key === 'Escape') {
+    close();
+  }
 }
 
 function mapStateToProps(state: {modals: ModalsState}): {modals: ModalsState} {

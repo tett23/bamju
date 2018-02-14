@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import styles from './NewFileDialog.css';
+import styles from './InputDialog.css';
 import {
   type InputDialogValues,
   closeDialog,
@@ -26,46 +26,28 @@ class inputDialog extends React.Component<Props> {
     };
 
     return (
-      <div
-        role="none"
-        className={styles.inputDialog}
-        onClick={this.props.closeDialog}
-        onKeyUp={e => { return checkEsc(e, onClose); }}
-      >
-        <div className={styles.floatWindow}>
-          <label
-            className={styles.inputLabel}
-            htmlFor="modalNewFileDialogInput"
-          >
-            <span style={{ paddingLeft: '1rem' }}>{this.props.label}</span>
-          </label>
-          <input
-            type="text"
-            id="modalNewFileDialogInput"
-            className={styles.input}
-            ref={(input) => { if (input) { input.focus(); } }}
-            value={this.props.formValue}
-            onClick={(e) => { e.stopPropagation(); }}
-            onKeyUp={e => {
-              return checkEnter(e, this.props.onEnter, onClose);
-            }}
-            placeholder={this.props.placeholder}
-          />
-        </div>
+      <div className={styles.inputDialog}>
+        <label
+          className={styles.label}
+          htmlFor="modalNewFileDialogInput"
+        >
+          <span style={{ paddingLeft: '1rem' }}>{this.props.label}</span>
+        </label>
+        <input
+          type="text"
+          id="modalNewFileDialogInput"
+          className={styles.input}
+          ref={(input) => { if (input) { input.focus(); } }}
+          value={this.props.formValue}
+          onClick={(e) => { e.stopPropagation(); }}
+          onKeyUp={e => {
+            return checkEnter(e, this.props.onEnter, onClose);
+          }}
+          placeholder={this.props.placeholder}
+        />
       </div>
     );
   }
-}
-
-function checkEsc(e, onClose) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (e.key === 'Escape') {
-    onClose();
-  }
-
-  return true;
 }
 
 function checkEnter(e, onEnter, onClose) {
