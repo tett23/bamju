@@ -95,7 +95,7 @@ describe('repository events', () => {
         expect(true).toBe(false);
         return;
       }
-      const result = await openBySystemEditor(metaData);
+      const result = await openBySystemEditor(metaData.absolutePath);
 
       expect(isSimilarError(result)).toBe(false);
 
