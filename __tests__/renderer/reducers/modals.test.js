@@ -37,17 +37,24 @@ describe('modal reducer', () => {
 
   describe('CLOSE_DIALOG', () => {
     it('Dialogを閉じられる', () => {
-      const modalAction = store.dispatch(openInputDialog({
+      const dialog1 = store.dispatch(openInputDialog({
         label: 'new file',
         formValue: '',
         placeholder: '',
         onEnter: (_) => { return true; },
       }));
+      const dialog2 = store.dispatch(openInputDialog({
+        label: 'new file',
+        formValue: '',
+        placeholder: '',
+        onEnter: (_) => { return true; },
+      }));
+      expect(store.getState().length).toBe(2);
+
+      store.dispatch(closeDialog(dialog1.modalID));
+
       expect(store.getState().length).toBe(1);
-
-      store.dispatch(closeDialog(modalAction.modalID));
-
-      expect(store.getState().length).toBe(0);
+      expect(store.getState()[0].id).toBe(dialog2.modalID);
     });
   });
 
