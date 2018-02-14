@@ -99,8 +99,8 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
 });
 
 // TODO: reload-buffersに変更
-ipcRenderer.on('reload-repositories', (event, buffers: Buffer[]) => {
-  console.log('reload-repositories', buffers);
+ipcRenderer.on('reload-buffers', (event, buffers: Buffer[]) => {
+  console.log('reload-buffers', buffers);
   store.dispatch(reloadRepositories(buffers));
 });
 

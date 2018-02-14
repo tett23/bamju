@@ -86,7 +86,7 @@ ipcMain.on('buffers', async (e) => {
     return r.concat(result[k]);
   }, []);
 
-  e.sender.send('reload-repositories', ret);
+  e.sender.send('reload-buffers', ret);
   e.returnValue = ret;
 });
 
@@ -112,7 +112,7 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
     return;
   }
 
-  e.sender.send('reload-repositories', buffersResult);
+  e.sender.send('reload-buffers', buffersResult);
   e.returnValue = result;
 });
 
@@ -135,7 +135,7 @@ ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
   const repository:Repository = (result: any);
   await getConfigInstance().removeRepository(repository.name, repository.absolutePath);
 
-  e.sender.send('reload-repositories', buffersResult);
+  e.sender.send('reload-buffers', buffersResult);
   e.returnValue = result;
 });
 

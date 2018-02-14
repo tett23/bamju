@@ -121,6 +121,6 @@ export default class AppWindow implements Window {
   }
 
   async reloadRepositories(buffers: Buffer[]): Promise<void> {
-    this.browserWindow.webContents.send('reload-repositories', buffers);
+    this.browserWindow.webContents.send('reload-buffers', buffers);
   }
 }
