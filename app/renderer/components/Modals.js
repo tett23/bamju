@@ -21,15 +21,24 @@ function modals(props: Props) {
   const items = props.modals.map((item) => {
     switch (item.type) {
     case ModalInputDialog: {
-      return (<InputDialog
-        key={item.id}
-        id={item.id}
-        label={item.label}
-        formValue={item.formValue}
-        placeholder={item.placeholder}
-        onEnter={item.onEnter}
-        onClose={item.onClose}
-      />);
+      return (
+        <div
+          role="none"
+          key={item.id}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <InputDialog
+            id={item.id}
+            label={item.label}
+            formValue={item.formValue}
+            placeholder={item.placeholder}
+            onEnter={item.onEnter}
+            onClose={item.onClose}
+          />
+        </div>
+      );
     }
     default: return null;
     }
