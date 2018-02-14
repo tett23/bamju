@@ -62,7 +62,7 @@ type dummyType = {
 export function createDummyBufferByPath(repositoryName: string, itemPath:string): Buffer {
   let name = path.basename(itemPath);
   if (itemPath === '/') {
-    name = '/';
+    name = repositoryName;
   }
   const repositoryPath = path.join('/tmp/bamju', repositoryName);
   const absolutePath = path.join(repositoryPath, itemPath).replace(/\/$/, '');

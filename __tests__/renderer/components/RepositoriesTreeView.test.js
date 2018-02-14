@@ -59,7 +59,7 @@ describe('<RepositoriesTreeView />', () => {
 
     const items = component.find('.repositoryItem');
     const names = items.at(0).find('.repositoryItem > li > div > span');
-    expect(names.at(0).text()).toBe('/');
+    expect(names.at(0).text()).toBe('test');
     expect(names.at(1).text()).toBe('foo.md');
   });
 

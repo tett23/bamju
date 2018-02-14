@@ -360,21 +360,21 @@ describe('Repository', () => {
     it('/はルートのアイテムを取得する', () => {
       let rootItem = repository.detect('/');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
 
       const item = rootItem.detect('deepItem');
       rootItem = item.detect('/');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
 
       rootItem = repository.detect('/');
       rootItem = rootItem.detect('..');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
     });
@@ -382,21 +382,21 @@ describe('Repository', () => {
     it('/はcurrentが何であるとルートのアイテムを取得する', () => {
       let rootItem = repository.detect('/');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
 
       const item = rootItem.detect('deepItem');
       rootItem = item.detect('/');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
 
       rootItem = repository.detect('/');
       rootItem = rootItem.detect('..');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
     });
@@ -418,13 +418,13 @@ describe('Repository', () => {
     it('/に対して.を取得するとルートの取得ができる', () => {
       let rootItem = repository.detect('/');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
 
       rootItem = rootItem.detect('.');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
     });
@@ -432,7 +432,7 @@ describe('Repository', () => {
     it('/../するとルートの取得ができる', () => {
       const rootItem = repository.detect('/../');
       expect(rootItem).toMatchObject({
-        name: '/',
+        name: 'test',
         path: '/'
       });
     });
