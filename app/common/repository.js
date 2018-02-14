@@ -205,23 +205,24 @@ export class Repository {
   }
 
   async addDirectory(dirPath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(dirPath)) {
+    const normalizedPath = path.normalize(dirPath);
+    if (normalizedPath === '/') {
+      return [this.rootItem(), {
+        type: MessageTypeSucceeded,
+        message: ''
+      }];
+    }
+
+    if (!path.isAbsolute(normalizedPath)) {
       return [null, {
         type: MessageTypeFailed,
         message: 'RepositoryManager.addDirectory.isAbsolute',
       }];
     }
 
-    const [createdItems, message] = await _mkdir(path.normalize(dirPath), this.rootItem());
+    const [createdItems, message] = await _mkdir(normalizedPath, this.rootItem());
     if (message.type === MessageTypeFailed) {
       return [null, message];
-    }
-
-    if (createdItems.length === 0) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectory.isAbsolute',
-      }];
     }
 
     const ret = createdItems[createdItems.length - 1];
@@ -269,7 +270,7 @@ export class Repository {
   }
 }
 
-async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<MetaData>, Message]> {
+async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaData>, Message]> {
   const pathItems = path.split(path.normalize(dirPath));
   if (pathItems.length === 0) {
     return [[], {
@@ -279,9 +280,9 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
   }
 
   const ret:Array<MetaData> = [];
-  let currentItem = parentItem;
+  let currentItem = rootItem;
   for (let i = 0; i < pathItems.length; i += 1) {
-    if (currentItem.itemType === ItemTypeRepository) {
+    if (pathItems[i] === '') { // /のとき
       ret.push(currentItem);
       continue;
     }
