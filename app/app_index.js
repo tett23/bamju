@@ -27,7 +27,9 @@ import {
   openBuffer,
   bufferContentUpdated,
 } from './renderer/actions/tab';
-import { closeDialog } from './renderer/actions/modals';
+import {
+  closeAllDialog,
+} from './renderer/actions/modals';
 import {
   reloadRepositories,
   updateBuffers,
@@ -123,9 +125,7 @@ ipcRenderer.on('file-created', (event, result: {success: boolean, message: strin
   console.log('file-created', result);
 
   if (result.success) {
-    store.dispatch(closeDialog());
-  } else {
-    store.dispatch(updateMessage(result.message));
+    store.dispatch(closeAllDialog());
   }
 });
 
