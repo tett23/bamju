@@ -9,10 +9,10 @@ export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
 export const ADD_BUFFERS = 'ADD_BUFFERS';
 export const REMOVE_BUFFERS = 'REMOVE_BUFFERS';
 
-export function reloadRepositories(repositories: {[string]: Buffer[]}) {
+export function reloadRepositories(buffers: Buffer[]) {
   return {
     type: RELOAD_REPOSITORIES,
-    repositories
+    buffers
   };
 }
 

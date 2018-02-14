@@ -15,7 +15,6 @@ import {
 } from './renderer/reducers/browser';
 import {
   initialRepositoriesState,
-  type RepositoriesState,
 } from './renderer/reducers/repositories';
 import {
   initialModalsState,
@@ -99,9 +98,10 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
   store.dispatch(bufferContentUpdated(metaDataID, content));
 });
 
-ipcRenderer.on('reload-repositories', (event, repositories: RepositoriesState) => {
-  console.log('reload-repositories', repositories);
-  store.dispatch(reloadRepositories(repositories));
+// TODO: reload-buffersに変更
+ipcRenderer.on('reload-repositories', (event, buffers: Buffer[]) => {
+  console.log('reload-repositories', buffers);
+  store.dispatch(reloadRepositories(buffers));
 });
 
 ipcRenderer.on('update-buffers', (event, buffers: Buffer[]) => {

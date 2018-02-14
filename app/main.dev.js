@@ -82,8 +82,12 @@ ipcMain.on('buffers', async (e) => {
     return;
   }
 
-  e.sender.send('reload-repositories', result);
-  e.returnValue = result;
+  const ret = Object.keys(result).reduce((r, k) => {
+    return r.concat(result[k]);
+  }, []);
+
+  e.sender.send('reload-repositories', ret);
+  e.returnValue = ret;
 });
 
 // TODO: add-repository, remove-repository時のconfig更新

@@ -35,7 +35,10 @@ describe('repositories reducer', () => {
     const dummyBuffers = dummy({
       test: ['/foo.md']
     });
-    store.dispatch(reloadRepositories(dummyBuffers));
+    const buffers = Object.keys(dummyBuffers).reduce((r, k) => {
+      return r.concat(dummyBuffers[k]);
+    }, []);
+    store.dispatch(reloadRepositories(buffers));
   });
 
   describe('RELOAD_REPOSITORIES', () => {
@@ -43,62 +46,61 @@ describe('repositories reducer', () => {
       const dummyBuffers = dummy({
         test: ['/foo.md']
       });
-      store.dispatch(reloadRepositories(dummyBuffers));
-
+      const buffers = Object.keys(dummyBuffers).reduce((r, k) => {
+        return r.concat(dummyBuffers[k]);
+      }, []);
+      store.dispatch(reloadRepositories(buffers));
       const newState = store.getState();
 
-      expect(Object.keys(newState)).not.toBe(1);
-      expect(newState.test).not.toBe(undefined);
-      expect(newState.test.length).toBe(2);
-      expect(newState.test[0]).toMatchObject({
+      expect(newState.buffers).not.toBe(undefined);
+      expect(newState.buffers.length).toBe(2);
+      expect(newState.buffers[0]).toMatchObject({
         path: '/'
       });
-      expect(newState.test[1]).toMatchObject({
+      expect(newState.buffers[1]).toMatchObject({
         path: '/foo.md'
       });
     });
 
     it('repositoriesが空のときは空になる', () => {
-      store.dispatch(reloadRepositories({}));
+      store.dispatch(reloadRepositories([]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(0);
+      expect(newState.buffers.length).toBe(0);
     });
   });
 
   describe('UPDATE_BUFFERS', () => {
     it('バッファを更新することができる', () => {
-      const buf = deepCopy(store.getState().test[1]);
+      const buf = deepCopy(store.getState().buffers[1]);
       buf.path = '/bar.md';
       store.dispatch(updateBuffers([buf]));
 
       const newState = store.getState();
 
-      expect(newState.test.length).toBe(2);
-      expect(newState.test[1]).toMatchObject(buf);
+      expect(newState.buffers.length).toBe(2);
+      expect(newState.buffers[1]).toMatchObject(buf);
     });
 
     it('存在しないbufferを更新しようとしても何もしない', () => {
-      const buffers = deepCopy(store.getState().test);
+      const buffers = deepCopy(store.getState().buffers);
       store.dispatch(updateBuffers([
         createDummyBufferByPath('test', '/bar.md'),
       ]));
 
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(2);
-      expect(newState.test).toMatchObject(buffers);
+      expect(newState.buffers.length).toBe(2);
+      expect(newState.buffers).toMatchObject(buffers);
     });
 
     it('buffersが空のときは何もしない', () => {
-      const buffers = deepCopy(store.getState().test);
+      const buffers = deepCopy(store.getState().buffers);
       store.dispatch(updateBuffers([]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(2);
-      expect(newState.test).toMatchObject(buffers);
+      expect(newState.buffers.length).toBe(2);
+      expect(newState.buffers).toMatchObject(buffers);
     });
   });
 
@@ -111,7 +113,7 @@ describe('repositories reducer', () => {
 
       const newState = store.getState();
 
-      expect(newState.test.length).toBe(4);
+      expect(newState.buffers.length).toBe(4);
     });
 
     it('repositoryが存在しない場合は追加する', () => {
@@ -119,19 +121,17 @@ describe('repositories reducer', () => {
       store.dispatch(addBuffers([buf]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(2);
-      expect(newState.foo.length).toBe(1);
-      expect(newState.foo[0]).toBe(buf);
+      expect(newState.buffers.length).toBe(3);
+      expect(newState.buffers[2]).toBe(buf);
     });
 
     it('buffersが空のときは何もしない', () => {
-      const buffers = deepCopy(store.getState().test);
+      const buffers = deepCopy(store.getState().buffers);
       store.dispatch(addBuffers([]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(2);
-      expect(newState.test).toMatchObject(buffers);
+      expect(newState.buffers.length).toBe(2);
+      expect(newState.buffers).toMatchObject(buffers);
     });
 
     it('すでに存在するBufferのときは何もしない', () => {
@@ -139,36 +139,33 @@ describe('repositories reducer', () => {
       store.dispatch(addBuffers([buf]));
       const newState = store.getState();
 
-      expect(newState.test.length).toBe(3);
+      expect(newState.buffers.length).toBe(3);
 
-      const buffers = deepCopy(store.getState().test);
+      const buffers = deepCopy(store.getState().buffers);
 
       store.dispatch(addBuffers([buf]));
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(3);
-      expect(newState.test).toMatchObject(buffers);
+      expect(newState.buffers.length).toBe(3);
+      expect(newState.buffers).toMatchObject(buffers);
     });
   });
 
   describe('REMOVE_BUFFERS', () => {
     it('Bufferの削除ができる', () => {
-      const buf = deepCopy(store.getState().test[1]);
+      const buf = deepCopy(store.getState().buffers[1]);
       store.dispatch(removeBuffers([buf]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(1);
+      expect(newState.buffers.length).toBe(1);
     });
 
     it('Bufferが存在しない場合何もしない', () => {
-      const buf = deepCopy(store.getState().test[1]);
+      const buf = deepCopy(store.getState().buffers[1]);
       buf.id = createMetaDataID();
       store.dispatch(removeBuffers([buf]));
       const newState = store.getState();
 
-      expect(Object.keys(newState).length).toBe(1);
-      expect(newState.test.length).toBe(2);
+      expect(newState.buffers.length).toBe(2);
     });
   });
 });
