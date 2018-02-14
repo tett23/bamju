@@ -9,12 +9,10 @@ import { Messages } from '../components/Messages';
 import styles from './App.css';
 import { initialBrowserState, type BrowserState } from '../reducers/browser';
 import { initialRepositoriesState, type RepositoriesState } from '../reducers/repositories';
-import { type ModalState } from '../reducers/modal';
 
 type appState = {
   repositories: RepositoriesState,
-  browser: BrowserState,
-  modal: ModalState
+  browser: BrowserState
 };
 
 const app = ({ repositories, browser }: appState = defaultState) => {

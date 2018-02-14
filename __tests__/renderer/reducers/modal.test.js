@@ -3,9 +3,9 @@
 import { createStore } from 'redux';
 
 import {
-  initialModalState,
-  modal,
-} from '../../../app/renderer/reducers/modal';
+  initialModalsState,
+  modals,
+} from '../../../app/renderer/reducers/modals';
 import {
   openInputDialog,
   closeDialog,
@@ -14,7 +14,7 @@ import {
 
 let store;
 beforeEach(() => {
-  store = createStore(modal, initialModalState());
+  store = createStore(modals, initialModalsState());
 });
 
 describe('modal reducer', () => {

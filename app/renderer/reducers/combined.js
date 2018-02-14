@@ -47,10 +47,10 @@ import {
   initialBrowserState,
 } from './browser';
 import {
-  modal,
-  type ModalState,
-  initialModalState,
-} from './modal';
+  modals,
+  type ModalsState,
+  initialModalsState,
+} from './modals';
 import {
   messages,
   type MessagesState,
@@ -76,7 +76,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
-  modal: ModalState,
+  modal: ModalsState,
   messages: MessagesState
 };
 
@@ -84,7 +84,7 @@ export function initialState(): State {
   return {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState(),
+    modal: initialModalsState(),
     messages: initialMessagesState(),
   };
 }
@@ -94,7 +94,7 @@ export function appReducer(s: State, a: ActionTypes) {
   return {
     browser: browser(s.browser, a),
     repositories: repositories(s.repositories, a),
-    modal: modal(s.modal, a),
+    modal: modals(s.modal, a),
     messages: messages(s.messages, a)
   };
 }
