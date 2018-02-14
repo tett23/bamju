@@ -108,12 +108,11 @@ ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
   store.dispatch(updateBuffers(updates));
 });
 
-ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
-  console.log('file-created', result);
+ipcRenderer.on('file-created', (event, updates: BufferUpdate) => {
+  console.log('file-created', updates);
 
-  if (result.success) {
-    store.dispatch(closeAllDialog());
-  }
+  store.dispatch(closeAllDialog());
+  store.dispatch(updateBuffers(updates));
 });
 
 ipcRenderer.on('message', (_, message: Message) => {

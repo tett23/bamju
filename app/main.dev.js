@@ -167,7 +167,7 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   }
 
   let tmp = buffer;
-  const parents = [buffer];
+  const parents = [];
   while (tmp.parentID != null) {
     const parent = repo.getItemByID(tmp.parentID);
     if (parent == null) {
