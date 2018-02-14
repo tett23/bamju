@@ -10,9 +10,6 @@ import {
   type InputDialog,
   type UndefinedDialog,
 } from '../actions/modals';
-import {
-  deepCopy,
-} from '../../common/util';
 
 export type ModalsState = Array<InputDialog | UndefinedDialog>;
 
@@ -26,7 +23,7 @@ export function modals(
 ): ModalsState {
   switch (action.type) {
   case OPEN_INPUT_DIALOG: {
-    const newState = deepCopy(state);
+    const newState = state.slice();
     newState.push({
       id: action.modalID,
       type: 'inputDialog',
@@ -48,7 +45,7 @@ export function modals(
       return state;
     }
 
-    const newState = deepCopy(state);
+    const newState = state.slice();
     newState.splice(idx, 1);
 
     return newState;

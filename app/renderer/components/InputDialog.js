@@ -14,16 +14,40 @@ type Props = InputDialogValues & {
 };
 
 class inputDialog extends React.Component<Props> {
-  render() {
-    const { id: modalID } = this.props;
-    const onClose = () => {
-      if (this.props.onClose == null) {
-        this.props.closeDialog(modalID);
+  filename: ?HTMLInputElement;
+  closeDialog: () => void;
+  handleChange: (SyntheticInputEvent<*>) => void;
+
+  static defaultProps = {
+    id: '',
+    label: '',
+    formValue: '',
+    placeholder: '',
+  }
+
+  constructor(props: Props) {
+    super(props);
+
+    this.closeDialog = () => {
+      const { id: modalID } = this.props;
+      if (props.onClose == null) {
+        props.closeDialog(modalID);
         return;
       }
 
-      return this.props.onClose() && this.props.closeDialog(modalID);
+      return props.onClose() && props.closeDialog(modalID);
     };
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange(e: SyntheticInputEvent<*>) {
+    this.setState(Object.assign({}, this.state, {
+      formValue: e.target.value
+    }));
+  }
+
+  render() {
+    const formValue = this.state ? this.state.formValue : this.props.formValue;
 
     return (
       <div className={styles.inputDialog}>
@@ -37,12 +61,13 @@ class inputDialog extends React.Component<Props> {
           type="text"
           id="modalNewFileDialogInput"
           className={styles.input}
-          ref={(input) => { if (input) { input.focus(); } }}
-          value={this.props.formValue}
+          ref={(input) => { if (input) { input.focus(); } this.filename = input; }}
+          value={formValue}
           onClick={(e) => { e.stopPropagation(); }}
           onKeyUp={e => {
-            return checkEnter(e, this.props.onEnter, onClose);
+            return checkEnter(e, this.props.onEnter, this.closeDialog);
           }}
+          onChange={this.handleChange}
           placeholder={this.props.placeholder}
         />
       </div>
