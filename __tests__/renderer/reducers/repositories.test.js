@@ -168,7 +168,7 @@ describe('repositories reducer', () => {
       it('Bufferの削除ができる', () => {
         const buf = deepCopy(store.getState().buffers[1]);
         store.dispatch(updateBuffers({
-          removes: [buf]
+          removes: [buf.id]
         }));
         const newState = store.getState();
 
@@ -179,7 +179,7 @@ describe('repositories reducer', () => {
         const buf = deepCopy(store.getState().buffers[1]);
         buf.id = createMetaDataID();
         store.dispatch(updateBuffers({
-          removes: [buf]
+          removes: [buf.id]
         }));
         const newState = store.getState();
 

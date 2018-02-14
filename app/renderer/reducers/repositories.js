@@ -13,7 +13,12 @@ import {
   deepCopy,
 } from '../../common/util';
 
-import type { Buffer } from '../../common/buffer';
+import {
+  type Buffer,
+} from '../../common/buffer';
+import {
+  type MetaDataID,
+} from '../../common/metadata';
 
 export type RepositoriesState = {
   buffers: Buffer[]
@@ -59,16 +64,16 @@ function updateBuffers(state: RepositoriesState, updates: BufferUpdate): Reposit
   return ret;
 }
 
-function removeBuffers(buffers: Buffer[], removes: Buffer[]): Buffer[] {
+function removeBuffers(buffers: Buffer[], removes: MetaDataID[]): Buffer[] {
   if (removes.length === 0) {
     return buffers;
   }
 
   const ret = buffers.slice();
 
-  removes.forEach((buf) => {
-    const idx = ret.findIndex((b) => {
-      return b.id === buf.id;
+  removes.forEach((id) => {
+    const idx = ret.findIndex((buf) => {
+      return buf.id === id;
     });
     if (idx === -1) {
       return;

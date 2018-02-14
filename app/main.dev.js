@@ -112,8 +112,12 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
     return;
   }
 
-  e.sender.send('reload-buffers', buffersResult);
-  e.returnValue = result;
+  const ret = {
+    additions: ((result: any): Repository).toBuffers()
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
 ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
@@ -135,8 +139,14 @@ ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
   const repository:Repository = (result: any);
   await getConfigInstance().removeRepository(repository.name, repository.absolutePath);
 
-  e.sender.send('reload-buffers', buffersResult);
-  e.returnValue = result;
+  const ret = {
+    removes: ((result: any): Repository).items.map((buf) => {
+      return buf.id;
+    })
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
 // TODO: windowの更新
@@ -205,18 +215,39 @@ ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
 });
 
 // TODO: loadをchainさせて非同期でupdate-buffersを発行？
-// TODO: removesを設定しないとリークする
 ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
   console.log('open-item', metaDataID);
+
+  const metaData = getInstance().getItemByID(metaDataID);
+  if (metaData == null) {
+    return;
+  }
+
+  const beforeChildrenIDs = metaData.childrenIDs;
   const result = await openItem(metaDataID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
     return;
   }
+  const afterChildrenIDs = ((result: any): Buffer).childrenIDs;
+  const removeIDs = beforeChildrenIDs.filter((beforeID) => {
+    return !afterChildrenIDs.some((afterID) => {
+      return afterID === beforeID;
+    });
+  });
+  const additions = afterChildrenIDs.filter((afterID) => {
+    return !beforeChildrenIDs.some((beforeID) => {
+      return afterID === beforeID;
+    });
+  }).map((id) => {
+    return getInstance().getItemByID(id);
+  });
 
   const ret = {
-    changes: [result]
+    changes: [result],
+    additons: additions,
+    removes: removeIDs,
   };
 
   e.sender.send('update-buffers', ret);
