@@ -281,6 +281,11 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
   const ret:Array<MetaData> = [];
   let currentItem = parentItem;
   for (let i = 0; i < pathItems.length; i += 1) {
+    if (currentItem.itemType === ItemTypeRepository) {
+      ret.push(currentItem);
+      continue;
+    }
+
     if (!currentItem.isSimilarDirectory()) {
       return [[], {
         type: MessageTypeFailed,
