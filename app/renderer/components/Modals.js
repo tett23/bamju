@@ -35,10 +35,7 @@ function modals(props: Props) {
     }
   });
 
-  let background;
-  if (items.length >= 1) {
-    background = <div className={styles.background} />;
-  }
+  const visibility = (items.length >= 1) ? 'block' : 'none';
 
   return (
     <div
@@ -57,9 +54,10 @@ function modals(props: Props) {
         props.closeAllDialog();
       }}
     >
-      {background}
-      <div className={styles.dialogs}>
-        {items}
+      <div className={styles.background} style={{ display: visibility }}>
+        <div className={styles.dialogs}>
+          {items}
+        </div>
       </div>
     </div>
   );
