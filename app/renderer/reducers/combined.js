@@ -26,10 +26,9 @@ import {
   bufferContentUpdated
 } from '../actions/tab';
 import {
-  openNewFileDialog,
+  openInputDialog,
   closeDialog,
-  updateMessage,
-  updateFormValue
+  closeAllDialog,
 } from '../actions/modal';
 import {
   addMessage,
@@ -67,10 +66,9 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof updateBuffers>
 | $ReturnType<typeof addBuffers>
 | $ReturnType<typeof removeBuffers>
-| $ReturnType<typeof openNewFileDialog>
+| $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
-| $ReturnType<typeof updateMessage>
-| $ReturnType<typeof updateFormValue>
+| $ReturnType<typeof closeAllDialog>
 | $ReturnType<typeof addMessage>
 | $ReturnType<typeof closeMessage>
 | $ReturnType<typeof closeAllMessages>;

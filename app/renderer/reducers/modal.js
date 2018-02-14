@@ -4,33 +4,26 @@ import {
   type ActionTypes
 } from './combined';
 import {
+  OPEN_INPUT_DIALOG,
   CLOSE_DIALOG,
-  OPEN_NEW_FILE_DIALOG,
-  UPDATE_MESSAGE,
-  UPDATE_FORM_VALUE,
+  CLOSE_ALL_DIALOG,
+  type ModalType,
+  type ModalArgument,
 } from '../actions/modal';
 import {
   deepCopy,
 } from '../../common/util';
 
-export type ModalState = {
-  newFileDialog: {
-    isOpened: boolean,
-    repositoryName: string,
-    formValue: string,
-    message: string
-  }
+type ModalWindow = {
+  id: string,
+  type: ModalType,
+  argument: ModalArgument
 };
 
+export type ModalState = ModalWindow[];
+
 export function initialModalState() {
-  return {
-    newFileDialog: {
-      isOpened: false,
-      repositoryName: '',
-      formValue: '',
-      message: ''
-    }
-  };
+  return [];
 }
 
 export function modal(
@@ -38,34 +31,32 @@ export function modal(
   action: ActionTypes
 ): ModalState {
   switch (action.type) {
-  case OPEN_NEW_FILE_DIALOG: {
+  case OPEN_INPUT_DIALOG: {
     const newState = deepCopy(state);
-    newState.newFileDialog = {
-      isOpened: true,
-      repositoryName: action.repositoryName,
-      formValue: action.formValue,
-      message: '',
-    };
+    newState.push({
+      id: action.modalID,
+      type: action.modalType,
+      argument: action.argument
+    });
 
     return newState;
   }
   case CLOSE_DIALOG: {
+    const { modalID } = action;
+    const idx = state.findIndex((item) => {
+      return item.id === modalID;
+    });
+    if (idx === -1) {
+      return state;
+    }
+
     const newState = deepCopy(state);
-    newState.newFileDialog = initialModalState.newFileDialog;
+    newState.splice(idx, 1);
 
     return newState;
   }
-  case UPDATE_MESSAGE: {
-    const newState = deepCopy(state);
-    newState.newFileDialog.message = action.message;
-
-    return newState;
-  }
-  case UPDATE_FORM_VALUE: {
-    const newState = deepCopy(state);
-    newState.newFileDialog.formValue = action.formValue;
-
-    return newState;
+  case CLOSE_ALL_DIALOG: {
+    return [];
   }
   default:
     return state;
