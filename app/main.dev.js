@@ -167,20 +167,24 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   }
 
   let tmp = buffer;
-  const updated = [buffer];
+  const parents = [buffer];
   while (tmp.parentID != null) {
     const parent = repo.getItemByID(tmp.parentID);
     if (parent == null) {
       break;
     }
 
-    updated.push(parent);
+    parents.push(parent);
     tmp = parent;
   }
-  e.sender.send('update-buffers', updated);
 
-  e.sender.send('file-created', buffer);
-  e.returnValue = buffer;
+  const ret = {
+    additons: [result],
+    changes: parents,
+  };
+
+  e.sender.send('file-created', ret);
+  e.returnValue = ret;
 });
 
 ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
@@ -192,11 +196,16 @@ ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  e.sender.send('update-buffers', [result]);
-  e.returnValue = result;
+  const ret = {
+    changes: [result]
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
-
+// TODO: loadをchainさせて非同期でupdate-buffersを発行？
+// TODO: removesを設定しないとリークする
 ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
   console.log('open-item', metaDataID);
   const result = await openItem(metaDataID);
@@ -206,8 +215,12 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  e.sender.send('update-buffers', [result]);
-  e.returnValue = result;
+  const ret = {
+    changes: [result]
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
 require('./main/app');

@@ -18,8 +18,6 @@ import {
 import {
   reloadRepositories,
   updateBuffers,
-  addBuffers,
-  removeBuffers,
 } from '../actions/repositories';
 import {
   openBuffer,
@@ -64,8 +62,6 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
-| $ReturnType<typeof addBuffers>
-| $ReturnType<typeof removeBuffers>
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof closeAllDialog>

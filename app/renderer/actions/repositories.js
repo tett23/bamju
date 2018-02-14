@@ -6,8 +6,12 @@ import {
 
 export const RELOAD_REPOSITORIES = 'RELOAD_REPOSITORIES';
 export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
-export const ADD_BUFFERS = 'ADD_BUFFERS';
-export const REMOVE_BUFFERS = 'REMOVE_BUFFERS';
+
+export type BufferUpdate = {
+  removes?: Buffer[],
+  additions?: Buffer[],
+  changes?: Buffer[]
+};
 
 export function reloadRepositories(buffers: Buffer[]) {
   return {
@@ -16,23 +20,9 @@ export function reloadRepositories(buffers: Buffer[]) {
   };
 }
 
-export function updateBuffers(buffers: Buffer[]) {
+export function updateBuffers(updates: BufferUpdate) {
   return {
     type: UPDATE_BUFFERS,
-    buffers,
-  };
-}
-
-export function addBuffers(buffers: Buffer[]) {
-  return {
-    type: ADD_BUFFERS,
-    buffers,
-  };
-}
-
-export function removeBuffers(buffers: Buffer[]) {
-  return {
-    type: REMOVE_BUFFERS,
-    buffers,
+    updates,
   };
 }

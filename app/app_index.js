@@ -33,8 +33,7 @@ import {
 import {
   reloadRepositories,
   updateBuffers,
-  addBuffers,
-  removeBuffers,
+  type BufferUpdate,
 } from './renderer/actions/repositories';
 import { addMessage } from './renderer/actions/messages';
 import {
@@ -98,28 +97,15 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
   store.dispatch(bufferContentUpdated(metaDataID, content));
 });
 
-// TODO: reload-buffersに変更
 ipcRenderer.on('reload-buffers', (event, buffers: Buffer[]) => {
   console.log('reload-buffers', buffers);
   store.dispatch(reloadRepositories(buffers));
 });
 
-ipcRenderer.on('update-buffers', (event, buffers: Buffer[]) => {
-  console.log('update-buffers', buffers);
+ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
+  console.log('update-buffers', updates);
 
-  store.dispatch(updateBuffers(buffers));
-});
-
-ipcRenderer.on('add-buffers', (event, buffers: Buffer[]) => {
-  console.log('add-buffers', buffers);
-
-  store.dispatch(addBuffers(buffers));
-});
-
-ipcRenderer.on('remove-buffers', (event, buffers: Buffer[]) => {
-  console.log('remove-buffers', buffers);
-
-  store.dispatch(removeBuffers(buffers));
+  store.dispatch(updateBuffers(updates));
 });
 
 ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
