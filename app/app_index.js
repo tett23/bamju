@@ -28,6 +28,7 @@ import {
   bufferContentUpdated,
 } from './renderer/actions/tab';
 import {
+  openInputDialog,
   closeAllDialog,
 } from './renderer/actions/modals';
 import {
@@ -143,5 +144,15 @@ window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
 
 window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {
   console.log('wikiLinkOnClickUnAvailable', repo, formValue);
-  store.dispatch(openNewFileDialog(repo, formValue));
+  store.dispatch(openInputDialog({
+    label: 'new file',
+    formValue,
+    placeholder: 'input file name',
+    onEnter: (itemPath) => {
+      ipcRenderer.send('create-file', {
+        repositoryName: repo,
+        path: itemPath
+      });
+    }
+  }));
 };
