@@ -260,6 +260,28 @@ export class Repository {
     return metaData.close();
   }
 
+  // TODO: 無名ファイル実装時には削除ではなく移動になる
+  async moveNamelessFile(id: MetaDataID) {
+    const idx = this.items.findIndex((item) => {
+      return item.id === id;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    const metaData = this.getItemByID(this.items[idx].id);
+    if (metaData == null) {
+      return;
+    }
+    const promiseAll = metaData.children().map(async (item) => {
+      const r = await item.moveNamelessFile();
+      return r;
+    });
+    await Promise.all(promiseAll);
+
+    this.items.splice(idx, 1);
+  }
+
   getItemByPath(itemPath: string): ?MetaData {
     return this.items.find((item) => {
       return item.path === itemPath;

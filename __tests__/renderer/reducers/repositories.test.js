@@ -186,5 +186,31 @@ describe('repositories reducer', () => {
         expect(newState.buffers.length).toBe(2);
       });
     });
+
+    describe('add change', () => {
+      it('追加と更新ができる', () => {
+        const parent = deepCopy(store.getState().buffers[0]);
+        expect(parent).toMatchObject({
+          path: '/',
+        });
+        const newFile = createDummyBufferByPath('test', '/bar.md');
+        parent.childrenIDs.push(newFile.id);
+
+        expect(store.getState().buffers.length).toBe(2);
+        expect(store.getState().buffers[0].childrenIDs.length).toBe(1);
+
+        store.dispatch(updateBuffers({
+          additions: [newFile],
+          changes: [parent]
+        }));
+        const newState = store.getState();
+
+        expect(newState.buffers.length).toBe(3);
+        expect(newState.buffers[0]).toMatchObject({
+          path: '/',
+        });
+        expect(newState.buffers[0].childrenIDs.length).toBe(2);
+      });
+    });
   });
 });

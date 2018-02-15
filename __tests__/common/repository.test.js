@@ -320,6 +320,42 @@ describe('Repository', () => {
       expect(repository.getItemByPath('/foo').isOpened).toBe(true);
       expect(repository.getItemByPath('/foo/bar').isOpened).toBe(true);
     });
+
+    it('子のアイテムが存在しなくなった場合itemsから削除される', async () => {
+      await repository.addFile('/foo.md', '');
+      expect(repository.items.length).toBe(6);
+
+      let rootItem = repository.rootItem();
+      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo.md'));
+      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo/bar/baz/testItem.md'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar/baz'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar'));
+      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo'));
+
+      await repository.openItem(rootItem.id);
+      rootItem = repository.rootItem();
+
+      expect(rootItem.childrenIDs.length).toBe(0);
+      expect(repository.items.length).toBe(1);
+      expect(repository.getItemByPath('/foo')).toBeFalsy();
+      expect(repository.getItemByPath('/foo/bar')).toBeFalsy();
+      expect(repository.getItemByPath('/foo/bar/baz')).toBeFalsy();
+      expect(repository.getItemByPath('/foo/bar/baz/testItem.md')).toBeFalsy();
+    });
+
+    it('管理されていないアイテムが追加されていた場合itemsにも追加される', async () => {
+      const metaData = repository.getItemByPath('/foo/bar/baz');
+      expect(metaData.childrenIDs.length).toBe(1);
+      const newFilePath = path.join(metaData.absolutePath, 'add file.md');
+      expect(() => { fs.statSync(newFilePath); }).toThrowError();
+      fs.writeFile(newFilePath);
+
+      await repository.openItem(metaData.id);
+
+      expect(metaData.childrenIDs.length).toBe(2);
+      const itemPath = newFilePath.replace(metaData.repositoryPath, '');
+      expect(repository.getItemByPath(itemPath)).toBeTruthy();
+    });
   });
 
   describe('closeItem', () => {

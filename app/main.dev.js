@@ -223,34 +223,20 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  const beforeChildrenIDs = metaData.childrenIDs;
   const result = await openItem(metaDataID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
     return;
   }
-  const afterChildrenIDs = ((result: any): Buffer).childrenIDs;
-  const removeIDs = beforeChildrenIDs.filter((beforeID) => {
-    return !afterChildrenIDs.some((afterID) => {
-      return afterID === beforeID;
-    });
-  });
-  const additions = afterChildrenIDs.filter((afterID) => {
-    return !beforeChildrenIDs.some((beforeID) => {
-      return afterID === beforeID;
-    });
-  }).map((id) => {
-    return getInstance().getItemByID(id);
-  });
 
-  const ret = {
-    changes: [result],
-    additons: additions,
-    removes: removeIDs,
-  };
+  const repositories = getInstance().toBuffers();
+  const ret = Object.keys(repositories).reduce((r, k) => {
+    return r.concat(repositories[k]);
+  }, []);
+  console.log('ret', ret);
 
-  e.sender.send('update-buffers', ret);
+  e.sender.send('reload-buffers', ret);
   e.returnValue = ret;
 });
 

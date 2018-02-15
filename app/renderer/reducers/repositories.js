@@ -96,9 +96,11 @@ function addBuffers(buffers: Buffer[], additions: Buffer[]): Buffer[] {
     const isExist = ret.some((b) => {
       return b.id === buf.id;
     });
-    if (!isExist) {
-      ret.push(buf);
+    if (isExist) {
+      return;
     }
+
+    ret.push(buf);
   });
 
   return ret;

@@ -84,7 +84,7 @@ describe('MetaData', () => {
 
     // TODO: ファイルが存在しなくなった場合、無名ファイルに追加
 
-    it('子のアイテムが存在しなくなった場合は削除される', async () => {
+    it('子のアイテムが存在しなくなった場合はchildrenIDsから削除される', async () => {
       const metaData = repository.getItemByPath('/foo/bar/baz');
       fs.unlinkSync(metaData.children()[0].absolutePath);
       const [newState, result] = await metaData.load();
