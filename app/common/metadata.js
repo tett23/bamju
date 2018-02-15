@@ -390,13 +390,6 @@ export class MetaData {
       }];
     }
 
-    if (itemType === ItemTypeUndefined) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `MetaData._addItem check itemTypeError itemName=${itemName}`
-      }];
-    }
-
     if (this.isExist(itemName)) {
       return [null, {
         type: MessageTypeFailed,

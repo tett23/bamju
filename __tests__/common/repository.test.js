@@ -10,15 +10,16 @@ import {
   Repository,
 } from '../../app/common/repository';
 import {
+  MetaData,
   ItemTypeMarkdown,
   ItemTypeDirectory,
+  ItemTypeUndefined,
 } from '../../app/common/metadata';
 import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
 } from '../../app/common/util';
-
 
 import {
   dummy,
@@ -355,6 +356,32 @@ describe('Repository', () => {
       expect(metaData.childrenIDs.length).toBe(2);
       const itemPath = newFilePath.replace(metaData.repositoryPath, '');
       expect(repository.getItemByPath(itemPath)).toBeTruthy();
+    });
+
+    it('ItemTypeUndefinedのものが含まれていても動く', async () => {
+      let metaData = repository.getItemByPath('/');
+      expect(metaData.childrenIDs.length).toBe(1);
+
+      fs.writeFile(path.join(repository.absolutePath, 'foo.bar'));
+      repository.items.push(new MetaData({
+        id: 'testtest',
+        name: 'foo.bar',
+        path: '/foo.bar',
+        repositoryName: repository.name,
+        repositoryPath: repository.absolutePath,
+        absolutePath: path.join(repository.absolutePath, 'foo.bar'),
+        itemType: ItemTypeUndefined,
+        parentID: repository.rootItem().id,
+        childrenIDs: [],
+        isLoaded: false,
+        isOpened: false,
+        body: '',
+      }));
+
+      metaData = repository.getItemByPath('/');
+      await repository.openItem(metaData.id);
+
+      expect(metaData.childrenIDs.length).toBe(2);
     });
   });
 
