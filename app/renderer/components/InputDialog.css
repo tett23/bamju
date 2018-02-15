@@ -5,7 +5,7 @@
   background-color: #282c34;
   color: #9da5b4;
   margin: auto;
-  padding: 10px;
+  padding: 0.5rem;
   margin-top: 10%;
   width: 50%;
   min-width: 200px;
@@ -19,6 +19,7 @@
 
 .input {
   padding: .5rem;
+  color: #9da5b4;
   border: #000;
   border-radius: .3rem;
   background-color: #1b1d23;
