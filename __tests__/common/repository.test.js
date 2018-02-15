@@ -420,6 +420,9 @@ describe('Repository', () => {
           'synonymTest/bar/synonym',
           'detect self',
           'rootItem',
+          'aaa.md',
+          'aa.md',
+          'partial match test',
           '濁点つきのファイル名ガ'
         ],
         test2: []
@@ -611,6 +614,21 @@ describe('Repository', () => {
         name: 'synonym',
         path: '/synonymTest/bar/synonym'
       });
+    });
+
+    it('aaa.mdがあるとき、aa.mdにマッチしたりはしない', () => {
+      const item = repository.detect('aa');
+
+      expect(item).toMatchObject({
+        name: 'aa.md',
+        path: '/aa.md'
+      });
+    });
+
+    it('nameの部分が部分一致したりはしない', () => {
+      const item = repository.detect('partial match');
+
+      expect(item).not.toBe(expect.anything());
     });
 
     // TODO: .txt, .mdのディレクトリを自動で開く

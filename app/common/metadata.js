@@ -273,7 +273,7 @@ export class MetaData {
       return matchItemName(searchPath, this.path);
     }
 
-    return !!this.path.match(searchPath);
+    return !!this.path.match(path.join(path.sep, searchPath));
   }
 
   async parse(): Promise<[?ParseResult, Message]> {
@@ -666,10 +666,12 @@ function detectInner(pathString: string, metaData: MetaData): ?MetaData {
   return ret;
 }
 
-function matchItemName(searchName: string, itemName: string): boolean {
-  if (searchName === '' || searchName === '.') {
+function matchItemName(name: string, itemName: string): boolean {
+  if (name === '' || name === '.') {
     return true;
   }
+
+  const searchName = path.join(path.sep, name);
 
   if (itemName === searchName) {
     return true;
