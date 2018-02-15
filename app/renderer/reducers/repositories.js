@@ -6,35 +6,39 @@ import {
 import {
   RELOAD_REPOSITORIES,
   UPDATE_BUFFERS,
-  ADD_BUFFERS,
-  REMOVE_BUFFERS,
+  type BufferUpdate,
 } from '../actions/repositories';
 
 import {
   deepCopy,
 } from '../../common/util';
 
-import type { Buffer } from '../../common/buffer';
+import {
+  type Buffer,
+} from '../../common/buffer';
+import {
+  type MetaDataID,
+} from '../../common/metadata';
 
-export type RepositoriesState = {[string]: Buffer[]};
+export type RepositoriesState = {
+  buffers: Buffer[]
+};
 
 export function initialRepositoriesState(): RepositoriesState {
-  return {};
+  return {
+    buffers: []
+  };
 }
 
 export function repositories(state: RepositoriesState = initialRepositoriesState(), action: ActionTypes): RepositoriesState {
   switch (action.type) {
   case RELOAD_REPOSITORIES: {
-    return deepCopy(action.repositories);
+    return {
+      buffers: action.buffers
+    };
   }
   case UPDATE_BUFFERS: {
-    return updateBuffers(state, action.buffers);
-  }
-  case ADD_BUFFERS: {
-    return addBuffers(state, action.buffers);
-  }
-  case REMOVE_BUFFERS: {
-    return removeBuffers(state, action.buffers);
+    return updateBuffers(state, action.updates);
   }
   default:
     return state;
@@ -42,59 +46,82 @@ export function repositories(state: RepositoriesState = initialRepositoriesState
 }
 
 // TODO そのうちdeepCopyしないで必要なところだけ更新するようにしたい
-function updateBuffers(state: RepositoriesState, updates: Buffer[]): RepositoriesState {
+function updateBuffers(state: RepositoriesState, updates: BufferUpdate): RepositoriesState {
   const ret = deepCopy(state);
-  updates.forEach((buf) => {
-    const repo = ret[buf.repositoryName];
-    if (repo == null) {
-      return;
-    }
 
-    const idx = repo.findIndex((b) => {
-      return b.id === buf.id;
+  if (updates.removes) {
+    ret.buffers = removeBuffers(ret.buffers, updates.removes);
+  }
+
+  if (updates.additions) {
+    ret.buffers = addBuffers(ret.buffers, updates.additions);
+  }
+
+  if (updates.changes) {
+    ret.buffers = changeBuffers(ret.buffers, updates.changes);
+  }
+
+  return ret;
+}
+
+function removeBuffers(buffers: Buffer[], removes: MetaDataID[]): Buffer[] {
+  if (removes.length === 0) {
+    return buffers;
+  }
+
+  const ret = buffers.slice();
+
+  removes.forEach((id) => {
+    const idx = ret.findIndex((buf) => {
+      return buf.id === id;
     });
     if (idx === -1) {
       return;
     }
 
-    repo[idx] = buf;
+    ret.splice(idx, 1);
   });
 
   return ret;
 }
 
-function addBuffers(state: RepositoriesState, additions: Buffer[]): RepositoriesState {
-  const ret = deepCopy(state);
+function addBuffers(buffers: Buffer[], additions: Buffer[]): Buffer[] {
+  if (additions.length === 0) {
+    return buffers;
+  }
+
+  const ret = buffers.slice();
+
   additions.forEach((buf) => {
-    ret[buf.repositoryName] = ret[buf.repositoryName] || [];
-
-    const isExist = ret[buf.repositoryName].some((b) => {
+    const isExist = ret.some((b) => {
       return b.id === buf.id;
     });
-    if (!isExist) {
-      ret[buf.repositoryName].push(buf);
+    if (isExist) {
+      return;
     }
+
+    ret.push(buf);
   });
 
   return ret;
 }
 
-function removeBuffers(state: RepositoriesState, removes: Buffer[]): RepositoriesState {
-  const ret = deepCopy(state);
-  removes.forEach((buf) => {
-    const repo = ret[buf.repositoryName];
-    if (repo == null) {
-      return;
-    }
+function changeBuffers(buffers: Buffer[], changes: Buffer[]): Buffer[] {
+  if (changes.length === 0) {
+    return buffers;
+  }
 
-    const idx = repo.findIndex((b) => {
+  const ret = buffers.slice();
+
+  changes.forEach((buf) => {
+    const idx = ret.findIndex((b) => {
       return b.id === buf.id;
     });
     if (idx === -1) {
       return;
     }
 
-    repo.splice(idx, 1);
+    ret[idx] = buf;
   });
 
   return ret;

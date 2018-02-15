@@ -27,6 +27,18 @@
     "no-unused-vars": ["error", { "varsIgnorePattern": "_+", "argsIgnorePattern": "_+" }],
     "no-await-in-loop": "off",
     "no-cond-assign": ["error", "except-parens"],
+    "prefer-destructuring": ["error", {
+      "VariableDeclarator": {
+        "array": false,
+        "object": false
+      },
+      "AssignmentExpression": {
+        "array": true,
+        "object": false
+      }
+    }, {
+      "enforceForRenamedProperties": false
+    }],
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,

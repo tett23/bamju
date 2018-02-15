@@ -15,11 +15,10 @@ import {
 } from './renderer/reducers/browser';
 import {
   initialRepositoriesState,
-  type RepositoriesState,
 } from './renderer/reducers/repositories';
 import {
-  initialModalState,
-} from './renderer/reducers/modal';
+  initialModalsState,
+} from './renderer/reducers/modals';
 import {
   initialMessagesState,
 } from './renderer/reducers/messages';
@@ -27,12 +26,14 @@ import {
   openBuffer,
   bufferContentUpdated,
 } from './renderer/actions/tab';
-import { closeDialog, openNewFileDialog, updateMessage } from './renderer/actions/modal';
+import {
+  openInputDialog,
+  closeAllDialog,
+} from './renderer/actions/modals';
 import {
   reloadRepositories,
   updateBuffers,
-  addBuffers,
-  removeBuffers,
+  type BufferUpdate,
 } from './renderer/actions/repositories';
 import { addMessage } from './renderer/actions/messages';
 import {
@@ -54,7 +55,7 @@ const store = createStore(
   {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState(),
+    modals: initialModalsState(),
     messages: initialMessagesState()
   },
 );
@@ -96,37 +97,22 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
   store.dispatch(bufferContentUpdated(metaDataID, content));
 });
 
-ipcRenderer.on('reload-repositories', (event, repositories: RepositoriesState) => {
-  console.log('reload-repositories', repositories);
-  store.dispatch(reloadRepositories(repositories));
+ipcRenderer.on('reload-buffers', (event, buffers: Buffer[]) => {
+  console.log('reload-buffers', buffers);
+  store.dispatch(reloadRepositories(buffers));
 });
 
-ipcRenderer.on('update-buffers', (event, buffers: Buffer[]) => {
-  console.log('update-buffers', buffers);
+ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
+  console.log('update-buffers', updates);
 
-  store.dispatch(updateBuffers(buffers));
+  store.dispatch(updateBuffers(updates));
 });
 
-ipcRenderer.on('add-buffers', (event, buffers: Buffer[]) => {
-  console.log('add-buffers', buffers);
+ipcRenderer.on('file-created', (event, updates: BufferUpdate) => {
+  console.log('file-created', updates);
 
-  store.dispatch(addBuffers(buffers));
-});
-
-ipcRenderer.on('remove-buffers', (event, buffers: Buffer[]) => {
-  console.log('remove-buffers', buffers);
-
-  store.dispatch(removeBuffers(buffers));
-});
-
-ipcRenderer.on('file-created', (event, result: {success: boolean, message: string}) => {
-  console.log('file-created', result);
-
-  if (result.success) {
-    store.dispatch(closeDialog());
-  } else {
-    store.dispatch(updateMessage(result.message));
-  }
+  store.dispatch(closeAllDialog());
+  store.dispatch(updateBuffers(updates));
 });
 
 ipcRenderer.on('message', (_, message: Message) => {
@@ -143,5 +129,15 @@ window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
 
 window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {
   console.log('wikiLinkOnClickUnAvailable', repo, formValue);
-  store.dispatch(openNewFileDialog(repo, formValue));
+  store.dispatch(openInputDialog({
+    label: 'new file',
+    formValue,
+    placeholder: 'input file name',
+    onEnter: (itemPath) => {
+      ipcRenderer.send('create-file', {
+        repositoryName: repo,
+        path: itemPath
+      });
+    }
+  }));
 };

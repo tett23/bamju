@@ -24,25 +24,20 @@ import {
 import styles from './RepositoriesTreeView.css';
 import { reloadRepositories } from '../actions/repositories';
 
+// type Props = RepositoriesState;
 type Props = {
-  repositories: RepositoriesState
+  buffers: Buffer[]
 };
 
 const defaultProps = {
-  repositories: {}
+  buffers: []
 };
 
-function repositoriesTreeView({ repositories }: Props = defaultProps) {
-  const items = Object.keys(repositories).map((repositoryName) => {
-    const repo = repositories[repositoryName];
-    const rootItem = repo.find((item) => {
-      return item.itemType === ItemTypeRepository;
-    });
-    if (rootItem == null) {
-      return null;
-    }
-
-    return buildItems(rootItem, repo);
+function repositoriesTreeView({ buffers }: Props = defaultProps) {
+  const items = buffers.filter((buf) => {
+    return buf.itemType === ItemTypeRepository;
+  }).map((rootBuf) => {
+    return buildItems(rootBuf, buffers);
   });
 
   return (
@@ -226,23 +221,23 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {repositories: RepositoriesState}): {repositories: RepositoriesState} => {
+const mapStateToProps = (state: {repositories: RepositoriesState}): Props => {
   if (state == null) {
     return {
-      repositories: {}
+      buffers: []
     };
   }
 
   return {
-    repositories: state.repositories
+    buffers: state.repositories.buffers
   };
 };
 
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    reloadRepositories: (repositories: {[string]: Buffer[]}) => {
-      dispatch(reloadRepositories(repositories));
+    reloadRepositories: (buffers: Buffer[]) => {
+      dispatch(reloadRepositories(buffers));
     }
   };
 };

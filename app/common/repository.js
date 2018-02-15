@@ -205,23 +205,24 @@ export class Repository {
   }
 
   async addDirectory(dirPath: string): Promise<[?MetaData, Message]> {
-    if (!path.isAbsolute(dirPath)) {
+    const normalizedPath = path.normalize(dirPath);
+    if (normalizedPath === '/') {
+      return [this.rootItem(), {
+        type: MessageTypeSucceeded,
+        message: ''
+      }];
+    }
+
+    if (!path.isAbsolute(normalizedPath)) {
       return [null, {
         type: MessageTypeFailed,
         message: 'RepositoryManager.addDirectory.isAbsolute',
       }];
     }
 
-    const [createdItems, message] = await _mkdir(path.normalize(dirPath), this.rootItem());
+    const [createdItems, message] = await _mkdir(normalizedPath, this.rootItem());
     if (message.type === MessageTypeFailed) {
       return [null, message];
-    }
-
-    if (createdItems.length === 0) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectory.isAbsolute',
-      }];
     }
 
     const ret = createdItems[createdItems.length - 1];
@@ -236,6 +237,16 @@ export class Repository {
     }
 
     const ret = await metaData.open();
+    let parentID = metaData.parentID;
+    while (parentID != null) {
+      const parent = await this.openItem(parentID);
+      if (parent == null) {
+        parentID = null;
+        continue;
+      }
+
+      parentID = parent.parentID;
+    }
 
     return ret;
   }
@@ -247,6 +258,28 @@ export class Repository {
     }
 
     return metaData.close();
+  }
+
+  // TODO: 無名ファイル実装時には削除ではなく移動になる
+  async moveNamelessFile(id: MetaDataID) {
+    const idx = this.items.findIndex((item) => {
+      return item.id === id;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    const metaData = this.getItemByID(this.items[idx].id);
+    if (metaData == null) {
+      return;
+    }
+    const promiseAll = metaData.children().map(async (item) => {
+      const r = await item.moveNamelessFile();
+      return r;
+    });
+    await Promise.all(promiseAll);
+
+    this.items.splice(idx, 1);
   }
 
   getItemByPath(itemPath: string): ?MetaData {
@@ -269,7 +302,7 @@ export class Repository {
   }
 }
 
-async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<MetaData>, Message]> {
+async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaData>, Message]> {
   const pathItems = path.split(path.normalize(dirPath));
   if (pathItems.length === 0) {
     return [[], {
@@ -279,8 +312,13 @@ async function _mkdir(dirPath: string, parentItem: MetaData): Promise<[Array<Met
   }
 
   const ret:Array<MetaData> = [];
-  let currentItem = parentItem;
+  let currentItem = rootItem;
   for (let i = 0; i < pathItems.length; i += 1) {
+    if (pathItems[i] === '') { // /のとき
+      ret.push(currentItem);
+      continue;
+    }
+
     if (!currentItem.isSimilarDirectory()) {
       return [[], {
         type: MessageTypeFailed,

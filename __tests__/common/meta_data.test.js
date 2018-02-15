@@ -84,7 +84,7 @@ describe('MetaData', () => {
 
     // TODO: ファイルが存在しなくなった場合、無名ファイルに追加
 
-    it('子のアイテムが存在しなくなった場合は削除される', async () => {
+    it('子のアイテムが存在しなくなった場合はchildrenIDsから削除される', async () => {
       const metaData = repository.getItemByPath('/foo/bar/baz');
       fs.unlinkSync(metaData.children()[0].absolutePath);
       const [newState, result] = await metaData.load();
@@ -614,17 +614,48 @@ describe('MetaData', () => {
 
     // TODO: tableの中身のタグ解釈
     // TODO: Markdown.parseのcurrentの解釈
+    // TODO: aa.md が aaa.md にもマッチする問題
   });
 
   describe('open', () => {
-    // TODO
-    it('', async () => {
+    it('isOpenedがtrueになる', async () => {
+      let metaData = repository.getItemByPath('/');
+      expect(metaData.isOpened).toBe(false);
+      metaData = await metaData.open();
+      expect(metaData.isOpened).toBe(true);
+
+      metaData = repository.getItemByPath('/');
+      expect(metaData.isOpened).toBe(true);
+    });
+
+    it('isSimilarDirectoryのときtrueになる', async () => {
+      let metaData = repository.getItemByPath('/foo');
+      expect(metaData.isSimilarDirectory()).toBe(true);
+      metaData = await metaData.open();
+      expect(metaData.isOpened).toBe(true);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(true);
+    });
+
+    it('isSimilarFileのときもtrueになる', async () => {
+      let metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      expect(metaData.isSimilarFile()).toBe(true);
+      metaData = await metaData.open();
+      expect(metaData.isOpened).toBe(true);
+
+      metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
+      expect(metaData.isOpened).toBe(true);
     });
   });
 
   describe('close', () => {
-    // TODO
-    it('', () => {
+    it('isOpenedがfalseになる', () => {
+      let metaData = repository.getItemByPath('/foo');
+      expect(metaData.close().isOpened).toBe(false);
+
+      metaData = repository.getItemByPath('/foo');
+      expect(metaData.isOpened).toBe(false);
     });
   });
 });

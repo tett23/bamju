@@ -18,19 +18,16 @@ import {
 import {
   reloadRepositories,
   updateBuffers,
-  addBuffers,
-  removeBuffers,
 } from '../actions/repositories';
 import {
   openBuffer,
   bufferContentUpdated
 } from '../actions/tab';
 import {
-  openNewFileDialog,
+  openInputDialog,
   closeDialog,
-  updateMessage,
-  updateFormValue
-} from '../actions/modal';
+  closeAllDialog,
+} from '../actions/modals';
 import {
   addMessage,
   closeMessage,
@@ -48,10 +45,10 @@ import {
   initialBrowserState,
 } from './browser';
 import {
-  modal,
-  type ModalState,
-  initialModalState,
-} from './modal';
+  modals,
+  type ModalsState,
+  initialModalsState,
+} from './modals';
 import {
   messages,
   type MessagesState,
@@ -65,12 +62,9 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
-| $ReturnType<typeof addBuffers>
-| $ReturnType<typeof removeBuffers>
-| $ReturnType<typeof openNewFileDialog>
+| $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
-| $ReturnType<typeof updateMessage>
-| $ReturnType<typeof updateFormValue>
+| $ReturnType<typeof closeAllDialog>
 | $ReturnType<typeof addMessage>
 | $ReturnType<typeof closeMessage>
 | $ReturnType<typeof closeAllMessages>;
@@ -78,7 +72,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
-  modal: ModalState,
+  modals: ModalsState,
   messages: MessagesState
 };
 
@@ -86,7 +80,7 @@ export function initialState(): State {
   return {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
-    modal: initialModalState(),
+    modals: initialModalsState(),
     messages: initialMessagesState(),
   };
 }
@@ -96,7 +90,7 @@ export function appReducer(s: State, a: ActionTypes) {
   return {
     browser: browser(s.browser, a),
     repositories: repositories(s.repositories, a),
-    modal: modal(s.modal, a),
+    modals: modals(s.modals, a),
     messages: messages(s.messages, a)
   };
 }

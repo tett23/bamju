@@ -82,8 +82,12 @@ ipcMain.on('buffers', async (e) => {
     return;
   }
 
-  e.sender.send('reload-repositories', result);
-  e.returnValue = result;
+  const ret = Object.keys(result).reduce((r, k) => {
+    return r.concat(result[k]);
+  }, []);
+
+  e.sender.send('reload-buffers', ret);
+  e.returnValue = ret;
 });
 
 // TODO: add-repository, remove-repository時のconfig更新
@@ -108,8 +112,12 @@ ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
     return;
   }
 
-  e.sender.send('reload-repositories', buffersResult);
-  e.returnValue = result;
+  const ret = {
+    additions: ((result: any): Repository).toBuffers()
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
 ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
@@ -131,8 +139,14 @@ ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
   const repository:Repository = (result: any);
   await getConfigInstance().removeRepository(repository.name, repository.absolutePath);
 
-  e.sender.send('reload-repositories', buffersResult);
-  e.returnValue = result;
+  const ret = {
+    removes: ((result: any): Repository).items.map((buf) => {
+      return buf.id;
+    })
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
 // TODO: windowの更新
@@ -163,20 +177,24 @@ ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string})
   }
 
   let tmp = buffer;
-  const updated = [buffer];
+  const parents = [];
   while (tmp.parentID != null) {
     const parent = repo.getItemByID(tmp.parentID);
     if (parent == null) {
       break;
     }
 
-    updated.push(parent);
+    parents.push(parent);
     tmp = parent;
   }
-  e.sender.send('update-buffers', updated);
 
-  e.sender.send('file-created', buffer);
-  e.returnValue = buffer;
+  const ret = {
+    additons: [result],
+    changes: parents,
+  };
+
+  e.sender.send('file-created', ret);
+  e.returnValue = ret;
 });
 
 ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
@@ -188,13 +206,23 @@ ipcMain.on('close-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  e.sender.send('update-buffers', [result]);
-  e.returnValue = result;
+  const ret = {
+    changes: [result]
+  };
+
+  e.sender.send('update-buffers', ret);
+  e.returnValue = ret;
 });
 
-
+// TODO: loadをchainさせて非同期でupdate-buffersを発行？
 ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
   console.log('open-item', metaDataID);
+
+  const metaData = getInstance().getItemByID(metaDataID);
+  if (metaData == null) {
+    return;
+  }
+
   const result = await openItem(metaDataID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
@@ -202,8 +230,14 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  e.sender.send('update-buffers', [result]);
-  e.returnValue = result;
+  const repositories = getInstance().toBuffers();
+  const ret = Object.keys(repositories).reduce((r, k) => {
+    return r.concat(repositories[k]);
+  }, []);
+  console.log('ret', ret);
+
+  e.sender.send('reload-buffers', ret);
+  e.returnValue = ret;
 });
 
 require('./main/app');

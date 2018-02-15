@@ -1,3 +1,5 @@
+// @flow
+
 import * as React from 'react';
 import { createStore } from 'redux';
 
@@ -42,8 +44,11 @@ beforeEach(() => {
   dummyBuffers.test.forEach((_, i) => {
     dummyBuffers.test[i].isOpened = true;
   });
+  const buffers = Object.keys(dummyBuffers).reduce((r, k) => {
+    return r.concat(dummyBuffers[k]);
+  }, []);
 
-  store.dispatch(reloadRepositories(dummyBuffers));
+  store.dispatch(reloadRepositories(buffers));
 });
 
 describe('<RepositoriesTreeView />', () => {
@@ -54,7 +59,7 @@ describe('<RepositoriesTreeView />', () => {
 
     const items = component.find('.repositoryItem');
     const names = items.at(0).find('.repositoryItem > li > div > span');
-    expect(names.at(0).text()).toBe('/');
+    expect(names.at(0).text()).toBe('test');
     expect(names.at(1).text()).toBe('foo.md');
   });
 
@@ -69,7 +74,7 @@ describe('<RepositoriesTreeView />', () => {
       [ItemTypeRepository, 'database'],
       [ItemTypeUndefined, 'question-circle'],
     ].forEach((pair) => {
-      const buf = store.getState().repositories.test.find((b) => {
+      const buf = store.getState().repositories.buffers.find((b) => {
         return b.name === 'a';
       });
       if (buf == null) {
@@ -89,7 +94,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpenedにもとづいてアイコンが設定される', () => {
-    const buf = store.getState().repositories.test.find((b) => {
+    const buf = store.getState().repositories.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -105,7 +110,7 @@ describe('<RepositoriesTreeView />', () => {
     }).find('FontAwesome');
     expect(items.at(0).prop('name')).toBe('folder');
 
-    store.getState().repositories.test[1].isOpened = true;
+    store.getState().repositories.buffers[1].isOpened = true;
 
     component = mountWithStore(<RepositoriesTreeView repositories={store.getState().repositories} />, store);
 
@@ -116,7 +121,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpened == trueのときは子のアイテムが作られる', () => {
-    const buf = store.getState().repositories.test.find((b) => {
+    const buf = store.getState().repositories.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -136,7 +141,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpened == falseのときは子のアイテムが作られない', () => {
-    const buf = store.getState().repositories.test.find((b) => {
+    const buf = store.getState().repositories.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -182,6 +187,7 @@ describe('buildContextMenu', () => {
         return;
       }
 
+      // $FlowFixMe
       expect(menu.enabled).toBe(enabled);
     });
   });
@@ -211,6 +217,7 @@ describe('buildContextMenu', () => {
         return;
       }
 
+      // $FlowFixMe
       expect(menu.enabled).toBe(enabled);
     });
   });

@@ -80,6 +80,7 @@ export class MetaData {
         fs.statSync(this.absolutePath);
       } catch (e) {
         // TODO: 無名ファイルにする処理
+        await this.moveNamelessFile();
         return [null, {
           type: MessageTypeSucceeded,
           message: ''
@@ -94,6 +95,8 @@ export class MetaData {
       if (loadDirResult.type !== MessageTypeSucceeded) {
         return [null, loadDirResult];
       }
+    } else if (this.itemType === ItemTypeUndefined) {
+      this.isLoaded = true;
     } else {
       return [null, {
         type: MessageTypeError,
@@ -105,6 +108,16 @@ export class MetaData {
       type: MessageTypeSucceeded,
       message: ''
     }];
+  }
+
+  async moveNamelessFile() {
+    const promiseAll = this.children().map(async (item) => {
+      const r = await item.moveNamelessFile();
+      return r;
+    });
+    await Promise.all(promiseAll);
+
+    await this.repository().moveNamelessFile(this.id);
   }
 
   async addFile(itemName: string, content: string): Promise<[?MetaData, Message]> {
@@ -377,13 +390,6 @@ export class MetaData {
       }];
     }
 
-    if (itemType === ItemTypeUndefined) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'MetaData._addItem.ItemTypeUndefined'
-      }];
-    }
-
     if (this.isExist(itemName)) {
       return [null, {
         type: MessageTypeFailed,
@@ -451,8 +457,11 @@ export class MetaData {
   async _loadDirectory(): Promise<Message> {
     const [childNames, readdirResult] = await this._readdir();
     if (readdirResult.type !== MessageTypeSucceeded) {
+      await this.moveNamelessFile();
       return readdirResult;
     }
+
+    const beforeIDs = this.childrenIDs.slice();
 
     const currentChildren = this.children();
     const promiseAll = childNames.map(async (childName) => {
@@ -504,6 +513,18 @@ export class MetaData {
       return item.id;
     }).filter(Boolean);
 
+    const afterIDs = this.childrenIDs.slice();
+    // なくなったファイルを無名ファイルにしたい
+    const namelessPromiseAll = beforeIDs.filter((beforeID) => {
+      return !afterIDs.some((afterID) => {
+        return afterID === beforeID;
+      });
+    }).map(async (id) => {
+      const r = await this.repository().moveNamelessFile(id);
+      return r;
+    });
+    await Promise.all(namelessPromiseAll);
+
     this.isLoaded = true;
 
     return {
@@ -531,7 +552,10 @@ async function _readdir(absolutePath: string): Promise<[Array<string>, Message]>
 }
 
 export function detectItemType(name: string): ItemType {
-  const ext = path.extname(name);
+  let ext = path.extname(name);
+  if (ext === '' && name.match(/\./)) {
+    ext = name;
+  }
 
   switch (ext) {
   case '.md': return ItemTypeMarkdown;

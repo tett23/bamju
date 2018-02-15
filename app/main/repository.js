@@ -71,7 +71,7 @@ export async function openBySystemEditor(absolutePath: string): Promise<boolean 
   } catch (e) {
     return {
       type: MessageTypeError,
-      message: `open-by-system-editor stat error: ${e.message}`
+      message: `open-by-system-editor stat error: ${e.message}. absolutePath=${absolutePath}`
     };
   }
 
