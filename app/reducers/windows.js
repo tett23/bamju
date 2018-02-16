@@ -6,6 +6,7 @@ import {
 import {
   NEW_WINDOW,
   CLOSE_WINDOW,
+  UPDATE_WINDOW_RECTANGLE,
   ADD_TAB,
   CLOSE_TAB,
   UPDATE_TAB,
@@ -23,8 +24,16 @@ export type Tab = {
   content: string
 };
 
+type Rectangle = {
+  x: number,
+  y: number,
+  width: number,
+  height: number
+};
+
 export type WindowsState = Array<{
   id: WindowID,
+  rectangle: Rectangle,
   tabs: Tab[]
 }>;
 
@@ -38,6 +47,12 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
     const newState = state.slice();
     newState.push({
       id: action.windowID,
+      rectangle: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      },
       tabs: []
     });
 
@@ -53,6 +68,19 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
 
     const newState = state.slice();
     newState.splice(idx, 1);
+
+    return newState;
+  }
+  case UPDATE_WINDOW_RECTANGLE: {
+    const idx = state.findIndex((item) => {
+      return item.id === action.windowID;
+    });
+    if (idx === -1) {
+      return state;
+    }
+
+    const newState = state.slice();
+    newState[idx].rectangle = action.rectangle;
 
     return newState;
   }

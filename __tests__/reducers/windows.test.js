@@ -9,6 +9,7 @@ import {
 import {
   newWindow,
   closeWindow,
+  updateWindowRectangle,
   addTab,
   closeTab,
   updateTab,
@@ -53,6 +54,52 @@ describe('windows reducer', () => {
       store.dispatch(closeWindow('hogehoge'));
 
       expect(store.getState().length).toBe(1);
+    });
+  });
+
+  describe('UPDATE_WINDOW_RECTANGLE', () => {
+    it('Window.rectangleの更新ができる', () => {
+      const window = store.dispatch(newWindow());
+      expect(store.getState()[0].rectangle).toMatchObject({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      });
+
+      const rectangle = {
+        x: 10,
+        y: 20,
+        width: 30,
+        height: 40
+      };
+      store.dispatch(updateWindowRectangle(window.windowID, rectangle));
+
+      expect(store.getState()[0].rectangle).toMatchObject(rectangle);
+    });
+
+    it('windowIDが存在しない場合は何も起きない', () => {
+      store.dispatch(newWindow());
+      expect(store.getState()[0].rectangle).toMatchObject({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      });
+
+      store.dispatch(updateWindowRectangle('foo', {
+        x: 10,
+        y: 20,
+        width: 30,
+        height: 40
+      }));
+
+      expect(store.getState()[0].rectangle).toMatchObject({
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      });
     });
   });
 
@@ -152,7 +199,7 @@ describe('windows reducer', () => {
       expect(store.getState().length).toBe(1);
       expect(store.getState()[0].tabs.length).toBe(1);
 
-      store.dispatch(updateTab(window.id, 'b', 'hoge', 'fuga'));
+      store.dispatch(updateTab(window.windowID, 'b', 'hoge', 'fuga'));
 
       const newState = store.getState();
 
