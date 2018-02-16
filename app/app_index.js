@@ -2,8 +2,8 @@
 /* eslint disable-line: 0, global-require:0 */
 
 import React from 'react';
-import { createStore, applyMiddleware } from 'redux';
-import { forwardToMain, replayActionRenderer, getInitialStateRenderer } from 'electron-redux';
+import { createStore, applyMiddleware, compose } from 'redux';
+import { electronEnhancer } from 'redux-electron-store';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
@@ -39,14 +39,18 @@ import {
 } from './common/util';
 import './app.global.css';
 
-const initialState = getInitialStateRenderer();
-
 const store = createStore(
   appReducer,
-  initialState,
-  applyMiddleware(forwardToMain),
+  ipcRenderer.sendSync('get-state'),
+  compose(
+    applyMiddleware(),
+    electronEnhancer({
+      dispatchProxy: a => {
+        return store.dispatch(a);
+      },
+    })
+  )
 );
-replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root != null) {

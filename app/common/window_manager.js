@@ -81,9 +81,9 @@ export class WindowManager {
       return w.windowID() === windowID;
     });
     if (idx !== -1) {
-      if (this._appWindows[idx].browserWindow != null) {
-        this._appWindows[idx].browserWindow.close();
-      }
+      // if (this._appWindows[idx].browserWindow != null) {
+      //   this._appWindows[idx].browserWindow.close();
+      // }
       this._appWindows.splice(idx);
       return true;
     }
@@ -92,9 +92,9 @@ export class WindowManager {
       return w.windowID() === windowID;
     });
     if (idx !== -1) {
-      if (this._editorWindows[idx].browserWindow != null) {
-        this._editorWindows[idx].browserWindow.close();
-      }
+      // if (this._editorWindows[idx].browserWindow != null) {
+      //   this._editorWindows[idx].browserWindow.close();
+      // }
       this._editorWindows.splice(idx);
       return true;
     }

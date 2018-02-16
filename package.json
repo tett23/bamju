@@ -194,6 +194,7 @@
     "react-router-redux": "^4.0.8",
     "react-treebeard": "^2.1.0",
     "redux": "^3.7.2",
+    "redux-electron-store": "^0.6.2",
     "redux-thunk": "^2.2.0",
     "source-map-support": "^0.5.3"
   }

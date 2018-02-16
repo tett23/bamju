@@ -3,8 +3,8 @@
 
 import path from 'path';
 import { ipcMain } from 'electron';
-import { createStore, applyMiddleware } from 'redux';
-import { forwardToRenderer, replayActionMain } from 'electron-redux';
+import { createStore, applyMiddleware, compose } from 'redux';
+import { electronEnhancer } from 'redux-electron-store';
 import {
   appReducer,
   initialState,
@@ -47,13 +47,18 @@ import {
 const store = createStore(
   appReducer,
   initialState(),
-  applyMiddleware(forwardToRenderer),
+  compose(
+    applyMiddleware(),
+    electronEnhancer({
+      dispatchProxy: a => {
+        return store.dispatch(a);
+      },
+    })
+  )
 );
 
 setStore(store);
-store.subscribe(updateConfig);
-
-replayActionMain(store);
+// store.subscribe(updateConfig);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -72,6 +77,13 @@ function updateConfig() {
 
   // getConfigInstance().update(state);
 }
+
+ipcMain.on('get-state', (e) => {
+  const state = store.getState();
+
+  e.sender.send('initialize', state);
+  e.returnValue = state;
+});
 
 ipcMain.on('open-page', async (e, req) => {
   console.log('open-page', req);

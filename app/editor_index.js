@@ -1,15 +1,14 @@
 // @flow
 
 import React from 'react';
-import { createStore, applyMiddleware } from 'redux';
-import { forwardToMain, replayActionRenderer } from 'electron-redux';
+import { createStore, applyMiddleware, compose } from 'redux';
+import { electronEnhancer } from 'redux-electron-store';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import EditorRoot from './renderer/containers/EditorRoot';
 import {
   appReducer,
-  initialState,
 } from './reducers/editor_combined';
 import { openBuffer } from './actions/editor';
 import { addMessage } from './actions/messages';
@@ -23,10 +22,16 @@ import './app.global.css';
 
 const store = createStore(
   appReducer,
-  initialState(),
-  applyMiddleware(forwardToMain),
+  ipcRenderer.sendSync('get-state'),
+  compose(
+    applyMiddleware(),
+    electronEnhancer({
+      dispatchProxy: a => {
+        return store.dispatch(a);
+      },
+    })
+  )
 );
-replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root != null) {
