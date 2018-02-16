@@ -7,6 +7,9 @@ import {
 import {
 } from '../menu';
 import {
+  dispatch,
+} from './event_dispatcher';
+import {
   getInstance as getRepositoryManagerInstance,
 } from '../common/repository_manager';
 import {

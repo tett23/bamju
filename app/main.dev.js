@@ -9,6 +9,9 @@ import {
   appReducer,
   initialState,
 } from './reducers/combined';
+import {
+  setStore,
+} from './main/event_dispatcher';
 
 import {
   openBuffer,
@@ -47,7 +50,10 @@ const store = createStore(
   applyMiddleware(forwardToRenderer),
 );
 
+setStore(store);
+
 replayActionMain(store);
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

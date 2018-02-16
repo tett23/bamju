@@ -9,6 +9,12 @@ import {
   MenuTypeApp,
 } from '../menu';
 import {
+  dispatch,
+} from '../main/event_dispatcher';
+import {
+  updateWindowRectangle,
+} from '../actions/windows';
+import {
   getInstance as getConfigInstance
 } from '../common/bamju_config';
 import {
@@ -84,14 +90,7 @@ export default class AppWindow implements Window {
 
     const updateRectangle = () => {
       const rectangle = browserWindow.getBounds();
-      this.conf.rectangle = {
-        x: rectangle.x,
-        y: rectangle.y,
-        width: rectangle.width,
-        height: rectangle.height
-      };
-
-      getConfigInstance().replaceWindow(this.conf);
+      dispatch(updateWindowRectangle(this.conf.id, rectangle));
     };
   }
 
