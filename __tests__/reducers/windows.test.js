@@ -7,6 +7,7 @@ import {
   windows,
 } from '../../app/reducers/windows';
 import {
+  initializeWindows,
   newWindow,
   closeWindow,
   updateWindowRectangle,
@@ -21,6 +22,38 @@ beforeEach(() => {
 });
 
 describe('windows reducer', () => {
+  describe('INITIALIZE_WINDOWS', () => {
+    it('windowsの初期化ができる', () => {
+      expect(store.getState().length).toBe(0);
+
+      const init = [{
+        id: 'foo',
+        rectangle: {
+          x: 1,
+          y: 2,
+          width: 3,
+          height: 4
+        },
+        tabs: [{
+          id: 'aa',
+          metaDataID: 'bb',
+          content: 'cc'
+        }]
+      }];
+      store.dispatch(initializeWindows(init));
+
+      expect(store.getState()).toMatchObject(init);
+    });
+
+    it('stateが空なら初期化後も空', () => {
+      expect(store.getState().length).toBe(0);
+
+      store.dispatch(initializeWindows([]));
+
+      expect(store.getState().length).toBe(0);
+    });
+  });
+
   describe('NEW_WINDOW', () => {
     it('Windowを追加できる', () => {
       expect(store.getState().length).toBe(0);

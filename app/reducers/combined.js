@@ -20,6 +20,7 @@ import {
   updateBuffers,
 } from '../actions/repositories';
 import {
+  initializeWindows,
   newWindow,
   closeWindow,
   addTab,
@@ -74,6 +75,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
+| $ReturnType<typeof initializeWindows>
 | $ReturnType<typeof newWindow>
 | $ReturnType<typeof closeWindow>
 | $ReturnType<typeof addTab>

@@ -6,6 +6,7 @@ import {
 import {
   type Rectangle,
   type Tab,
+  INITIALIZE_WINDOWS,
   NEW_WINDOW,
   CLOSE_WINDOW,
   UPDATE_WINDOW_RECTANGLE,
@@ -29,6 +30,9 @@ export function initialWindowsState() {
 
 export function windows(state: WindowsState = initialWindowsState(), action: ActionTypes): WindowsState {
   switch (action.type) {
+  case INITIALIZE_WINDOWS: {
+    return action.state;
+  }
   case NEW_WINDOW: {
     const newState = state.slice();
     newState.push({

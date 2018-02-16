@@ -7,7 +7,11 @@ import {
   type WindowID,
   createWindowID,
 } from '../common/window';
+import {
+  type WindowsState
+} from '../reducers/windows';
 
+export const INITIALIZE_WINDOWS = Symbol('INITIALIZE_WINDOWS');
 export const NEW_WINDOW = Symbol('NEW_WINDOW');
 export const CLOSE_WINDOW = Symbol('CLOSE_WINDOW');
 export const UPDATE_WINDOW_RECTANGLE = Symbol('UPDATE_WINDOW_RECTANGLE');
@@ -34,6 +38,13 @@ const rectangleDefault = {
   width: 1024,
   height: 728
 };
+
+export function initializeWindows(state: WindowsState) {
+  return {
+    type: INITIALIZE_WINDOWS,
+    state
+  };
+}
 
 export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = []) {
   return {
