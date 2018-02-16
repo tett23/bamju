@@ -12,7 +12,7 @@ import {
 } from '../../../app/reducers/editor_combined';
 import {
   openBuffer,
-} from '../../../app/actions/tab';
+} from '../../../app/actions/editor';
 import {
   ItemTypeMarkdown
 } from '../../../app/common/metadata';
