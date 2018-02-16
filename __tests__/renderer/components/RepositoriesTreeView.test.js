@@ -178,7 +178,7 @@ describe('buildContextMenu', () => {
 
       buffer.itemType = itemType;
 
-      const template = buildContextMenu(buffer);
+      const template = buildContextMenu(buffer, () => {}, () => {});
       const menu = template.find((item) => {
         return item.label === 'edit on bamju editor';
       });
@@ -208,7 +208,7 @@ describe('buildContextMenu', () => {
 
       buffer.itemType = itemType;
 
-      const template = buildContextMenu(buffer);
+      const template = buildContextMenu(buffer, () => {}, () => {});
       const menu = template.find((item) => {
         return item.label === 'remove';
       });

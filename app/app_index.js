@@ -3,15 +3,17 @@
 
 import React from 'react';
 import { createStore, applyMiddleware } from 'redux';
-import { forwardToMain, replayActionRenderer } from 'electron-redux';
+import { forwardToMain, replayActionRenderer, getInitialStateRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
-  initialState,
 } from './reducers/combined';
+import {
+  type Window,
+} from './actions/windows';
 import {
   openBuffer,
   bufferContentUpdated,
@@ -35,14 +37,13 @@ import {
 import {
   type Message
 } from './common/util';
-import {
-  type WindowConfig
-} from './common/window';
 import './app.global.css';
+
+const initialState = getInitialStateRenderer();
 
 const store = createStore(
   appReducer,
-  initialState(),
+  initialState,
   applyMiddleware(forwardToMain),
 );
 replayActionRenderer(store);
@@ -57,16 +58,11 @@ if (root != null) {
   );
 }
 
-ipcRenderer.on('initialize', (event, conf: WindowConfig) => {
+ipcRenderer.on('initialize', (event, conf: Window) => {
   console.log('initialize', conf);
   ipcRenderer.sendSync('buffers');
 
   window.windowID = conf.id;
-
-  const tab = conf.tabs[0];
-  if (tab != null) {
-    ipcRenderer.send('open-page', { repositoryName: tab.buffer.repositoryName, itemName: tab.buffer.path });
-  }
 });
 
 ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {

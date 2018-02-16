@@ -7,6 +7,7 @@ import {
 } from './event_dispatcher';
 import {
   initializeWindows,
+  newWindow,
 } from '../actions/windows';
 import {
   RepositoryManager
@@ -49,8 +50,9 @@ app.on('ready', async () => {
   const repositoryManager = new RepositoryManager(conf.bufferItems, conf.repositories);
   await repositoryManager.loadRepositories();
 
+  console.log('ready', conf.windows);
+  const _ = new WindowManager([]);
   dispatch(initializeWindows(conf.windows));
-  const _ = new WindowManager(conf.windows);
 });
 
 app.on('before-quit', async () => {
@@ -60,7 +62,7 @@ app.on('before-quit', async () => {
 
 app.on('activate', async () => {
   if (getWindowManagerInstance().getAppWindows().length === 0) {
-    getWindowManagerInstance().createAppWindow(defaultConfig.windows[0]);
+    dispatch(newWindow(defaultConfig.windows[0].rectangle));
   }
 });
 

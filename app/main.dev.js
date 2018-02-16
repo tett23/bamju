@@ -70,7 +70,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 function updateConfig() {
   const state = store.getState();
 
-  getConfigInstance().update(state);
+  // getConfigInstance().update(state);
 }
 
 ipcMain.on('open-page', async (e, req) => {

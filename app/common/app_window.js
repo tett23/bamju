@@ -14,7 +14,6 @@ import {
 import {
   type Window as WindowConfig,
   updateWindowRectangle,
-  newWindow,
   closeWindow,
 } from '../actions/windows';
 import {
@@ -55,8 +54,6 @@ export default class AppWindow implements Window {
       if (!browserWindow) {
         throw new Error('"browserWindow" is not defined');
       }
-
-      dispatch(newWindow(browserWindow.getBounds(), this.conf.tabs));
 
       if (process.platform !== 'darwin') {
         const menuItems = buildMenu(MenuTypeApp, this);

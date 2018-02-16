@@ -4,11 +4,18 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
+import {
+  type Rectangle,
+  type Tab,
+  newWindow,
+  addTab,
+} from '../../actions/windows';
 import type { RepositoriesState } from '../../reducers/repositories';
 import {
   type Buffer
 } from '../../common/buffer';
 import {
+  type MetaDataID,
   type ItemType,
   ItemTypeMarkdown,
   ItemTypeText,
@@ -21,23 +28,28 @@ import {
   isSimilarFile,
   isSimilarDirectory,
 } from '../../common/metadata';
+import {
+  type WindowID,
+} from '../../common/window';
 import styles from './RepositoriesTreeView.css';
-import { reloadRepositories } from '../../actions/repositories';
 
-// type Props = RepositoriesState;
 type Props = {
-  buffers: Buffer[]
+  buffers: Buffer[],
+  newWindow: typeof newWindow,
+  addTab: typeof addTab
 };
 
 const defaultProps = {
-  buffers: []
+  buffers: [],
+  newWindow: (_, __) => {},
+  addTab: (_, __, ___) => {}
 };
 
-function repositoriesTreeView({ buffers }: Props = defaultProps) {
+function repositoriesTreeView({ buffers, newWindow: newWindowDispatcher, addTab: addTabDispatcher }: Props = defaultProps) {
   const items = buffers.filter((buf) => {
     return buf.itemType === ItemTypeRepository;
   }).map((rootBuf) => {
-    return buildItems(rootBuf, buffers);
+    return buildItems(rootBuf, buffers, newWindowDispatcher, addTabDispatcher);
   });
 
   return (
@@ -52,7 +64,7 @@ function repositoriesTreeView({ buffers }: Props = defaultProps) {
   );
 }
 
-function buildItems(item: Buffer, repository: Buffer[]) {
+function buildItems(item: Buffer, repository: Buffer[], newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
   const spanClass = `${itemType(item.itemType)}`;
 
   let children = [];
@@ -62,7 +74,7 @@ function buildItems(item: Buffer, repository: Buffer[]) {
         return child.id === childrenID;
       });
     }).filter(Boolean).map((child) => {
-      return buildItems(child, repository);
+      return buildItems(child, repository, newWindowDispatcher, addTabDispatcher);
     });
   }
 
@@ -72,7 +84,7 @@ function buildItems(item: Buffer, repository: Buffer[]) {
         role="menuitem"
         onClick={e => { return onClickItem(e, item); }}
         onKeyUp={e => { return onClickItem(e, item); }}
-        onContextMenu={e => { return contextmenu(e, item); }}
+        onContextMenu={e => { return contextmenu(e, item, newWindowDispatcher, addTabDispatcher); }}
       >
         <div>
           {icon(item)}
@@ -156,17 +168,17 @@ function openFile(item: Buffer) {
   ipcRenderer.send('open-page', { repositoryName: item.repositoryName, itemName: item.path });
 }
 
-function contextmenu(e, item: Buffer) {
+function contextmenu(e, item: Buffer, newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
   e.preventDefault();
   e.stopPropagation();
 
-  const template = buildContextMenu(item);
+  const template = buildContextMenu(item, newWindowDispatcher, addTabDispatcher);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
 
-export function buildContextMenu(item: Buffer) {
+export function buildContextMenu(item: Buffer, newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
   const ret = [];
   ret.push({
     label: 'edit on system editor',
@@ -187,10 +199,14 @@ export function buildContextMenu(item: Buffer) {
   ret.push({
     label: 'open new window',
     click: () => {
-      ipcRenderer.send('open-new-window', {
-        windowID: window.windowID,
-        metaDataID: item.id,
-      });
+      const rectangle = remote.getCurrentWindow().getBounds();
+      rectangle.x += 50;
+      rectangle.y += 50;
+      console.log('new window', rectangle);
+      const win = newWindowDispatcher(rectangle);
+      console.log('new window win', win);
+      // TODO parseの結果の取得
+      addTabDispatcher(win.windowID, item.id, 'content');
     }
   });
   ret.push({
@@ -221,7 +237,7 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {repositories: RepositoriesState}): Props => {
+const mapStateToProps = (state: {repositories: RepositoriesState}): RepositoriesState => {
   if (state == null) {
     return {
       buffers: []
@@ -236,9 +252,12 @@ const mapStateToProps = (state: {repositories: RepositoriesState}): Props => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    reloadRepositories: (buffers: Buffer[]) => {
-      dispatch(reloadRepositories(buffers));
-    }
+    newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
+      return dispatch(newWindow(rectangle, tabs));
+    },
+    addTab: (windowID: WindowID, metaDataID: MetaDataID, content: string = '') => {
+      return dispatch(addTab(windowID, metaDataID, content));
+    },
   };
 };
 

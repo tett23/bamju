@@ -88,7 +88,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof closeMessage>
 | $ReturnType<typeof closeAllMessages>;
 
-type State = {
+export type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
   windows: WindowsState,

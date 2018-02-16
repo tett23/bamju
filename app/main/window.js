@@ -7,8 +7,12 @@ import {
 import {
 } from '../menu';
 import {
-  dispatch,
+  subscribe,
+  getState,
 } from './event_dispatcher';
+import {
+  type WindowsState,
+} from '../reducers/windows';
 import {
   getInstance as getRepositoryManagerInstance,
 } from '../common/repository_manager';
@@ -16,41 +20,49 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 import {
-  newWindow,
-  addTab,
-} from '../actions/windows';
-import {
   MessageTypeSucceeded,
   MessageTypeFailed,
 } from '../common/util';
 import {
-  getInstance as getConfigInstance
-} from '../common/bamju_config';
-import {
-  createWindowID,
   type WindowID,
 } from '../common/window';
 import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';
 
-ipcMain.on('open-new-window', async (e, { windowID, metaDataID }: {windowID: WindowID, metaDataID: MetaDataID}) => {
-  console.log('open-new-window', windowID, metaDataID);
-
-  let conf = getConfigInstance().findWindowConfig(windowID);
-  if (conf == null) {
-    conf = Object.assign({}, getConfigInstance().getConfig().windows[0]);
+let prevState:WindowsState = [];
+subscribe(() => {
+  const currentState = getState().windows;
+  console.log('subscribe currentState', currentState);
+  console.log('subscribe prevState', prevState);
+  if (prevState === currentState) {
+    return;
   }
 
-  conf.id = createWindowID();
-  conf.rectangle.x += 50;
-  conf.rectangle.y += 50;
+  const removes = prevState.filter((b) => {
+    return !currentState.some((a) => {
+      return a.id === b.id;
+    });
+  }).map((item) => {
+    return item.id;
+  });
+  removes.forEach((id) => {
+    getWindowManagerInstance().removeWindow(id);
+  });
 
-  const win = newWindow(conf.rectangle);
-  dispatch(win);
-  dispatch(addTab(win.windowID, metaDataID, ''));
+  const additions = currentState.filter((a) => {
+    return !prevState.some((b) => {
+      return a.id === b.id;
+    });
+  });
+  additions.forEach((item) => {
+    getWindowManagerInstance().createAppWindow(item);
+  });
 
-  getWindowManagerInstance().createAppWindow(conf);
+  console.log('additions', additions);
+  console.log('removes', removes);
+
+  prevState = getState().windows;
 });
 
 ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {parentWindowID: ?WindowID, metaDataID: MetaDataID}) => {
