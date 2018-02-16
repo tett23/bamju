@@ -1,7 +1,8 @@
 // @flow
 
 import React from 'react';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import { forwardToMain, replayActionRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
@@ -23,7 +24,9 @@ import './app.global.css';
 const store = createStore(
   appReducer,
   initialState(),
+  applyMiddleware(forwardToMain),
 );
+replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root != null) {

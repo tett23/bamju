@@ -2,26 +2,16 @@
 /* eslint disable-line: 0, global-require:0 */
 
 import React from 'react';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
+import { forwardToMain, replayActionRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
+  initialState,
 } from './reducers/combined';
-import {
-  initialBrowserState,
-} from './reducers/browser';
-import {
-  initialRepositoriesState,
-} from './reducers/repositories';
-import {
-  initialModalsState,
-} from './reducers/modals';
-import {
-  initialMessagesState,
-} from './reducers/messages';
 import {
   openBuffer,
   bufferContentUpdated,
@@ -52,13 +42,10 @@ import './app.global.css';
 
 const store = createStore(
   appReducer,
-  {
-    browser: initialBrowserState(),
-    repositories: initialRepositoriesState(),
-    modals: initialModalsState(),
-    messages: initialMessagesState()
-  },
+  initialState(),
+  applyMiddleware(forwardToMain),
 );
+replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root != null) {

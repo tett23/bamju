@@ -3,6 +3,12 @@
 
 import path from 'path';
 import { ipcMain } from 'electron';
+import { createStore, applyMiddleware } from 'redux';
+import { forwardToRenderer, replayActionMain } from 'electron-redux';
+import {
+  appReducer,
+  initialState,
+} from './reducers/combined';
 
 import {
   openBuffer,
@@ -35,6 +41,13 @@ import {
   isSimilarMessage,
 } from './common/util';
 
+const store = createStore(
+  appReducer,
+  initialState(),
+  applyMiddleware(forwardToRenderer),
+);
+
+replayActionMain(store);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
