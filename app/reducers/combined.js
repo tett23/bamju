@@ -20,6 +20,13 @@ import {
   updateBuffers,
 } from '../actions/repositories';
 import {
+  newWindow,
+  closeWindow,
+  addTab,
+  closeTab,
+  updateTab,
+} from '../actions/windows';
+import {
   openBuffer,
   bufferContentUpdated
 } from '../actions/tab';
@@ -39,6 +46,11 @@ import {
   type RepositoriesState,
   initialRepositoriesState,
 } from './repositories';
+import {
+  windows,
+  type WindowsState,
+  initialWindowsState,
+} from './windows';
 import {
   browser,
   type BrowserState,
@@ -62,6 +74,11 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof reloadRepositories>
 | $ReturnType<typeof updateBuffers>
+| $ReturnType<typeof newWindow>
+| $ReturnType<typeof closeWindow>
+| $ReturnType<typeof addTab>
+| $ReturnType<typeof closeTab>
+| $ReturnType<typeof updateTab>
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof closeAllDialog>
@@ -72,6 +89,7 @@ export type ActionTypes = $ReturnType<typeof openBuffer>
 type State = {
   browser: BrowserState,
   repositories: RepositoriesState,
+  windows: WindowsState,
   modals: ModalsState,
   messages: MessagesState
 };
@@ -80,6 +98,7 @@ export function initialState(): State {
   return {
     browser: initialBrowserState(),
     repositories: initialRepositoriesState(),
+    windows: initialWindowsState(),
     modals: initialModalsState(),
     messages: initialMessagesState(),
   };
@@ -90,6 +109,7 @@ export function appReducer(s: State, a: ActionTypes) {
   return {
     browser: browser(s.browser, a),
     repositories: repositories(s.repositories, a),
+    windows: windows(s.windows, a),
     modals: modals(s.modals, a),
     messages: messages(s.messages, a)
   };
