@@ -11,14 +11,14 @@ import {
 
 import {
   deepCopy,
-} from '../../common/util';
+} from '../common/util';
 
 import {
   type Buffer,
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
   type MetaDataID,
-} from '../../common/metadata';
+} from '../common/metadata';
 
 export type RepositoriesState = {
   buffers: Buffer[]

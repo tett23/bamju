@@ -10,13 +10,13 @@ import {
 
 import {
   ItemTypeUndefined
-} from '../../common/metadata';
+} from '../common/metadata';
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
   deepCopy,
-} from '../../common/util';
+} from '../common/util';
 
 export type BrowserState = {
   tabs: Array<{buffer: Buffer, content: string}>

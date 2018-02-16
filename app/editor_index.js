@@ -9,9 +9,9 @@ import EditorRoot from './renderer/containers/EditorRoot';
 import {
   appReducer,
   initialState,
-} from './renderer/reducers/editor_combined';
-import { openBuffer } from './renderer/actions/editor';
-import { addMessage } from './renderer/actions/messages';
+} from './reducers/editor_combined';
+import { openBuffer } from './actions/editor';
+import { addMessage } from './actions/messages';
 import {
   type Buffer
 } from './common/buffer';

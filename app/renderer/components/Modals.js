@@ -4,11 +4,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
   type ModalsState,
-} from '../reducers/modals';
+} from '../../reducers/modals';
 import {
   ModalInputDialog,
   closeAllDialog,
-} from '../actions/modals';
+} from '../../actions/modals';
 import { InputDialog } from './InputDialog';
 import styles from './Modals.css';
 

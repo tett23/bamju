@@ -5,15 +5,15 @@ import { createStore } from 'redux';
 import {
   initialMessagesState,
   messages,
-} from '../../../app/renderer/reducers/messages';
+} from '../../app/reducers/messages';
 import {
   addMessage,
   closeMessage,
   closeAllMessages,
-} from '../../../app/renderer/actions/messages';
+} from '../../app/actions/messages';
 import {
   MessageTypeInfo,
-} from '../../../app/common/util';
+} from '../../app/common/util';
 
 let store;
 beforeEach(() => {

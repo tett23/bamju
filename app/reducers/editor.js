@@ -2,10 +2,10 @@
 
 import {
   ItemTypeUndefined
-} from '../../common/metadata';
+} from '../common/metadata';
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
   type ActionTypes
 } from './editor_combined';

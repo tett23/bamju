@@ -2,10 +2,10 @@
 
 import {
   type MetaDataID,
-} from '../../common/metadata';
+} from '../common/metadata';
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 
 export const OPEN_BUFFER = 'OPEN_BUFFER';
 export const BUFFER_CONTENT_UPDATED = 'BUFFER_CONTENT_UPDATED';

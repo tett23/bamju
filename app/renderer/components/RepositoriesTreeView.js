@@ -4,7 +4,7 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import type { RepositoriesState } from '../reducers/repositories';
+import type { RepositoriesState } from '../../reducers/repositories';
 import {
   type Buffer
 } from '../../common/buffer';
@@ -22,7 +22,7 @@ import {
   isSimilarDirectory,
 } from '../../common/metadata';
 import styles from './RepositoriesTreeView.css';
-import { reloadRepositories } from '../actions/repositories';
+import { reloadRepositories } from '../../actions/repositories';
 
 // type Props = RepositoriesState;
 type Props = {

@@ -14,7 +14,7 @@ import path from '../../common/path';
 import {
   type BrowserState,
   tabDefault,
-} from '../reducers/browser';
+} from '../../reducers/browser';
 import {
   isSimilarFile,
 } from '../../common/metadata';

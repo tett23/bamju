@@ -9,10 +9,10 @@ import { mountWithStore } from '../../test_utils';
 import {
   appReducer,
   initialState,
-} from '../../../app/renderer/reducers/editor_combined';
+} from '../../../app/reducers/editor_combined';
 import {
   openBuffer,
-} from '../../../app/renderer/actions/tab';
+} from '../../../app/actions/tab';
 import {
   ItemTypeMarkdown
 } from '../../../app/common/metadata';

@@ -6,14 +6,14 @@ import {
 } from 'redux';
 import {
   ItemTypeUndefined
-} from '../../common/metadata';
+} from '../common/metadata';
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
   deepCopy,
   deepMerge
-} from '../../common/util';
+} from '../common/util';
 
 import {
   reloadRepositories,

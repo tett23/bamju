@@ -7,8 +7,8 @@ import Browser from '../components/Browser';
 import { Modals } from '../components/Modals';
 import { Messages } from '../components/Messages';
 import styles from './App.css';
-import { initialBrowserState, type BrowserState } from '../reducers/browser';
-import { initialRepositoriesState, type RepositoriesState } from '../reducers/repositories';
+import { initialBrowserState, type BrowserState } from '../../reducers/browser';
+import { initialRepositoriesState, type RepositoriesState } from '../../reducers/repositories';
 
 type appState = {
   repositories: RepositoriesState,

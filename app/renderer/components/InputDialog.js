@@ -6,7 +6,7 @@ import styles from './InputDialog.css';
 import {
   type InputDialogValues,
   closeDialog,
-} from '../actions/modals';
+} from '../../actions/modals';
 
 type Props = InputDialogValues & {
   id: string,

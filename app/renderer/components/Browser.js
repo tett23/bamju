@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import type { BrowserState } from '../reducers/browser';
+import type { BrowserState } from '../../reducers/browser';
 import { Tab } from './Tab';
-import { initialBrowserState } from '../reducers/browser';
+import { initialBrowserState } from '../../reducers/browser';
 import styles from './Browser.css';
 
 const browser = ({ tabs }: BrowserState = initialBrowserState()) => {

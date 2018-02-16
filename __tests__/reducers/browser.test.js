@@ -5,15 +5,15 @@ import { createStore } from 'redux';
 import {
   initialBrowserState,
   browser,
-} from '../../../app/renderer/reducers/browser';
+} from '../../app/reducers/browser';
 import {
   openBuffer,
   bufferContentUpdated,
-} from '../../../app/renderer/actions/tab';
+} from '../../app/actions/tab';
 import {
   ItemTypeUndefined,
   createMetaDataID,
-} from '../../../app/common/metadata';
+} from '../../app/common/metadata';
 
 let buffer;
 let store;

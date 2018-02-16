@@ -4,7 +4,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import {
   type MessagesState
-} from '../reducers/messages';
+} from '../../reducers/messages';
 import { Message } from './Message';
 import styles from './Message.css';
 

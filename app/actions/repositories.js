@@ -2,10 +2,10 @@
 
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
   type MetaDataID,
-} from '../../common/metadata';
+} from '../common/metadata';
 
 export const RELOAD_REPOSITORIES = 'RELOAD_REPOSITORIES';
 export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';

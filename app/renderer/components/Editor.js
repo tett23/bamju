@@ -9,7 +9,7 @@ import 'brace/theme/monokai';
 import {
   type EditorState,
   initialEditorState,
-} from '../reducers/editor';
+} from '../../reducers/editor';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
@@ -19,7 +19,7 @@ import {
 } from '../../common/buffer';
 import {
   bufferUpdated,
-} from '../actions/editor';
+} from '../../actions/editor';
 
 type Props = {
   bufferUpdated: (Buffer, string) => void

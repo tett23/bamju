@@ -11,7 +11,7 @@ import {
 import {
   deepCopy,
   type Message,
-} from '../../common/util';
+} from '../common/util';
 
 export type MessagesState = Array<{
   id: string,

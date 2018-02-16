@@ -2,7 +2,7 @@
 
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 
 export const OPEN_BUFFER = 'OPEN_BUFFER';
 export const BURFFER_UPDATED = 'BUFFER_UPDATED';

@@ -9,33 +9,33 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
-} from './renderer/reducers/combined';
+} from './reducers/combined';
 import {
   initialBrowserState,
-} from './renderer/reducers/browser';
+} from './reducers/browser';
 import {
   initialRepositoriesState,
-} from './renderer/reducers/repositories';
+} from './reducers/repositories';
 import {
   initialModalsState,
-} from './renderer/reducers/modals';
+} from './reducers/modals';
 import {
   initialMessagesState,
-} from './renderer/reducers/messages';
+} from './reducers/messages';
 import {
   openBuffer,
   bufferContentUpdated,
-} from './renderer/actions/tab';
+} from './actions/tab';
 import {
   openInputDialog,
   closeAllDialog,
-} from './renderer/actions/modals';
+} from './actions/modals';
 import {
   reloadRepositories,
   updateBuffers,
   type BufferUpdate,
-} from './renderer/actions/repositories';
-import { addMessage } from './renderer/actions/messages';
+} from './actions/repositories';
+import { addMessage } from './actions/messages';
 import {
   type MetaDataID
 } from './common/metadata';

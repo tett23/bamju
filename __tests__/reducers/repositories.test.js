@@ -5,23 +5,23 @@ import { createStore } from 'redux';
 import {
   initialRepositoriesState,
   repositories,
-} from '../../../app/renderer/reducers/repositories';
+} from '../../app/reducers/repositories';
 import {
   reloadRepositories,
   updateBuffers,
-} from '../../../app/renderer/actions/repositories';
+} from '../../app/actions/repositories';
 import {
   createMetaDataID,
-} from '../../../app/common/metadata';
+} from '../../app/common/metadata';
 import {
   deepCopy
-} from '../../../app/common/util';
+} from '../../app/common/util';
 
-import '../../global_config.test';
+import '../global_config.test';
 import {
   dummy,
   createDummyBufferByPath,
-} from '../../test_utils';
+} from '../test_utils';
 
 let store;
 beforeEach(() => {

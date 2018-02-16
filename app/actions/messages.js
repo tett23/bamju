@@ -2,7 +2,7 @@
 
 import {
   type Message
-} from '../../common/util';
+} from '../common/util';
 
 export const ADD_MESSAGE = 'ADD_MESSAGE';
 export const CLOSE_MESSAGE = 'CLOSE_MESSAGE';

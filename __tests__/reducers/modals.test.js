@@ -5,12 +5,12 @@ import { createStore } from 'redux';
 import {
   initialModalsState,
   modals,
-} from '../../../app/renderer/reducers/modals';
+} from '../../app/reducers/modals';
 import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
-} from '../../../app/renderer/actions/modals';
+} from '../../app/actions/modals';
 
 let store;
 beforeEach(() => {

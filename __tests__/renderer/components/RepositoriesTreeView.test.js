@@ -13,10 +13,10 @@ import {
 import {
   appReducer,
   initialState,
-} from '../../../app/renderer/reducers/combined';
+} from '../../../app/reducers/combined';
 import {
   reloadRepositories,
-} from '../../../app/renderer/actions/repositories';
+} from '../../../app/actions/repositories';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
