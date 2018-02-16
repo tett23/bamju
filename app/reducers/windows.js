@@ -4,6 +4,8 @@ import {
   type ActionTypes,
 } from './combined';
 import {
+  type Rectangle,
+  type Tab,
   NEW_WINDOW,
   CLOSE_WINDOW,
   UPDATE_WINDOW_RECTANGLE,
@@ -12,24 +14,8 @@ import {
   UPDATE_TAB,
 } from '../actions/windows';
 import {
-  type MetaDataID,
-} from '../common/metadata';
-import {
   type WindowID,
 } from '../common/window';
-
-export type Tab = {
-  id: string,
-  metaDataID: MetaDataID,
-  content: string
-};
-
-type Rectangle = {
-  x: number,
-  y: number,
-  width: number,
-  height: number
-};
 
 export type WindowsState = Array<{
   id: WindowID,
@@ -47,13 +33,8 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
     const newState = state.slice();
     newState.push({
       id: action.windowID,
-      rectangle: {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      },
-      tabs: []
+      rectangle: action.rectangle,
+      tabs: action.tabs,
     });
 
     return newState;

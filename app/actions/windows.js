@@ -15,10 +15,32 @@ export const ADD_TAB = Symbol('ADD_TAB');
 export const CLOSE_TAB = Symbol('CLOSE_TAB');
 export const UPDATE_TAB = Symbol('UPDATE_TAB');
 
-export function newWindow() {
+export type Rectangle = {
+  x: number,
+  y: number,
+  width: number,
+  height: number
+};
+
+export type Tab = {
+  id: string,
+  metaDataID: MetaDataID,
+  content: string
+};
+
+const rectangleDefault = {
+  x: 100,
+  y: 100,
+  width: 1024,
+  height: 728
+};
+
+export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = []) {
   return {
     type: NEW_WINDOW,
-    windowID: createWindowID()
+    windowID: createWindowID(),
+    rectangle,
+    tabs,
   };
 }
 
@@ -28,13 +50,6 @@ export function closeWindow(windowID: string) {
     windowID
   };
 }
-
-type Rectangle = {
-  x: number,
-  y: number,
-  width: number,
-  height: number
-};
 
 export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle) {
   return {
