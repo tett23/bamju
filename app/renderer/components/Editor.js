@@ -68,6 +68,7 @@ class editor extends React.Component<Props> {
           height="100vh"
           focus
           showPrintMargin={false}
+          wrapEnabled
           editorProps={{ $blockScrolling: true }}
           onChange={this.handleOnChange.bind(this)}
           onLoad={this.handleOnLoad.bind(this)}
