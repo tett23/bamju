@@ -50,7 +50,10 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 
 ipcMain.on('open-page', async (e, req) => {
   console.log('open-page', req);
+  const benchID = `Project.openPage benchmark ${req.repositoryName} ${req.itemName}`;
+  console.time(benchID);
   const result = await openBuffer(req);
+  console.timeEnd(benchID);
   if (isSimilarMessage(result)) {
     e.sender.send('message', result);
     e.returnValue = result;
