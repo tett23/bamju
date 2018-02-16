@@ -51,9 +51,9 @@ const store = createStore(
 );
 
 setStore(store);
+store.subscribe(updateConfig);
 
 replayActionMain(store);
-
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -65,6 +65,12 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   const p = path.join(__dirname, '..', 'app', 'node_modules');
   // $FlowFixMe
   require('module').globalPaths.push(p); // eslint-disable-line
+}
+
+function updateConfig() {
+  const state = store.getState();
+
+  getConfigInstance().update(state);
 }
 
 ipcMain.on('open-page', async (e, req) => {
