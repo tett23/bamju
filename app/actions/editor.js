@@ -4,8 +4,8 @@ import {
   type Buffer
 } from '../common/buffer';
 
-export const OPEN_BUFFER = Symbol('OPEN_BUFFER');
-export const BURFFER_UPDATED = Symbol('BUFFER_UPDATED');
+export const OPEN_BUFFER = 'OPEN_BUFFER';
+export const BURFFER_UPDATED = 'BUFFER_UPDATED';
 
 export function openBuffer(buffer: Buffer, content: string) {
   return {

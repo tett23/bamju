@@ -4,9 +4,9 @@ import {
   type Message
 } from '../common/util';
 
-export const ADD_MESSAGE = Symbol('ADD_MESSAGE');
-export const CLOSE_MESSAGE = Symbol('CLOSE_MESSAGE');
-export const CLOSE_ALL_MESSAGES = Symbol('CLOSE_ALL_MESSAGES');
+export const ADD_MESSAGE = 'ADD_MESSAGE';
+export const CLOSE_MESSAGE = 'CLOSE_MESSAGE';
+export const CLOSE_ALL_MESSAGES = 'CLOSE_ALL_MESSAGES';
 
 export function addMessage(message: Message) {
   return {

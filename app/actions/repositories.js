@@ -7,8 +7,8 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 
-export const RELOAD_REPOSITORIES = Symbol('RELOAD_REPOSITORIES');
-export const UPDATE_BUFFERS = Symbol('UPDATE_BUFFERS');
+export const RELOAD_REPOSITORIES = 'RELOAD_REPOSITORIES';
+export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
 
 export type BufferUpdate = {
   removes?: MetaDataID[],

@@ -11,13 +11,13 @@ import {
   type WindowsState
 } from '../reducers/windows';
 
-export const INITIALIZE_WINDOWS = Symbol('INITIALIZE_WINDOWS');
-export const NEW_WINDOW = Symbol('NEW_WINDOW');
-export const CLOSE_WINDOW = Symbol('CLOSE_WINDOW');
-export const UPDATE_WINDOW_RECTANGLE = Symbol('UPDATE_WINDOW_RECTANGLE');
-export const ADD_TAB = Symbol('ADD_TAB');
-export const CLOSE_TAB = Symbol('CLOSE_TAB');
-export const UPDATE_TAB = Symbol('UPDATE_TAB');
+export const INITIALIZE_WINDOWS = 'INITIALIZE_WINDOWS';
+export const NEW_WINDOW = 'NEW_WINDOW';
+export const CLOSE_WINDOW = 'CLOSE_WINDOW';
+export const UPDATE_WINDOW_RECTANGLE = 'UPDATE_WINDOW_RECTANGLE';
+export const ADD_TAB = 'ADD_TAB';
+export const CLOSE_TAB = 'CLOSE_TAB';
+export const UPDATE_TAB = 'UPDATE_TAB';
 
 export type Window = {
   id: WindowID,

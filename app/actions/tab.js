@@ -7,8 +7,8 @@ import {
   type Buffer
 } from '../common/buffer';
 
-export const OPEN_BUFFER = Symbol('OPEN_BUFFER');
-export const BUFFER_CONTENT_UPDATED = Symbol('BUFFER_CONTENT_UPDATED');
+export const OPEN_BUFFER = 'OPEN_BUFFER';
+export const BUFFER_CONTENT_UPDATED = 'BUFFER_CONTENT_UPDATED';
 
 export type page = {
   body: string
