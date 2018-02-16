@@ -10,7 +10,7 @@ export type InputDialogValues = {
   formValue?: string,
   placeholder?: string,
   onEnter: (string) => void | any, // eslint-disable-line
-  onClose?: () => void | any // eslint-disable-line 
+  onClose?: () => void | any // eslint-disable-line
 };
 
 export type InputDialog = {
@@ -23,9 +23,9 @@ export type UndefinedDialog = {
   type: 'undefined'
 };
 
-export const OPEN_INPUT_DIALOG = 'OPEN_INPUT_DIALOG';
-export const CLOSE_DIALOG = 'CLOSE_DIALOG';
-export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
+export const OPEN_INPUT_DIALOG = Symbol('OPEN_INPUT_DIALOG');
+export const CLOSE_DIALOG = Symbol('CLOSE_DIALOG');
+export const CLOSE_ALL_DIALOG = Symbol('CLOSE_ALL_DIALOG');
 
 export function openInputDialog(argument: InputDialogValues) {
   return {
