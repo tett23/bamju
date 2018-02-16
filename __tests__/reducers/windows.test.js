@@ -59,6 +59,7 @@ describe('windows reducer', () => {
   describe('ADD_TAB', () => {
     it('Tabの追加ができる', () => {
       const window = store.dispatch(newWindow());
+      expect(store.getState()[0].tabs.length).toBe(0);
       const tab = store.dispatch(addTab(window.windowID, '', ''));
 
       const newState = store.getState();
@@ -68,6 +69,15 @@ describe('windows reducer', () => {
       expect(newState[0].tabs[0]).toMatchObject({
         id: tab.tabID
       });
+    });
+
+    it('windowIDが存在しない場合は何も起きない', () => {
+      store.dispatch(newWindow());
+      expect(store.getState()[0].tabs.length).toBe(0);
+
+      store.dispatch(addTab('foo', '', ''));
+
+      expect(store.getState()[0].tabs.length).toBe(0);
     });
   });
 
