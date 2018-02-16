@@ -12,14 +12,13 @@ import {
   dispatch,
 } from '../main/event_dispatcher';
 import {
+  type Window as WindowConfig,
   updateWindowRectangle,
+  newWindow,
+  closeWindow,
 } from '../actions/windows';
 import {
-  getInstance as getConfigInstance
-} from '../common/bamju_config';
-import {
   Window,
-  type WindowConfig,
 } from './window';
 import {
   getInstance as getWindowManagerInstance,
@@ -57,7 +56,7 @@ export default class AppWindow implements Window {
         throw new Error('"browserWindow" is not defined');
       }
 
-      getConfigInstance().addWindow(this.conf);
+      dispatch(newWindow(browserWindow.getBounds(), this.conf.tabs));
 
       if (process.platform !== 'darwin') {
         const menuItems = buildMenu(MenuTypeApp, this);
@@ -71,9 +70,10 @@ export default class AppWindow implements Window {
     });
 
     browserWindow.on('closed', () => {
-      getConfigInstance().removeWindow(this.conf.id);
+      dispatch(closeWindow(this.conf.id));
       this.browserWindow = null;
       getWindowManagerInstance().removeWindow(this.windowID());
+      dispatch(closeWindow(this.conf.id));
     });
 
     browserWindow.on('resize', () => {

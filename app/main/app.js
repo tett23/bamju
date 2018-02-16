@@ -3,6 +3,12 @@
 import { app } from 'electron';
 import expandHomeDir from 'expand-home-dir';
 import {
+  dispatch,
+} from './event_dispatcher';
+import {
+  initializeWindows,
+} from '../actions/windows';
+import {
   RepositoryManager
 } from '../common/repository_manager';
 import {
@@ -43,6 +49,7 @@ app.on('ready', async () => {
   const repositoryManager = new RepositoryManager(conf.bufferItems, conf.repositories);
   await repositoryManager.loadRepositories();
 
+  dispatch(initializeWindows(conf.windows));
   const _ = new WindowManager(conf.windows);
 });
 

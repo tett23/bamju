@@ -7,6 +7,9 @@ import {
   MenuTypeInit,
 } from '../menu';
 import {
+  type Window as WindowConfig,
+} from '../actions/windows';
+import {
   MetaData,
   type MetaDataID,
 } from './metadata';
@@ -15,7 +18,6 @@ import {
 } from './buffer';
 import {
   Window,
-  type WindowConfig,
 } from './window';
 import AppWindow from './app_window';
 import EditorWindow from './editor_window';

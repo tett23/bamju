@@ -16,6 +16,10 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 import {
+  newWindow,
+  addTab,
+} from '../actions/windows';
+import {
   MessageTypeSucceeded,
   MessageTypeFailed,
 } from '../common/util';
@@ -38,18 +42,13 @@ ipcMain.on('open-new-window', async (e, { windowID, metaDataID }: {windowID: Win
     conf = Object.assign({}, getConfigInstance().getConfig().windows[0]);
   }
 
-  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
-  if (metaData == null) {
-    return;
-  }
-
   conf.id = createWindowID();
   conf.rectangle.x += 50;
   conf.rectangle.y += 50;
-  conf.tabs = [{
-    buffer: metaData.toBuffer(),
-    content: '',
-  }];
+
+  const win = newWindow(conf.rectangle);
+  dispatch(win);
+  dispatch(addTab(win.windowID, metaDataID, ''));
 
   getWindowManagerInstance().createAppWindow(conf);
 });

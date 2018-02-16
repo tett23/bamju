@@ -14,13 +14,12 @@ import {
   type Buffer,
 } from './buffer';
 import {
-  type WindowConfig,
-  type WindowID,
-} from './window';
+  type WindowsState,
+} from '../reducers/windows';
 
 export type Config = {
   repositories: RepositoryConfig[],
-  windows: WindowConfig[],
+  windows: WindowsState,
   config: {
     followChange: boolean,
     mkdirP: boolean
@@ -105,47 +104,10 @@ export class BamjuConfig {
     this._quit = true;
   }
 
-  findWindowConfig(id: string): ?WindowConfig {
+  findWindowConfig(id: string) {
     return this._config.windows.find((item) => {
       return id === item.id;
     });
-  }
-
-  async replaceWindow(win: WindowConfig): Promise<void> {
-    const idx = this._config.windows.findIndex((w) => {
-      return w.id === win.id;
-    });
-    if (idx === -1) {
-      this._config.windows.push(win);
-      return;
-    }
-
-    this._config.windows[idx] = win;
-
-    await this.update();
-  }
-
-  async addWindow(win: WindowConfig): Promise<void> {
-    const c = this.findWindowConfig(win.id);
-    if (c) {
-      return;
-    }
-
-    this._config.windows.push(win);
-    await this.update();
-  }
-
-  async removeWindow(id: WindowID): Promise<void> {
-    const idx = this._config.windows.findIndex((w) => {
-      return w.id === id;
-    });
-    if (idx === -1) {
-      return;
-    }
-
-    this._config.windows.splice(idx, 1);
-
-    await this.update();
   }
 
   async addRepository(repo: RepositoryConfig) {

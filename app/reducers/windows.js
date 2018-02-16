@@ -4,8 +4,7 @@ import {
   type ActionTypes,
 } from './combined';
 import {
-  type Rectangle,
-  type Tab,
+  type Window,
   INITIALIZE_WINDOWS,
   NEW_WINDOW,
   CLOSE_WINDOW,
@@ -14,15 +13,8 @@ import {
   CLOSE_TAB,
   UPDATE_TAB,
 } from '../actions/windows';
-import {
-  type WindowID,
-} from '../common/window';
 
-export type WindowsState = Array<{
-  id: WindowID,
-  rectangle: Rectangle,
-  tabs: Tab[]
-}>;
+export type WindowsState = Window[];
 
 export function initialWindowsState() {
   return [];

@@ -19,6 +19,12 @@ export const ADD_TAB = Symbol('ADD_TAB');
 export const CLOSE_TAB = Symbol('CLOSE_TAB');
 export const UPDATE_TAB = Symbol('UPDATE_TAB');
 
+export type Window = {
+  id: WindowID,
+  rectangle: Rectangle,
+  tabs: Tab[]
+};
+
 export type Rectangle = {
   x: number,
   y: number,
