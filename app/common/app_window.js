@@ -25,9 +25,6 @@ import {
 import {
   type MetaDataID,
 } from './metadata';
-import {
-  type Buffer,
-} from './buffer';
 
 export default class AppWindow implements Window {
   browserWindow: BrowserWindow;
@@ -114,9 +111,5 @@ export default class AppWindow implements Window {
 
   async initializeRenderer() {
     this.browserWindow.webContents.send('initialize', this.conf);
-  }
-
-  async reloadRepositories(buffers: Buffer[]): Promise<void> {
-    this.browserWindow.webContents.send('reload-buffers', buffers);
   }
 }

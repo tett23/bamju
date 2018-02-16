@@ -64,7 +64,6 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: Window) => {
   console.log('initialize', conf);
-  ipcRenderer.sendSync('buffers');
 
   window.windowID = conf.id;
 });
