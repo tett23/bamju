@@ -10,7 +10,7 @@ import {
   newWindow,
   addTab,
 } from '../../actions/windows';
-import type { RepositoriesState } from '../../reducers/repositories';
+import type { BuffersState } from '../../reducers/buffers';
 import {
   type Buffer
 } from '../../common/buffer';
@@ -237,7 +237,7 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {repositories: RepositoriesState}): RepositoriesState => {
+const mapStateToProps = (state: {buffers: BuffersState}): BuffersState => {
   if (state == null) {
     return {
       buffers: []
@@ -245,7 +245,7 @@ const mapStateToProps = (state: {repositories: RepositoriesState}): Repositories
   }
 
   return {
-    buffers: state.repositories.buffers
+    buffers: state.buffers
   };
 };
 

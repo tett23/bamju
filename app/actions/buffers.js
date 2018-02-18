@@ -7,7 +7,7 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 
-export const RELOAD_REPOSITORIES = 'RELOAD_REPOSITORIES';
+export const RELOAD_BUFFERS = 'RELOAD_BUFFERS';
 export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
 
 export type BufferUpdate = {
@@ -16,9 +16,9 @@ export type BufferUpdate = {
   changes?: Buffer[]
 };
 
-export function reloadRepositories(buffers: Buffer[]) {
+export function reloadBuffers(buffers: Buffer[]) {
   return {
-    type: RELOAD_REPOSITORIES,
+    type: RELOAD_BUFFERS,
     buffers
   };
 }

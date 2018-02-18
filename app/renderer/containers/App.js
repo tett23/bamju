@@ -8,20 +8,17 @@ import { Modals } from '../components/Modals';
 import { Messages } from '../components/Messages';
 import styles from './App.css';
 import { initialBrowserState, type BrowserState } from '../../reducers/browser';
-import { initialRepositoriesState, type RepositoriesState } from '../../reducers/repositories';
+import { initialBuffersState, type BuffersState } from '../../reducers/buffers';
 
 type appState = {
-  repositories: RepositoriesState,
+  buffers: BuffersState,
   browser: BrowserState
 };
 
-const app = ({ repositories, browser }: appState = defaultState) => {
-  console.log('init app');
-  console.log('create app VDOM', repositories, browser);
-
+const app = ({ buffers, browser }: appState = defaultState) => {
   return (
     <div className={styles.app} data-tid="app">
-      <RepositoriesTreeView repositories={repositories} />
+      <RepositoriesTreeView buffers={buffers} />
       <Browser tabs={[browser.tabs]} />
       <Modals />
       <Messages />
@@ -31,7 +28,7 @@ const app = ({ repositories, browser }: appState = defaultState) => {
 
 // FIXME: いらない気がする
 const defaultState = {
-  repositories: initialRepositoriesState(),
+  buffers: initialBuffersState(),
   browser: initialBrowserState()
 };
 

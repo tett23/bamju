@@ -59,7 +59,7 @@ export async function openBuffer({ repositoryName, itemName }: {repositoryName: 
   return ret;
 }
 
-export async function buffers(): Promise<{[string]: Buffer[]} | Message> {
+export async function buffers(): Promise<Buffer[] | Message> {
   const ret = getInstance().toBuffers();
 
   return ret;

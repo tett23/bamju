@@ -4,14 +4,10 @@ import {
   type ActionTypes
 } from './combined';
 import {
-  RELOAD_REPOSITORIES,
+  RELOAD_BUFFERS,
   UPDATE_BUFFERS,
   type BufferUpdate,
-} from '../actions/repositories';
-
-import {
-  deepCopy,
-} from '../common/util';
+} from '../actions/buffers';
 
 import {
   type Buffer,
@@ -20,22 +16,16 @@ import {
   type MetaDataID,
 } from '../common/metadata';
 
-export type RepositoriesState = {
-  buffers: Buffer[]
-};
+export type BuffersState = Buffer[];
 
-export function initialRepositoriesState(): RepositoriesState {
-  return {
-    buffers: []
-  };
+export function initialBuffersState(): BuffersState {
+  return [];
 }
 
-export function repositories(state: RepositoriesState = initialRepositoriesState(), action: ActionTypes): RepositoriesState {
+export function buffers(state: BuffersState = initialBuffersState(), action: ActionTypes): BuffersState {
   switch (action.type) {
-  case RELOAD_REPOSITORIES: {
-    return {
-      buffers: action.buffers
-    };
+  case RELOAD_BUFFERS: {
+    return action.buffers;
   }
   case UPDATE_BUFFERS: {
     return updateBuffers(state, action.updates);
@@ -46,30 +36,30 @@ export function repositories(state: RepositoriesState = initialRepositoriesState
 }
 
 // TODO そのうちdeepCopyしないで必要なところだけ更新するようにしたい
-function updateBuffers(state: RepositoriesState, updates: BufferUpdate): RepositoriesState {
-  const ret = deepCopy(state);
+function updateBuffers(state: BuffersState, updates: BufferUpdate): BuffersState {
+  let ret = state.slice();
 
   if (updates.removes) {
-    ret.buffers = removeBuffers(ret.buffers, updates.removes);
+    ret = removeBuffers(ret, updates.removes);
   }
 
   if (updates.additions) {
-    ret.buffers = addBuffers(ret.buffers, updates.additions);
+    ret = addBuffers(ret, updates.additions);
   }
 
   if (updates.changes) {
-    ret.buffers = changeBuffers(ret.buffers, updates.changes);
+    ret = changeBuffers(ret, updates.changes);
   }
 
   return ret;
 }
 
-function removeBuffers(buffers: Buffer[], removes: MetaDataID[]): Buffer[] {
+function removeBuffers(state: Buffer[], removes: MetaDataID[]): Buffer[] {
   if (removes.length === 0) {
-    return buffers;
+    return state;
   }
 
-  const ret = buffers.slice();
+  const ret = state.slice();
 
   removes.forEach((id) => {
     const idx = ret.findIndex((buf) => {
@@ -85,12 +75,12 @@ function removeBuffers(buffers: Buffer[], removes: MetaDataID[]): Buffer[] {
   return ret;
 }
 
-function addBuffers(buffers: Buffer[], additions: Buffer[]): Buffer[] {
+function addBuffers(state: Buffer[], additions: Buffer[]): Buffer[] {
   if (additions.length === 0) {
-    return buffers;
+    return state;
   }
 
-  const ret = buffers.slice();
+  const ret = state.slice();
 
   additions.forEach((buf) => {
     const isExist = ret.some((b) => {
@@ -106,12 +96,12 @@ function addBuffers(buffers: Buffer[], additions: Buffer[]): Buffer[] {
   return ret;
 }
 
-function changeBuffers(buffers: Buffer[], changes: Buffer[]): Buffer[] {
+function changeBuffers(state: Buffer[], changes: Buffer[]): Buffer[] {
   if (changes.length === 0) {
-    return buffers;
+    return state;
   }
 
-  const ret = buffers.slice();
+  const ret = state.slice();
 
   changes.forEach((buf) => {
     const idx = ret.findIndex((b) => {

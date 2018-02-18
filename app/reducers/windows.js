@@ -21,7 +21,6 @@ export function initialWindowsState() {
 }
 
 export function windows(state: WindowsState = initialWindowsState(), action: ActionTypes): WindowsState {
-  console.log('reducers windows', action, state);
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
     return action.state;

@@ -55,10 +55,6 @@ export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
   }, obj);
 }
 
-type dummyType = {
-  [string]: Array<string>
-}
-
 export function createDummyBufferByPath(repositoryName: string, itemPath:string): Buffer {
   let name = path.basename(itemPath);
   if (itemPath === '/') {
@@ -83,7 +79,7 @@ export function createDummyBufferByPath(repositoryName: string, itemPath:string)
   return ret;
 }
 
-export function dummy(items: dummyType): {[string]: Array<Buffer>} {
+export function dummy(items: dummyType): Buffer[] {
   const ret = {};
   const repositoryKeys = Object.keys(items);
 
@@ -165,7 +161,9 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
     });
   });
 
-  return ret;
+  return Object.keys(ret).reduce((r, key) => {
+    return r.concat(ret[key]);
+  }, []);
 }
 
 Enzyme.configure({ adapter: new Adapter() });

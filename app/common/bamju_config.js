@@ -24,7 +24,7 @@ export type Config = {
     followChange: boolean,
     mkdirP: boolean
   },
-  bufferItems: {[string]: Buffer[]}
+  buffers: Buffer[]
 };
 
 export const defaultConfig:Config = {
@@ -39,7 +39,7 @@ export const defaultConfig:Config = {
     },
     tabs: []
   }],
-  bufferItems: {},
+  buffers: [],
   config: {
     followChange: true,
     mkdirP: true
@@ -92,7 +92,7 @@ export class BamjuConfig {
 
   async quit() {
     try {
-      this._config.bufferItems = getRepositoryManagerInstance().toBuffers();
+      this._config.buffers = getRepositoryManagerInstance().toBuffers();
       this._config.repositories = getRepositoryManagerInstance().getRepositories().map((repo) => {
         return repo.toConfig();
       });

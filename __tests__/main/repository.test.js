@@ -76,13 +76,13 @@ describe('repository events', () => {
 
   describe('buffers', () => {
     it('全てのrepositoryの内容を取得できる', async () => {
-      const result = ((await buffers()): { [string]: Buffer[] });
+      const result = await buffers();
 
       expect(isSimilarError(result)).toBe(false);
 
-      expect(result.test).not.toBe(5);
-      expect(result.test.length).toBe(5);
-      expect(result.test.find((item) => {
+      expect(result).not.toBe(5);
+      expect(result.length).toBe(5);
+      expect(result.find((item) => {
         return item.path === '/foo/bar/baz/testItem.md';
       })).toBeTruthy();
     });
@@ -125,7 +125,10 @@ describe('repository events', () => {
 
       expect(result.name).toBe('add-repository');
       const items = await buffers();
-      expect(items['add-repository'] != null).toBe(true);
+      const addRepositoryItem = items.find((item) => {
+        return item.repositoryName === 'add-repository';
+      });
+      expect(addRepositoryItem != null).toBe(true);
     });
 
     it('RepositoryManagerに存在するabsolutePathの場合、エラーが返る', async () => {

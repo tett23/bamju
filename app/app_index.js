@@ -23,10 +23,9 @@ import {
   closeAllDialog,
 } from './actions/modals';
 import {
-  reloadRepositories,
   updateBuffers,
   type BufferUpdate,
-} from './actions/repositories';
+} from './actions/buffers';
 import { addMessage } from './actions/messages';
 import {
   type MetaDataID
@@ -64,6 +63,7 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: Window) => {
   console.log('initialize', conf);
+  ipcRenderer.sendSync('buffers');
 
   window.windowID = conf.id;
 });
@@ -81,11 +81,6 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
   console.log('buffer-content-updated', metaDataID, content);
 
   store.dispatch(bufferContentUpdated(metaDataID, content));
-});
-
-ipcRenderer.on('reload-buffers', (event, buffers: Buffer[]) => {
-  console.log('reload-buffers', buffers);
-  store.dispatch(reloadRepositories(buffers));
 });
 
 ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
