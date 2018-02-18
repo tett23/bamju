@@ -10,6 +10,10 @@ import {
   newWindow,
   addTab,
 } from '../../actions/windows';
+import {
+  addRepository,
+  removeRepository,
+} from '../../actions/repositories';
 import type { BuffersState } from '../../reducers/buffers';
 import {
   type Buffer
@@ -36,20 +40,30 @@ import styles from './RepositoriesTreeView.css';
 type Props = {
   buffers: Buffer[],
   newWindow: typeof newWindow,
-  addTab: typeof addTab
+  addTab: typeof addTab,
+  addRepository: typeof addRepository,
+  removeRepository: typeof removeRepository
 };
 
 const defaultProps = {
   buffers: [],
-  newWindow: (_, __) => {},
-  addTab: (_, __, ___) => {}
+  newWindow: (_, __) => { return newWindow(_, __); },
+  addTab: (_, __, ___) => { return addTab(_, __, ___); },
+  addRepository: (_) => { return addRepository(_); },
+  removeRepository: (_, __) => { return removeRepository(_, __); }
 };
 
-function repositoriesTreeView({ buffers, newWindow: newWindowDispatcher, addTab: addTabDispatcher }: Props = defaultProps) {
+function repositoriesTreeView({
+  buffers,
+  newWindow: newWindowDispatcher,
+  addTab: addTabDispatcher,
+  addRepository: addRepositoryDispatcher,
+  removeRepository: removeRepositoryDispatcher
+}: Props = defaultProps) {
   const items = buffers.filter((buf) => {
     return buf.itemType === ItemTypeRepository;
   }).map((rootBuf) => {
-    return buildItems(rootBuf, buffers, newWindowDispatcher, addTabDispatcher);
+    return buildItems(rootBuf, buffers, newWindowDispatcher, addTabDispatcher, removeRepositoryDispatcher);
   });
 
   return (
@@ -57,14 +71,20 @@ function repositoriesTreeView({ buffers, newWindow: newWindowDispatcher, addTab:
       <ul className={styles.treeViewItems}>{items}</ul>
       <div className={styles.menu}>
         <span className={styles.menuItem}>
-          <FontAwesome name="plus" onClick={addRepository} />
+          <FontAwesome name="plus" onClick={(e) => { addRepositoryHandler(e, addRepositoryDispatcher); }} />
         </span>
       </div>
     </div>
   );
 }
 
-function buildItems(item: Buffer, repository: Buffer[], newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
+function buildItems(
+  item: Buffer,
+  repository: Buffer[],
+  newWindowDispatcher: typeof newWindow,
+  addTabDispatcher: typeof addTab,
+  removeRepositoryDispatcher: typeof removeRepository
+) {
   const spanClass = `${itemType(item.itemType)}`;
 
   let children = [];
@@ -74,7 +94,7 @@ function buildItems(item: Buffer, repository: Buffer[], newWindowDispatcher: typ
         return child.id === childrenID;
       });
     }).filter(Boolean).map((child) => {
-      return buildItems(child, repository, newWindowDispatcher, addTabDispatcher);
+      return buildItems(child, repository, newWindowDispatcher, addTabDispatcher, removeRepositoryDispatcher);
     });
   }
 
@@ -84,7 +104,7 @@ function buildItems(item: Buffer, repository: Buffer[], newWindowDispatcher: typ
         role="menuitem"
         onClick={e => { return onClickItem(e, item); }}
         onKeyUp={e => { return onClickItem(e, item); }}
-        onContextMenu={e => { return contextmenu(e, item, newWindowDispatcher, addTabDispatcher); }}
+        onContextMenu={e => { return contextmenu(e, item, newWindowDispatcher, addTabDispatcher, removeRepositoryDispatcher); }}
       >
         <div>
           {icon(item)}
@@ -145,7 +165,7 @@ function icon(item: Buffer) {
   }
 }
 
-function addRepository(e) {
+function addRepositoryHandler(e, addRepositoryDispatcher) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -155,7 +175,7 @@ function addRepository(e) {
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
-      ipcRenderer.send('add-repository', { absolutePath: directory });
+      addRepositoryDispatcher(directory);
     });
   });
 }
@@ -168,17 +188,28 @@ function openFile(item: Buffer) {
   ipcRenderer.send('open-page', { repositoryName: item.repositoryName, itemName: item.path });
 }
 
-function contextmenu(e, item: Buffer, newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
+function contextmenu(
+  e,
+  item: Buffer,
+  newWindowDispatcher: typeof newWindow,
+  addTabDispatcher: typeof addTab,
+  removeRepositoryDispatcher: typeof removeRepository
+) {
   e.preventDefault();
   e.stopPropagation();
 
-  const template = buildContextMenu(item, newWindowDispatcher, addTabDispatcher);
+  const template = buildContextMenu(item, newWindowDispatcher, addTabDispatcher, removeRepositoryDispatcher);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
 
-export function buildContextMenu(item: Buffer, newWindowDispatcher: typeof newWindow, addTabDispatcher: typeof addTab) {
+export function buildContextMenu(
+  item: Buffer,
+  newWindowDispatcher: typeof newWindow,
+  addTabDispatcher: typeof addTab,
+  removeRepositoryDispatcher: typeof removeRepository
+) {
   const ret = [];
   ret.push({
     label: 'edit on system editor',
@@ -220,7 +251,7 @@ export function buildContextMenu(item: Buffer, newWindowDispatcher: typeof newWi
         message: '削除しますか'
       });
       if (choice === 0) {
-        ipcRenderer.send('remove-repository', { absolutePath: item.absolutePath });
+        removeRepositoryDispatcher(item.absolutePath, item.repositoryName);
       }
     },
     enabled: item.itemType === ItemTypeRepository
@@ -237,7 +268,7 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {buffers: BuffersState}): BuffersState => {
+const mapStateToProps = (state: {buffers: BuffersState}): {buffers: Buffer[]} => {
   if (state == null) {
     return {
       buffers: []
@@ -258,6 +289,12 @@ const mapDispatchToProps = (dispatch) => {
     addTab: (windowID: WindowID, metaDataID: MetaDataID, content: string = '') => {
       return dispatch(addTab(windowID, metaDataID, content));
     },
+    addRepository: (absolutePath: string) => {
+      return dispatch(addRepository(absolutePath));
+    },
+    removeRepository: (absolutePath: string, repositoryName: string) => {
+      return dispatch(removeRepository(absolutePath, repositoryName));
+    }
   };
 };
 

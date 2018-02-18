@@ -33,8 +33,6 @@ import {
 let prevState:WindowsState = [];
 subscribe(() => {
   const currentState = getState().windows;
-  console.log('subscribe currentState', currentState);
-  console.log('subscribe prevState', prevState);
   if (prevState === currentState) {
     return;
   }
@@ -58,9 +56,6 @@ subscribe(() => {
   additions.forEach((item) => {
     getWindowManagerInstance().createAppWindow(item);
   });
-
-  console.log('additions', additions);
-  console.log('removes', removes);
 
   prevState = getState().windows;
 });

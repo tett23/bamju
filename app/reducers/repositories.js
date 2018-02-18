@@ -5,6 +5,7 @@ import {
   type ActionTypes,
 } from './combined';
 import {
+  INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
   REMOVE_REPOSITORY,
 } from '../actions/repositories';
@@ -20,6 +21,9 @@ export function initialRepositoriesState() {
 
 export function repositories(state: RepositoriesState = initialRepositoriesState(), action: ActionTypes): RepositoriesState {
   switch (action.type) {
+  case INITIALIZE_REPOSITORIES: {
+    return action.state;
+  }
   case ADD_REPOSITORY: {
     const absolutePath = action.absolutePath;
     const isExist = state.some((item) => {

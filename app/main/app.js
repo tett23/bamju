@@ -10,6 +10,9 @@ import {
   newWindow,
 } from '../actions/windows';
 import {
+  initializeRepositories,
+} from '../actions/repositories';
+import {
   RepositoryManager
 } from '../common/repository_manager';
 import {
@@ -49,6 +52,7 @@ app.on('ready', async () => {
 
   const repositoryManager = new RepositoryManager(conf.buffers, conf.repositories);
   await repositoryManager.loadRepositories();
+  dispatch(initializeRepositories(conf.repositories));
 
   console.log('ready', conf.windows);
   const _ = new WindowManager([]);

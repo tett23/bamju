@@ -7,6 +7,7 @@ import {
   repositories,
 } from '../../app/reducers/repositories';
 import {
+  initializeRepositories,
   addRepository,
   removeRepository,
 } from '../../app/actions/repositories';
@@ -17,6 +18,28 @@ beforeEach(() => {
 });
 
 describe('repositories reducer', () => {
+  describe('INITIALIZE_REPOSITORIES', () => {
+    it('repositoriesの初期化ができる', () => {
+      expect(store.getState().length).toBe(0);
+
+      const init = [{
+        absolutePath: '/tmp/bamju/test',
+        repositoryName: 'test'
+      }];
+      store.dispatch(initializeRepositories(init));
+
+      expect(store.getState()).toMatchObject(init);
+    });
+
+    it('stateが空なら初期化後も空', () => {
+      expect(store.getState().length).toBe(0);
+
+      store.dispatch(initializeRepositories([]));
+
+      expect(store.getState().length).toBe(0);
+    });
+  });
+
   describe('ADD_REPOSITORY', () => {
     it('Repositoryを追加できる', () => {
       const absolutePath = '/tmp/bamju/test';

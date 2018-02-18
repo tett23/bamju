@@ -17,8 +17,6 @@ import {
   openBuffer,
   openBySystemEditor,
   buffers,
-  addRepository,
-  removeRepository,
   createFile,
   closeItem,
   openItem,
@@ -81,7 +79,6 @@ function updateConfig() {
 ipcMain.on('get-state', (e) => {
   const state = store.getState();
 
-  e.sender.send('initialize', state);
   e.returnValue = state;
 });
 
@@ -127,65 +124,6 @@ ipcMain.on('buffers', async (e) => {
   }, []);
 
   e.sender.send('reload-buffers', ret);
-  e.returnValue = ret;
-});
-
-// TODO: add-repository, remove-repository時のconfig更新
-ipcMain.on('add-repository', async (e, arg: {absolutePath: string}) => {
-  console.log('add-repository', arg);
-  const result = await addRepository(arg.absolutePath);
-  if (isSimilarMessage(result)) {
-    e.sender.send('message', result);
-    e.returnValue = result;
-    return;
-  }
-
-  const repository:Repository = (result: any);
-  await getConfigInstance().addRepository(repository.toConfig());
-
-  await repository.load();
-
-  const buffersResult = await buffers();
-  if (isSimilarMessage(buffersResult)) {
-    e.sender.send('message', buffersResult);
-    e.returnValue = result;
-    return;
-  }
-
-  const ret = {
-    additions: ((result: any): Repository).toBuffers()
-  };
-
-  e.sender.send('update-buffers', ret);
-  e.returnValue = ret;
-});
-
-ipcMain.on('remove-repository', async (e, arg: {absolutePath: string}) => {
-  console.log('remove-repository', arg);
-  const result = await removeRepository(arg.absolutePath);
-  if (isSimilarMessage(result)) {
-    e.sender.send('message', result);
-    e.returnValue = result;
-    return;
-  }
-
-  const buffersResult = await buffers();
-  if (isSimilarMessage(buffersResult)) {
-    e.sender.send('message', buffersResult);
-    e.returnValue = result;
-    return;
-  }
-
-  const repository:Repository = (result: any);
-  await getConfigInstance().removeRepository(repository.name, repository.absolutePath);
-
-  const ret = {
-    removes: ((result: any): Repository).items.map((buf) => {
-      return buf.id;
-    })
-  };
-
-  e.sender.send('update-buffers', ret);
   e.returnValue = ret;
 });
 
@@ -282,4 +220,5 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
 
 require('./main/app');
 require('./main/window');
+require('./main/repositories');
 // require('./main/repository');
