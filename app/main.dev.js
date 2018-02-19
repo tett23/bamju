@@ -4,6 +4,7 @@
 import path from 'path';
 import { ipcMain } from 'electron';
 import { createStore, applyMiddleware, compose } from 'redux';
+import thunk from 'redux-thunk';
 import { electronEnhancer } from 'redux-electron-store';
 import {
   appReducer,
@@ -42,15 +43,17 @@ import {
   isSimilarMessage,
 } from './common/util';
 
+import {
+  repositoriesMiddleware,
+} from './middlewares/repositories';
+
 const store = createStore(
   appReducer,
   initialState(),
   compose(
-    applyMiddleware(),
+    applyMiddleware(thunk, repositoriesMiddleware),
     electronEnhancer({
-      dispatchProxy: a => {
-        return store.dispatch(a);
-      },
+      dispatchProxy: a => store.dispatch(a),
     })
   )
 );
@@ -216,5 +219,4 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
 
 require('./main/app');
 require('./main/window');
-require('./main/repositories');
 // require('./main/repository');
