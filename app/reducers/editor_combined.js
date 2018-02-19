@@ -1,6 +1,9 @@
 // @flow
 
 import {
+  type $ReturnType,
+} from '../common/util';
+import {
   openBuffer,
   bufferUpdated,
 } from '../actions/editor';
@@ -14,9 +17,6 @@ import {
   messages,
   initialMessagesState,
 } from './messages';
-
-type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
-type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes =
   $ReturnType<typeof openBuffer> |

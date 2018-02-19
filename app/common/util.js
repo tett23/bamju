@@ -47,4 +47,7 @@ export function isSimilarMessage(mes: Message | any): boolean {
   return mes.type != null;
 }
 
+type __ReturnType<B, F: (...any) => B> = B; // eslint-disable-line
+export type $ReturnType<F> = __ReturnType<*, F>;
+
 export default { sleep };

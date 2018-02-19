@@ -5,14 +5,7 @@ import {
   type Store
 } from 'redux';
 import {
-  ItemTypeUndefined
-} from '../common/metadata';
-import {
-  type Buffer
-} from '../common/buffer';
-import {
-  deepCopy,
-  deepMerge
+  type $ReturnType,
 } from '../common/util';
 
 import {
@@ -76,9 +69,6 @@ import {
   type MessagesState,
   initialMessagesState,
 } from './messages';
-
-type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
-type $ReturnType<F> = __ReturnType<*, F>;
 
 export type ActionTypes = $ReturnType<typeof addRepository>
 | $ReturnType<typeof removeRepository>
