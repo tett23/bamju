@@ -119,9 +119,7 @@ ipcMain.on('buffers', async (e) => {
     return;
   }
 
-  const ret = Object.keys(result).reduce((r, k) => {
-    return r.concat(result[k]);
-  }, []);
+  const ret = Object.keys(result).reduce((r, k) => r.concat(result[k]), []);
 
   e.sender.send('reload-buffers', ret);
   e.returnValue = ret;
@@ -209,9 +207,7 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
   }
 
   const repositories = getInstance().toBuffers();
-  const ret = Object.keys(repositories).reduce((r, k) => {
-    return r.concat(repositories[k]);
-  }, []);
+  const ret = Object.keys(repositories).reduce((r, k) => r.concat(repositories[k]), []);
   console.log('ret', ret);
 
   e.sender.send('reload-buffers', ret);
