@@ -86,7 +86,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 ipcMain.on('get-state', (e) => {
   const state = store.getState();
 
-  e.returnValue = state;
+  e.returnValue = state.global;
 });
 
 ipcMain.on('open-page', async (e, req) => {
