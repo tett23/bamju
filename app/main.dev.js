@@ -45,6 +45,9 @@ import {
 import {
   windowsMiddleware,
 } from './middlewares/windows';
+import {
+  parserMiddleware,
+} from './middlewares/parser';
 
 const store = createStore(
   appReducer,
@@ -54,6 +57,7 @@ const store = createStore(
     thunk,
     repositoriesMiddleware,
     windowsMiddleware,
+    parserMiddleware,
     forwardToRenderer
   ))
 );
@@ -85,22 +89,6 @@ ipcMain.on('get-state', (e) => {
   const state = store.getState();
 
   e.returnValue = state.global;
-});
-
-ipcMain.on('open-page', async (e, req) => {
-  console.log('open-page', req);
-  const benchID = `Project.openPage benchmark ${req.repositoryName} ${req.itemName}`;
-  console.time(benchID);
-  const result = await openBuffer(req);
-  console.timeEnd(benchID);
-  if (isSimilarMessage(result)) {
-    e.sender.send('message', result);
-    e.returnValue = result;
-    return;
-  }
-
-  e.sender.send('open-buffer', result);
-  e.returnValue = result;
 });
 
 ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {

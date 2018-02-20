@@ -12,7 +12,11 @@ import { connect } from 'react-redux';
 import path from '../../common/path';
 
 import {
+  parseMetaData,
+} from '../../actions/parser';
+import {
   isSimilarFile,
+  type MetaDataID,
 } from '../../common/metadata';
 import {
   type Buffer
@@ -37,7 +41,7 @@ function tab(props: Props) {
     <div
       className={styles.tab}
       onContextMenu={e => {
-        return contextmenu(e, props.buffer);
+        return contextmenu(e, props);
       }}
     >
       {buildBreadcrumbs(props.buffer)}
@@ -93,12 +97,18 @@ function breadcrumbItemsOnClick(e, repo: string, itemPath: string) {
   ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: itemPath });
 }
 
-export function buildTabContextMenu(buf: Buffer) {
+export function buildTabContextMenu(props: Props) {
+  if (props.buffer == null) {
+    return [];
+  }
+
+  const buffer = props.buffer;
+
   return [
     {
       label: 'edit on system editor',
       click: () => {
-        ipcRenderer.send('open-by-system-editor', buf.absolutePath);
+        ipcRenderer.send('open-by-system-editor', buffer.absolutePath);
       }
     },
     {
@@ -106,40 +116,40 @@ export function buildTabContextMenu(buf: Buffer) {
       click: () => {
         ipcRenderer.send('open-by-bamju-editor', {
           parentWindowID: window.windowID,
-          metaDataID: buf.id,
+          metaDataID: buffer.id,
         });
       },
-      enabled: isSimilarFile(buf.itemType)
+      enabled: isSimilarFile(buffer.itemType)
     },
     {
       label: 'reload',
       click: () => {
-        ipcRenderer.send('open-page', {
-          windowID: window.windowID,
-          repositoryName: buf.repositoryName,
-          itemName: buf.path,
-        });
+        props.parseMetaData(props.id, buffer.id);
       }
     }
   ];
 }
 
-function contextmenu(e, buf: ?Buffer) {
+function contextmenu(e, props: Props) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (buf == null) {
+  if (props.buffer == null) {
     return;
   }
 
-  const template = buildTabContextMenu(buf);
+  const template = buildTabContextMenu(props);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
 
-function mapDispatchToProps(_) {
-  return {};
+function mapDispatchToProps(dispatch) {
+  return {
+    parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
+      return dispatch(parseMetaData(tabID, metaDataID));
+    }
+  };
 }
 
 

@@ -74,15 +74,6 @@ ipcRenderer.on('initialize', (event, conf: Window) => {
   window.windowID = conf.id;
 });
 
-ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {
-  console.log('open-buffer', buf, contents);
-  if (buf == null) {
-    return;
-  }
-
-  store.dispatch(updateTab(store.getState().browser.tabs[0].id, buf.id, contents));
-});
-
 ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {
   console.log('buffer-content-updated', metaDataID, content);
 

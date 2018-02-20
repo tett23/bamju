@@ -16,6 +16,9 @@ import {
   addRepository,
   removeRepository,
 } from '../../actions/repositories';
+import {
+  parseMetaData,
+} from '../../actions/parser';
 import type { State } from '../../reducers/app_window';
 import {
   type Buffer
@@ -45,7 +48,7 @@ function repositoriesTreeView(props: Props) {
   const items = props.buffers.filter((buf) => {
     return buf.itemType === ItemTypeRepository;
   }).map((rootBuf) => {
-    return buildItems(rootBuf, props.buffers, props);
+    return buildItems(rootBuf, props);
   });
 
   return (
@@ -62,19 +65,18 @@ function repositoriesTreeView(props: Props) {
 
 function buildItems(
   item: Buffer,
-  repository: Buffer[],
-  dispatcher: $ReturnType<typeof mapDispatchToProps>
+  props: Props,
 ) {
   const spanClass = `${itemType(item.itemType)}`;
 
   let children = [];
   if (item.isOpened) {
     children = item.childrenIDs.map((childrenID) => {
-      return repository.find((child) => {
+      return props.buffers.find((child) => {
         return child.id === childrenID;
       });
     }).filter(Boolean).map((child) => {
-      return buildItems(child, repository, dispatcher);
+      return buildItems(child, props);
     });
   }
 
@@ -82,9 +84,9 @@ function buildItems(
     <ul className={styles.repositoryItem} key={item.id}>
       <li
         role="menuitem"
-        onClick={e => { return onClickItem(e, item); }}
-        onKeyUp={e => { return onClickItem(e, item); }}
-        onContextMenu={e => { return contextmenu(e, item, dispatcher); }}
+        onClick={e => { return onClickItem(e, item, props.currentTabID, props); }}
+        onKeyUp={e => { return onClickItem(e, item, props.currentTabID, props); }}
+        onContextMenu={e => { return contextmenu(e, item, props); }}
       >
         <div>
           {icon(item)}
@@ -100,12 +102,12 @@ function buildItems(
   return ret;
 }
 
-function onClickItem(e, item: Buffer) {
+function onClickItem(e, item: Buffer, tabID: string, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
   if (isSimilarFile(item.itemType) || isSimilarDirectory(item.itemType)) {
-    return openFile(item);
+    return openFile(item, tabID, dispatcher);
   }
 }
 
@@ -160,12 +162,12 @@ function addRepositoryHandler(e, dispatcher: $ReturnType<typeof mapDispatchToPro
   });
 }
 
-function openFile(item: Buffer) {
+function openFile(item: Buffer, tabID: string, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   if (item.itemType === ItemTypeUndefined) {
     return;
   }
 
-  ipcRenderer.send('open-page', { repositoryName: item.repositoryName, itemName: item.path });
+  dispatcher.parseMetaData(tabID, item.id);
 }
 
 function contextmenu(
@@ -244,15 +246,12 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-function mapStateToProps(state: State): {buffers: Buffer[]} {
-  if (state == null) {
-    return {
-      buffers: []
-    };
-  }
+function mapStateToProps(state: State) {
+  const currentTabID = state.browser.tabs[0].id;
 
   return {
-    buffers: state.global.buffers
+    buffers: state.global.buffers,
+    currentTabID
   };
 }
 
@@ -269,6 +268,9 @@ function mapDispatchToProps(dispatch) {
     },
     removeRepository: (absolutePath: string, repositoryName: string) => {
       return dispatch(removeRepository(absolutePath, repositoryName));
+    },
+    parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
+      return dispatch(parseMetaData(tabID, metaDataID));
     }
   };
 }

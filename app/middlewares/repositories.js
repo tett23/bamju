@@ -35,7 +35,6 @@ import {
 } from '../actions/messages';
 
 export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
-  console.log('repositoriesMiddleware', action);
   switch (action.type) {
   case INITIALIZE_REPOSITORIES: {
     next(action);
