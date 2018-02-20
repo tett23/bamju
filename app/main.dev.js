@@ -49,14 +49,13 @@ import {
 const store = createStore(
   appReducer,
   initialState(),
-  compose(
-    // $FlowFixMe
-    applyMiddleware(
-      thunk,
-      repositoriesMiddleware,
-      windowsMiddleware,
-      forwardToRenderer,
-    ))
+  // $FlowFixMe
+  compose(applyMiddleware(
+    thunk,
+    repositoriesMiddleware,
+    windowsMiddleware,
+    forwardToRenderer
+  ))
 );
 
 replayActionMain(store);
