@@ -30,21 +30,26 @@ export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
 export function openInputDialog(argument: InputDialogValues) {
   return {
     type: OPEN_INPUT_DIALOG,
-    modalType: ModalInputDialog,
-    modalID: `${Math.random()}`,
-    argument,
+    payload: {
+      modalType: ModalInputDialog,
+      modalID: `${Math.random()}`,
+      argument,
+    }
   };
 }
 
 export function closeDialog(id: string) {
   return {
     type: CLOSE_DIALOG,
-    modalID: id,
+    payload: {
+      modalID: id,
+    }
   };
 }
 
 export function closeAllDialog() {
   return {
-    type: CLOSE_ALL_DIALOG
+    type: CLOSE_ALL_DIALOG,
+    payload: {}
   };
 }

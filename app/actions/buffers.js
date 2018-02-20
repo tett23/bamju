@@ -19,13 +19,17 @@ export type BufferUpdate = {
 export function reloadBuffers(buffers: Buffer[]) {
   return {
     type: RELOAD_BUFFERS,
-    buffers
+    payload: {
+      buffers
+    }
   };
 }
 
 export function updateBuffers(updates: BufferUpdate) {
   return {
     type: UPDATE_BUFFERS,
-    updates,
+    payload: {
+      updates,
+    }
   };
 }

@@ -22,10 +22,10 @@ export function initialRepositoriesState() {
 export function repositories(state: RepositoriesState = initialRepositoriesState(), action: Actions): RepositoriesState {
   switch (action.type) {
   case INITIALIZE_REPOSITORIES: {
-    return action.state;
+    return action.payload.state;
   }
   case ADD_REPOSITORY: {
-    const absolutePath = action.absolutePath;
+    const absolutePath = action.payload.absolutePath;
     const isExist = state.some((item) => {
       return item.absolutePath === absolutePath;
     });
@@ -42,7 +42,7 @@ export function repositories(state: RepositoriesState = initialRepositoriesState
     return newState;
   }
   case REMOVE_REPOSITORY: {
-    const { absolutePath, repositoryName } = action;
+    const { absolutePath, repositoryName } = action.payload;
     const idx = state.findIndex((item) => {
       return item.absolutePath === absolutePath && item.repositoryName === repositoryName;
     });

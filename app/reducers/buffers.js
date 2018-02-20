@@ -25,10 +25,10 @@ export function initialBuffersState(): BuffersState {
 export function buffers(state: BuffersState = initialBuffersState(), action: Actions): BuffersState {
   switch (action.type) {
   case RELOAD_BUFFERS: {
-    return action.buffers;
+    return action.payload.buffers;
   }
   case UPDATE_BUFFERS: {
-    return updateBuffers(state, action.updates);
+    return updateBuffers(state, action.payload.updates);
   }
   default:
     return state;

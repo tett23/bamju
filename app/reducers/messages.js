@@ -27,12 +27,12 @@ export function messages(state: MessagesState = initialMessagesState(), action: 
   case ADD_MESSAGE: {
     const newState = deepCopy(state);
 
-    newState.push({ id: action.id, message: action.message });
+    newState.push({ id: action.payload.id, message: action.payload.message });
 
     return newState;
   }
   case CLOSE_MESSAGE: {
-    const { id } = action;
+    const { id } = action.payload;
     const idx = state.findIndex((item) => {
       return item.id === id;
     });

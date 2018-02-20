@@ -23,21 +23,22 @@ export function initialWindowsState() {
 export function windows(state: WindowsState = initialWindowsState(), action: Actions): WindowsState {
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
-    return action.state;
+    return action.payload.state;
   }
   case NEW_WINDOW: {
     const newState = state.slice();
     newState.push({
-      id: action.windowID,
-      rectangle: action.rectangle,
-      tabs: action.tabs,
+      id: action.payload.windowID,
+      rectangle: action.payload.rectangle,
+      tabs: action.payload.tabs,
     });
 
     return newState;
   }
   case CLOSE_WINDOW: {
+    const windowID = action.payload.windowID;
     const idx = state.findIndex((item) => {
-      return item.id === action.windowID;
+      return item.id === windowID;
     });
     if (idx === -1) {
       return state;
@@ -49,21 +50,23 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
     return newState;
   }
   case UPDATE_WINDOW_RECTANGLE: {
+    const windowID = action.payload.windowID;
     const idx = state.findIndex((item) => {
-      return item.id === action.windowID;
+      return item.id === windowID;
     });
     if (idx === -1) {
       return state;
     }
 
     const newState = state.slice();
-    newState[idx].rectangle = action.rectangle;
+    newState[idx].rectangle = action.payload.rectangle;
 
     return newState;
   }
   case ADD_TAB: {
+    const windowID = action.payload.windowID;
     const idx = state.findIndex((item) => {
-      return item.id === action.windowID;
+      return item.id === windowID;
     });
     if (idx === -1) {
       return state;
@@ -71,22 +74,23 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
 
     const newState = state.slice();
     newState[idx].tabs.push({
-      id: action.tabID,
-      metaDataID: action.metaDataID,
-      content: action.content,
+      id: action.payload.tabID,
+      metaDataID: action.payload.metaDataID,
+      content: action.payload.content,
     });
 
     return newState;
   }
   case CLOSE_TAB: {
+    const { windowID, tabID } = action.payload;
     const windowIdx = state.findIndex((item) => {
-      return item.id === action.windowID;
+      return item.id === windowID;
     });
     if (windowIdx === -1) {
       return state;
     }
     const tabIdx = state[windowIdx].tabs.findIndex((item) => {
-      return item.id === action.tabID;
+      return item.id === tabID;
     });
     if (tabIdx === -1) {
       return state;
@@ -98,22 +102,23 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
     return newState;
   }
   case UPDATE_TAB: {
+    const { windowID, tabID } = action.payload;
     const windowIdx = state.findIndex((item) => {
-      return item.id === action.windowID;
+      return item.id === windowID;
     });
     if (windowIdx === -1) {
       return state;
     }
     const tabIdx = state[windowIdx].tabs.findIndex((item) => {
-      return item.id === action.tabID;
+      return item.id === tabID;
     });
     if (tabIdx === -1) {
       return state;
     }
 
     const newState = state.slice();
-    newState[windowIdx].tabs[tabIdx].metaDataID = action.metaDataID;
-    newState[windowIdx].tabs[tabIdx].content = action.content;
+    newState[windowIdx].tabs[tabIdx].metaDataID = action.payload.metaDataID;
+    newState[windowIdx].tabs[tabIdx].content = action.payload.content;
 
     return newState;
   }

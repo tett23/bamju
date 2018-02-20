@@ -11,21 +11,27 @@ export const REMOVE_REPOSITORY = 'REMOVE_REPOSITORY';
 export function initializeRepositories(state: RepositoriesState) {
   return {
     type: INITIALIZE_REPOSITORIES,
-    state
+    payload: {
+      state
+    }
   };
 }
 
 export function addRepository(absolutePath: string) {
   return {
     type: ADD_REPOSITORY,
-    absolutePath,
+    payload: {
+      absolutePath,
+    }
   };
 }
 
 export function removeRepository(absolutePath: string, repositoryName: string) {
   return {
     type: REMOVE_REPOSITORY,
-    absolutePath,
-    repositoryName
+    payload: {
+      absolutePath,
+      repositoryName
+    }
   };
 }

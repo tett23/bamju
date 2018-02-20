@@ -17,15 +17,19 @@ export type page = {
 export function openBuffer(buf: Buffer, content: string) {
   return {
     type: OPEN_BUFFER,
-    buffer: buf,
-    content,
+    payload: {
+      buffer: buf,
+      content,
+    }
   };
 }
 
 export function bufferContentUpdated(metaDataID: MetaDataID, content: string) {
   return {
     type: BUFFER_CONTENT_UPDATED,
-    metaDataID,
-    content,
+    payload: {
+      metaDataID,
+      content,
+    }
   };
 }

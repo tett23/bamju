@@ -43,14 +43,14 @@ export function editor(state: EditorState = initialEditorState(), action: Action
   switch (action.type) {
   case OPEN_BUFFER: {
     return {
-      buffer: action.buffer,
-      content: action.content
+      buffer: action.payload.buffer,
+      content: action.payload.content
     };
   }
   case BURFFER_UPDATED: {
     return {
-      buffer: action.buffer,
-      content: action.content
+      buffer: action.payload.buffer,
+      content: action.payload.content
     };
   }
   default:

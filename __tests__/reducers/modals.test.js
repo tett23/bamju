@@ -51,10 +51,10 @@ describe('modal reducer', () => {
       }));
       expect(store.getState().length).toBe(2);
 
-      store.dispatch(closeDialog(dialog1.modalID));
+      store.dispatch(closeDialog(dialog1.payload.modalID));
 
       expect(store.getState().length).toBe(1);
-      expect(store.getState()[0].id).toBe(dialog2.modalID);
+      expect(store.getState()[0].id).toBe(dialog2.payload.modalID);
     });
   });
 

@@ -54,11 +54,11 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
   switch (action.type) {
   case OPEN_BUFFER: {
     return Object.assign({}, state, {
-      tabs: [{ buffer: action.buffer, content: action.content }]
+      tabs: [{ buffer: action.payload.buffer, content: action.payload.content }]
     });
   }
   case BUFFER_CONTENT_UPDATED: {
-    const { metaDataID, content } = action;
+    const { metaDataID, content } = action.payload;
     const idx = state.tabs.findIndex((buf) => {
       return buf.buffer.id === metaDataID;
     });

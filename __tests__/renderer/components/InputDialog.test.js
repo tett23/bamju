@@ -29,9 +29,9 @@ describe('<InputDialog />', () => {
       label: 'hogehoge',
       onEnter: () => {}
     }));
-    const component = mountWithStore(<InputDialog id={action.modalID} {...action} />, store);
+    const component = mountWithStore(<InputDialog id={action.payload.modalID} {...action.payload} />, store);
     expect(store.getState().modals.length).toBe(1);
-    expect(store.getState().modals[0].id).toBe(action.modalID);
+    expect(store.getState().modals[0].id).toBe(action.payload.modalID);
 
     component.find('input').simulate('keyUp', {
       key: 'Escape'

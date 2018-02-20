@@ -48,58 +48,72 @@ const rectangleDefault = {
 export function initializeWindows(state: WindowsState) {
   return {
     type: INITIALIZE_WINDOWS,
-    state
+    payload: {
+      state
+    }
   };
 }
 
 export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = []) {
   return {
     type: NEW_WINDOW,
-    windowID: createWindowID(),
-    rectangle,
-    tabs,
+    payload: {
+      windowID: createWindowID(),
+      rectangle,
+      tabs,
+    }
   };
 }
 
 export function closeWindow(windowID: string) {
   return {
     type: CLOSE_WINDOW,
-    windowID
+    payload: {
+      windowID
+    }
   };
 }
 
 export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle) {
   return {
     type: UPDATE_WINDOW_RECTANGLE,
-    windowID,
-    rectangle
+    payload: {
+      windowID,
+      rectangle
+    }
   };
 }
 
 export function addTab(windowID: WindowID, metaDataID: MetaDataID, content: string) {
   return {
     type: ADD_TAB,
-    windowID,
-    tabID: `${Math.random()}`,
-    metaDataID,
-    content,
+    payload: {
+      windowID,
+      tabID: `${Math.random()}`,
+      metaDataID,
+      content,
+    }
   };
 }
 
 export function closeTab(windowID: WindowID, tabID: string) {
   return {
     type: CLOSE_TAB,
-    windowID,
-    tabID,
+    payload: {
+      windowID,
+      tabID,
+    }
   };
 }
 
 export function updateTab(windowID: WindowID, tabID: string, metaDataID: MetaDataID, content: string) {
   return {
     type: UPDATE_TAB,
-    windowID,
-    tabID,
-    metaDataID,
-    content,
+    payload: {
+      windowID,
+      tabID,
+      metaDataID,
+      content,
+    }
   };
 }
