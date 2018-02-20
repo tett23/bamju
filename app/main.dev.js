@@ -17,7 +17,6 @@ import {
 import {
   openBuffer,
   openBySystemEditor,
-  buffers,
   createFile,
   closeItem,
   openItem,
@@ -27,17 +26,14 @@ import {
   getInstance,
 } from './common/repository_manager';
 import {
-  Repository,
-} from './common/repository';
-import {
   type MetaDataID,
 } from './common/metadata';
 import {
   type Buffer,
 } from './common/buffer';
-import {
-  getInstance as getConfigInstance
-} from './common/bamju_config';
+// import {
+//   getInstance as getConfigInstance
+// } from './common/bamju_config';
 import {
   type Message,
   isSimilarMessage,
@@ -54,6 +50,7 @@ const store = createStore(
   appReducer,
   initialState(),
   compose(
+    // $FlowFixMe
     applyMiddleware(
       thunk,
       repositoriesMiddleware,
@@ -80,11 +77,11 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p); // eslint-disable-line
 }
 
-function updateConfig() {
-  const state = store.getState();
-
-  // getConfigInstance().update(state);
-}
+// function updateConfig() {
+//   const state = store.getState();
+//
+//   // getConfigInstance().update(state);
+// }
 
 ipcMain.on('get-state', (e) => {
   const state = store.getState();
@@ -122,14 +119,7 @@ ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
 
 ipcMain.on('buffers', async (e) => {
   console.log('buffers');
-  const result = await buffers();
-  if (isSimilarMessage(result)) {
-    e.sender.send('message', result);
-    e.returnValue = result;
-    return;
-  }
-
-  const ret = Object.keys(result).reduce((r, k) => r.concat(result[k]), []);
+  const ret = getInstance().toBuffers();
 
   e.sender.send('reload-buffers', ret);
   e.returnValue = ret;
@@ -216,8 +206,7 @@ ipcMain.on('open-item', async (e, metaDataID: MetaDataID) => {
     return;
   }
 
-  const repositories = getInstance().toBuffers();
-  const ret = Object.keys(repositories).reduce((r, k) => r.concat(repositories[k]), []);
+  const ret = getInstance().toBuffers();
   console.log('ret', ret);
 
   e.sender.send('reload-buffers', ret);
