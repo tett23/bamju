@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes
-} from './combined';
+  type Actions
+} from './app_window';
 import {
   OPEN_INPUT_DIALOG,
   CLOSE_DIALOG,
@@ -19,7 +19,7 @@ export function initialModalsState() {
 
 export function modals(
   state: ModalsState = initialModalsState(),
-  action: ActionTypes
+  action: Actions
 ): ModalsState {
   switch (action.type) {
   case OPEN_INPUT_DIALOG: {

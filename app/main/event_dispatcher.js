@@ -3,9 +3,9 @@
 import { type Store } from 'redux';
 
 import {
-  type ActionTypes,
+  type Actions,
   type State,
-} from '../reducers/combined';
+} from '../reducers/app_window';
 
 let _store: Store<*, *>;
 
@@ -13,7 +13,7 @@ export function setStore(store: Store<*, *>) {
   _store = store;
 }
 
-export function dispatch(action: ActionTypes) {
+export function dispatch(action: Actions) {
   return _store.dispatch(action);
 }
 

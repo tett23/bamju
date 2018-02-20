@@ -1,21 +1,9 @@
 // @flow
 
 import {
-  combineReducers,
-  type Store
-} from 'redux';
-import {
   type $ReturnType,
 } from '../common/util';
 
-import {
-  addRepository,
-  removeRepository,
-} from '../actions/repositories';
-import {
-  reloadBuffers,
-  updateBuffers,
-} from '../actions/buffers';
 import {
   initializeWindows,
   newWindow,
@@ -40,16 +28,6 @@ import {
 } from '../actions/messages';
 
 import {
-  repositories,
-  type RepositoriesState,
-  initialRepositoriesState,
-} from './repositories';
-import {
-  buffers,
-  type BuffersState,
-  initialBuffersState,
-} from './buffers';
-import {
   windows,
   type WindowsState,
   initialWindowsState,
@@ -70,12 +48,14 @@ import {
   initialMessagesState,
 } from './messages';
 
-export type ActionTypes = $ReturnType<typeof addRepository>
-| $ReturnType<typeof removeRepository>
-| $ReturnType<typeof openBuffer>
+import {
+  appReducer as globalReducer,
+  type State as GlobalState,
+  initialState as initialGlobalState,
+} from './global';
+
+export type Actions = $ReturnType<typeof openBuffer>
 | $ReturnType<typeof bufferContentUpdated>
-| $ReturnType<typeof reloadBuffers>
-| $ReturnType<typeof updateBuffers>
 | $ReturnType<typeof initializeWindows>
 | $ReturnType<typeof newWindow>
 | $ReturnType<typeof closeWindow>
@@ -90,34 +70,31 @@ export type ActionTypes = $ReturnType<typeof addRepository>
 | $ReturnType<typeof closeAllMessages>;
 
 export type State = {
-  repositories: RepositoriesState,
   browser: BrowserState,
-  buffers: BuffersState,
   windows: WindowsState,
   modals: ModalsState,
-  messages: MessagesState
+  messages: MessagesState,
+  global: GlobalState
 };
 
 export function initialState(): State {
   return {
-    repositories: initialRepositoriesState(),
     browser: initialBrowserState(),
-    buffers: initialBuffersState(),
     windows: initialWindowsState(),
     modals: initialModalsState(),
     messages: initialMessagesState(),
+    global: initialGlobalState(),
   };
 }
 
 // なぜかcombineReducerが動かないので無理矢理
-export function appReducer(s: State, a: ActionTypes) {
+export function appReducer(s: State, a: Actions) {
   return {
-    repositories: repositories(s.repositories, a),
     browser: browser(s.browser, a),
-    buffers: buffers(s.buffers, a),
     windows: windows(s.windows, a),
     modals: modals(s.modals, a),
-    messages: messages(s.messages, a)
+    messages: messages(s.messages, a),
+    global: globalReducer(s.global, a)
   };
 }
 

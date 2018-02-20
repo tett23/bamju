@@ -17,8 +17,8 @@ import path from '../common/path';
 
 import {
   type State,
-  type ActionTypes,
-} from '../reducers/combined';
+  type Actions,
+} from '../reducers/app_window';
 import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
@@ -34,7 +34,7 @@ import {
   addMessage,
 } from '../actions/messages';
 
-export const repositoriesMiddleware = (store: Store<State, ActionTypes>) => (next: StoreCreator<State, ActionTypes>) => (action: ActionTypes) => {
+export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: StoreCreator<State, Actions>) => (action: Actions) => {
   switch (action.type) {
   case INITIALIZE_REPOSITORIES: {
     next(action);
@@ -56,7 +56,7 @@ export const repositoriesMiddleware = (store: Store<State, ActionTypes>) => (nex
   }
 };
 
-function initializeRepositories(store: Store<State, ActionTypes>, _: $ReturnType<typeof initializeRepositoriesAction>) {
+function initializeRepositories(store: Store<State, Actions>, _: $ReturnType<typeof initializeRepositoriesAction>) {
   const manager = getRepositoryManagerInstance();
 
   store.dispatch(async (dispatch) => {
@@ -65,7 +65,7 @@ function initializeRepositories(store: Store<State, ActionTypes>, _: $ReturnType
   });
 }
 
-function addRepository(store: Store<State, ActionTypes>, action: $ReturnType<typeof addRepositoryAction>) {
+function addRepository(store: Store<State, Actions>, action: $ReturnType<typeof addRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
   const repositoryName = path.dirname(action.absolutePath);
@@ -82,7 +82,7 @@ function addRepository(store: Store<State, ActionTypes>, action: $ReturnType<typ
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
 }
 
-function removeRepository(store: Store<State, ActionTypes>, action: $ReturnType<typeof removeRepositoryAction>) {
+function removeRepository(store: Store<State, Actions>, action: $ReturnType<typeof removeRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
   const repo = manager.removeRepository(action.repositoryName);

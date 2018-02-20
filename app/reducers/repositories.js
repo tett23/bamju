@@ -2,8 +2,8 @@
 
 import path from '../common/path';
 import {
-  type ActionTypes,
-} from './combined';
+  type Actions,
+} from './app_window';
 import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
@@ -19,7 +19,7 @@ export function initialRepositoriesState() {
   return [];
 }
 
-export function repositories(state: RepositoriesState = initialRepositoriesState(), action: ActionTypes): RepositoriesState {
+export function repositories(state: RepositoriesState = initialRepositoriesState(), action: Actions): RepositoriesState {
   switch (action.type) {
   case INITIALIZE_REPOSITORIES: {
     return action.state;

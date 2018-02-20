@@ -9,7 +9,7 @@ import { mountWithStore } from '../../test_utils';
 import {
   appReducer,
   initialState,
-} from '../../../app/reducers/editor_combined';
+} from '../../../app/reducers/editor_window';
 import {
   openBuffer,
 } from '../../../app/actions/editor';

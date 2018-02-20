@@ -13,7 +13,7 @@ import {
 import {
   appReducer,
   initialState,
-} from '../../../app/reducers/combined';
+} from '../../../app/reducers/app_window';
 import {
   reloadBuffers,
 } from '../../../app/actions/buffers';
@@ -49,9 +49,7 @@ beforeEach(() => {
 
 describe('<RepositoriesTreeView />', () => {
   it('TreeViewの構築ができる', () => {
-    const { buffers } = store.getState();
-
-    const component = mountWithStore(<RepositoriesTreeView buffers={buffers} />, store);
+    const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
     const items = component.find('.repositoryItem');
     const names = items.at(0).find('.repositoryItem > li > div > span');
@@ -70,7 +68,7 @@ describe('<RepositoriesTreeView />', () => {
       [ItemTypeRepository, 'database'],
       [ItemTypeUndefined, 'question-circle'],
     ].forEach((pair) => {
-      const buf = store.getState().buffers.find((b) => {
+      const buf = store.getState().global.buffers.find((b) => {
         return b.name === 'a';
       });
       if (buf == null) {
@@ -80,7 +78,7 @@ describe('<RepositoriesTreeView />', () => {
       const [itemType, className] = pair;
       buf.itemType = itemType;
 
-      const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().buffers} />, store);
+      const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
       const items = component.find('.repositoryItem').findWhere((item) => {
         return item.key() === buf.id;
@@ -90,7 +88,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpenedにもとづいてアイコンが設定される', () => {
-    const buf = store.getState().buffers.find((b) => {
+    const buf = store.getState().global.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -99,16 +97,16 @@ describe('<RepositoriesTreeView />', () => {
     }
     buf.isOpened = false;
 
-    let component = mountWithStore(<RepositoriesTreeView buffers={store.getState().buffers} />, store);
+    let component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
     let items = component.find('.repositoryItem').findWhere((item) => {
       return item.key() === buf.id;
     }).find('FontAwesome');
     expect(items.at(0).prop('name')).toBe('folder');
 
-    store.getState().buffers[1].isOpened = true;
+    store.getState().global.buffers[1].isOpened = true;
 
-    component = mountWithStore(<RepositoriesTreeView buffers={store.getState().buffers} />, store);
+    component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
     items = component.find('.repositoryItem').findWhere((item) => {
       return item.key() === buf.id;
@@ -117,7 +115,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpened == trueのときは子のアイテムが作られる', () => {
-    const buf = store.getState().buffers.find((b) => {
+    const buf = store.getState().global.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -126,7 +124,7 @@ describe('<RepositoriesTreeView />', () => {
     }
     buf.isOpened = true;
 
-    const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().buffers} />, store);
+    const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
     const repositoryItem = component.findWhere((item) => {
       return item.key() === buf.id;
@@ -137,7 +135,7 @@ describe('<RepositoriesTreeView />', () => {
   });
 
   it('isOpened == falseのときは子のアイテムが作られない', () => {
-    const buf = store.getState().buffers.find((b) => {
+    const buf = store.getState().global.buffers.find((b) => {
       return b.name === 'a';
     });
     if (buf == null) {
@@ -146,7 +144,7 @@ describe('<RepositoriesTreeView />', () => {
     }
     buf.isOpened = false;
 
-    const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().buffers} />, store);
+    const component = mountWithStore(<RepositoriesTreeView buffers={store.getState().global.buffers} />, store);
 
     const repositoryItem = component.findWhere((item) => {
       return item.key() === buf.id;

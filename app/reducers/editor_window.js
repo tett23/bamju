@@ -18,7 +18,7 @@ import {
   initialMessagesState,
 } from './messages';
 
-export type ActionTypes =
+export type Actions =
   $ReturnType<typeof openBuffer> |
   $ReturnType<typeof bufferUpdated>;
 
@@ -34,7 +34,7 @@ export function initialState(): State {
   };
 }
 
-export function appReducer(s: State, a: ActionTypes) {
+export function appReducer(s: State, a: Actions) {
   return {
     editor: editor(s.editor, a),
     messages: messages(s.messages, a),

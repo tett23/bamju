@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes,
-} from './combined';
+  type Actions,
+} from './app_window';
 import {
   type Window,
   INITIALIZE_WINDOWS,
@@ -20,7 +20,7 @@ export function initialWindowsState() {
   return [];
 }
 
-export function windows(state: WindowsState = initialWindowsState(), action: ActionTypes): WindowsState {
+export function windows(state: WindowsState = initialWindowsState(), action: Actions): WindowsState {
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
     return action.state;

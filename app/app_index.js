@@ -10,7 +10,7 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
-} from './reducers/combined';
+} from './reducers/app_window';
 import {
   type Window,
 } from './actions/windows';

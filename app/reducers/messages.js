@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes
-} from './combined';
+  type Actions
+} from './app_window';
 import {
   ADD_MESSAGE,
   CLOSE_MESSAGE,
@@ -22,7 +22,7 @@ export function initialMessagesState(): MessagesState {
   return [];
 }
 
-export function messages(state: MessagesState = initialMessagesState(), action: ActionTypes): MessagesState {
+export function messages(state: MessagesState = initialMessagesState(), action: Actions): MessagesState {
   switch (action.type) {
   case ADD_MESSAGE: {
     const newState = deepCopy(state);

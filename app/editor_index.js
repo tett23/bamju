@@ -9,7 +9,7 @@ import EditorRoot from './renderer/containers/EditorRoot';
 import {
   appReducer,
   initialState,
-} from './reducers/editor_combined';
+} from './reducers/editor_window';
 import { openBuffer } from './actions/editor';
 import { addMessage } from './actions/messages';
 import {

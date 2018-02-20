@@ -7,8 +7,8 @@ import {
   type Buffer
 } from '../common/buffer';
 import {
-  type ActionTypes
-} from './editor_combined';
+  type Actions
+} from './editor_window';
 import {
   OPEN_BUFFER,
   BURFFER_UPDATED,
@@ -39,7 +39,7 @@ export function initialEditorState(): EditorState {
   };
 }
 
-export function editor(state: EditorState = initialEditorState(), action: ActionTypes): EditorState {
+export function editor(state: EditorState = initialEditorState(), action: Actions): EditorState {
   switch (action.type) {
   case OPEN_BUFFER: {
     return {

@@ -9,7 +9,7 @@ import { mountWithStore } from '../../test_utils';
 import {
   appReducer,
   initialState,
-} from '../../../app/reducers/combined';
+} from '../../../app/reducers/app_window';
 import {
   openInputDialog,
 } from '../../../app/actions/modals';

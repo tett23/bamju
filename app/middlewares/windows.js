@@ -15,8 +15,8 @@ import {
 
 import {
   type State,
-  type ActionTypes,
-} from '../reducers/combined';
+  type Actions,
+} from '../reducers/app_window';
 import {
   INITIALIZE_WINDOWS,
   NEW_WINDOW,
@@ -26,7 +26,7 @@ import {
   closeWindow as closeWindowAction,
 } from '../actions/windows';
 
-export const windowsMiddleware = (store: Store<State, ActionTypes>) => (next: StoreCreator<State, ActionTypes>) => (action: ActionTypes) => {
+export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreCreator<State, Actions>) => (action: Actions) => {
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
     next(action);
@@ -49,7 +49,7 @@ export const windowsMiddleware = (store: Store<State, ActionTypes>) => (next: St
   }
 };
 
-function initializeWindows(store: Store<State, ActionTypes>, action: $ReturnType<typeof initializeWindowsAction>) {
+function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typeof initializeWindowsAction>) {
   const manager = getWindowManagerInstance();
 
   action.state.forEach((item) => {
@@ -57,7 +57,7 @@ function initializeWindows(store: Store<State, ActionTypes>, action: $ReturnType
   });
 }
 
-function newWindow(store: Store<State, ActionTypes>, action: $ReturnType<typeof newWindowAction>) {
+function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newWindowAction>) {
   const manager = getWindowManagerInstance();
 
   manager.createAppWindow({
@@ -67,7 +67,7 @@ function newWindow(store: Store<State, ActionTypes>, action: $ReturnType<typeof 
   });
 }
 
-function closeWindow(store: Store<State, ActionTypes>, action: $ReturnType<typeof closeWindowAction>) {
+function closeWindow(store: Store<State, Actions>, action: $ReturnType<typeof closeWindowAction>) {
   const manager = getWindowManagerInstance();
 
   manager.removeWindow(action.windowID);

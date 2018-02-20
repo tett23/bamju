@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes
-} from './combined';
+  type Actions
+} from './app_window';
 import {
   OPEN_BUFFER,
   BUFFER_CONTENT_UPDATED,
@@ -48,7 +48,7 @@ export function initialBrowserState(): BrowserState {
   };
 }
 
-export function browser(state: BrowserState = initialBrowserState(), action: ActionTypes): BrowserState {
+export function browser(state: BrowserState = initialBrowserState(), action: Actions): BrowserState {
   // console.log(`reducer tabReducer ${action.type}`, action, state);
 
   switch (action.type) {

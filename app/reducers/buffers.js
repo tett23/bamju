@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes
-} from './combined';
+  type Actions
+} from './app_window';
 import {
   RELOAD_BUFFERS,
   UPDATE_BUFFERS,
@@ -22,7 +22,7 @@ export function initialBuffersState(): BuffersState {
   return [];
 }
 
-export function buffers(state: BuffersState = initialBuffersState(), action: ActionTypes): BuffersState {
+export function buffers(state: BuffersState = initialBuffersState(), action: Actions): BuffersState {
   switch (action.type) {
   case RELOAD_BUFFERS: {
     return action.buffers;
