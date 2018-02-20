@@ -46,12 +46,19 @@ import {
 import {
   repositoriesMiddleware,
 } from './middlewares/repositories';
+import {
+  windowsMiddleware,
+} from './middlewares/windows';
 
 const store = createStore(
   appReducer,
   initialState(),
   compose(
-    applyMiddleware(thunk, repositoriesMiddleware),
+    applyMiddleware(
+      thunk,
+      repositoriesMiddleware,
+      windowsMiddleware,
+    ),
     electronEnhancer({
       dispatchProxy: a => store.dispatch(a),
     })

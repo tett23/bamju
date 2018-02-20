@@ -7,13 +7,6 @@ import {
 import {
 } from '../menu';
 import {
-  subscribe,
-  getState,
-} from './event_dispatcher';
-import {
-  type WindowsState,
-} from '../reducers/windows';
-import {
   getInstance as getRepositoryManagerInstance,
 } from '../common/repository_manager';
 import {
@@ -29,36 +22,6 @@ import {
 import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';
-
-let prevState:WindowsState = [];
-subscribe(() => {
-  const currentState = getState().windows;
-  if (prevState === currentState) {
-    return;
-  }
-
-  const removes = prevState.filter((b) => {
-    return !currentState.some((a) => {
-      return a.id === b.id;
-    });
-  }).map((item) => {
-    return item.id;
-  });
-  removes.forEach((id) => {
-    getWindowManagerInstance().removeWindow(id);
-  });
-
-  const additions = currentState.filter((a) => {
-    return !prevState.some((b) => {
-      return a.id === b.id;
-    });
-  });
-  additions.forEach((item) => {
-    getWindowManagerInstance().createAppWindow(item);
-  });
-
-  prevState = getState().windows;
-});
 
 ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {parentWindowID: ?WindowID, metaDataID: MetaDataID}) => {
   console.log('open-by-bamju-editor', parentWindowID, metaDataID);
