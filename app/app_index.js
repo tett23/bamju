@@ -10,6 +10,7 @@ import { ipcRenderer } from 'electron';
 import Root from './renderer/containers/Root';
 import {
   appReducer,
+  initialState,
 } from './reducers/app_window';
 import {
   type Window,
@@ -38,9 +39,13 @@ import {
 } from './common/util';
 import './app.global.css';
 
+const init = Object.assign({}, initialState(), {
+  global: ipcRenderer.sendSync('get-state'),
+});
+
 const store = createStore(
   appReducer,
-  ipcRenderer.sendSync('get-state'),
+  init,
   compose(
     applyMiddleware(),
     electronEnhancer({

@@ -16,7 +16,7 @@ import {
 import {
   type State,
   type Actions,
-} from '../reducers/app_window';
+} from '../reducers/main';
 import {
   INITIALIZE_WINDOWS,
   NEW_WINDOW,
@@ -54,7 +54,7 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreC
 function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typeof initializeWindowsAction>) {
   const manager = getWindowManagerInstance();
 
-  action.state.forEach((item) => {
+  action.payload.state.forEach((item) => {
     manager.createAppWindow(item);
   });
 }
@@ -62,17 +62,13 @@ function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typ
 function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newWindowAction>) {
   const manager = getWindowManagerInstance();
 
-  manager.createAppWindow({
-    id: action.windowID,
-    rectangle: action.rectangle,
-    tabs: action.tabs
-  });
+  manager.createAppWindow(action.payload);
 }
 
 function closeWindow(store: Store<State, Actions>, action: $ReturnType<typeof closeWindowAction>) {
   const manager = getWindowManagerInstance();
 
-  manager.removeWindow(action.windowID);
+  manager.removeWindow(action.payload.windowID);
 }
 
 export default windowsMiddleware;

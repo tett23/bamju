@@ -18,7 +18,7 @@ import path from '../common/path';
 import {
   type State,
   type Actions,
-} from '../reducers/app_window';
+} from '../reducers/main';
 import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
@@ -69,7 +69,7 @@ function initializeRepositories(store: Store<State, Actions>, _: $ReturnType<typ
 function addRepository(store: Store<State, Actions>, action: $ReturnType<typeof addRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
-  const repositoryName = path.dirname(action.absolutePath);
+  const repositoryName = path.dirname(action.payload.absolutePath);
   const conf = {
     absolutePath: action.absolutePath,
     repositoryName
@@ -86,7 +86,7 @@ function addRepository(store: Store<State, Actions>, action: $ReturnType<typeof 
 function removeRepository(store: Store<State, Actions>, action: $ReturnType<typeof removeRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
-  const repo = manager.removeRepository(action.repositoryName);
+  const repo = manager.removeRepository(action.payload.repositoryName);
   if (repo == null) {
     return;
   }

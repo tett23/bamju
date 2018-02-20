@@ -9,7 +9,7 @@ import { electronEnhancer } from 'redux-electron-store';
 import {
   appReducer,
   initialState,
-} from './reducers/app_window';
+} from './reducers/main';
 import {
   setStore,
 } from './main/event_dispatcher';

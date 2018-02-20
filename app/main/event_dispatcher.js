@@ -5,7 +5,7 @@ import { type Store } from 'redux';
 import {
   type Actions,
   type State,
-} from '../reducers/app_window';
+} from '../reducers/main';
 
 let _store: Store<*, *>;
 
