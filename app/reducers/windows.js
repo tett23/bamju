@@ -9,9 +9,6 @@ import {
   NEW_WINDOW,
   CLOSE_WINDOW,
   UPDATE_WINDOW_RECTANGLE,
-  ADD_TAB,
-  CLOSE_TAB,
-  UPDATE_TAB,
 } from '../actions/windows';
 
 export type WindowsState = Window[];
@@ -60,65 +57,6 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
 
     const newState = state.slice();
     newState[idx].rectangle = action.payload.rectangle;
-
-    return newState;
-  }
-  case ADD_TAB: {
-    const windowID = action.payload.windowID;
-    const idx = state.findIndex((item) => {
-      return item.id === windowID;
-    });
-    if (idx === -1) {
-      return state;
-    }
-
-    const newState = state.slice();
-    newState[idx].tabs.push({
-      id: action.payload.tabID,
-      metaDataID: action.payload.metaDataID,
-      content: action.payload.content,
-    });
-
-    return newState;
-  }
-  case CLOSE_TAB: {
-    const { windowID, tabID } = action.payload;
-    const windowIdx = state.findIndex((item) => {
-      return item.id === windowID;
-    });
-    if (windowIdx === -1) {
-      return state;
-    }
-    const tabIdx = state[windowIdx].tabs.findIndex((item) => {
-      return item.id === tabID;
-    });
-    if (tabIdx === -1) {
-      return state;
-    }
-
-    const newState = state.slice();
-    newState[windowIdx].tabs.splice(tabIdx, 1);
-
-    return newState;
-  }
-  case UPDATE_TAB: {
-    const { windowID, tabID } = action.payload;
-    const windowIdx = state.findIndex((item) => {
-      return item.id === windowID;
-    });
-    if (windowIdx === -1) {
-      return state;
-    }
-    const tabIdx = state[windowIdx].tabs.findIndex((item) => {
-      return item.id === tabID;
-    });
-    if (tabIdx === -1) {
-      return state;
-    }
-
-    const newState = state.slice();
-    newState[windowIdx].tabs[tabIdx].metaDataID = action.payload.metaDataID;
-    newState[windowIdx].tabs[tabIdx].content = action.payload.content;
 
     return newState;
   }

@@ -2,33 +2,50 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import type { BrowserState } from '../../reducers/browser';
+import type { State } from '../../reducers/app_window';
 import { Tab } from './Tab';
-import { initialBrowserState } from '../../reducers/browser';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './Browser.css';
 
-const browser = ({ tabs }: BrowserState = initialBrowserState()) => {
-  const tab = tabs[0];
+type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
+
+const browser = (props: Props) => {
+  const tabs = props.browser.tabs.map((item) => {
+    const buf = props.buffers.find((b) => {
+      return b.id === item.metaDataID;
+    });
+
+    return (
+      <Tab
+        className={styles.tab}
+        key={item.id}
+        id={item.id}
+        buffer={buf}
+        content={item.content}
+      />
+    );
+  });
 
   return (
     <div className={styles.browser}>
-      <Tab
-        className={styles.tab}
-        buffer={tab.buffer}
-        content={tab.content}
-      />
+      {tabs}
     </div>
   );
 };
 
-const mapStateToProps = (state: {browser: BrowserState}) => {
-  return state.browser;
-};
+function mapStateToProps(state: State) {
+  return {
+    browser: state.browser,
+    buffers: state.global.buffers
+  };
+}
 
 
-const mapDispatchToProps = (_) => {
+function mapDispatchToProps(_) {
   return {};
-};
+}
 
 
 const Browser = connect(mapStateToProps, mapDispatchToProps)(browser);

@@ -12,29 +12,26 @@ import { connect } from 'react-redux';
 import path from '../../common/path';
 
 import {
-  type BrowserState,
-  tabDefault,
-} from '../../reducers/browser';
-import {
   isSimilarFile,
 } from '../../common/metadata';
 import {
   type Buffer
 } from '../../common/buffer';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './Browser.css';
 
 type Props = {
+  id: string,
   buffer: Buffer,
   content: string
-};
+} & $ReturnType<typeof mapDispatchToProps>;
 
-function tab({ buffer, content }: {
-  buffer: Buffer,
-  content: string
-} = tabDefault()) {
+function tab(props: Props) {
   const {
     name, repositoryName, path: itemPath, absolutePath
-  } = buffer;
+  } = props.buffer;
 
   const breadcrumbItems = [];
   breadcrumbItems.push((
@@ -65,7 +62,7 @@ function tab({ buffer, content }: {
   });
 
   const html = {
-    __html: content
+    __html: props.content
   };
 
   return (
@@ -73,7 +70,7 @@ function tab({ buffer, content }: {
       className={styles.tab}
       data-absolute-path={absolutePath}
       onContextMenu={e => {
-        return contextmenu(e, buffer);
+        return contextmenu(e, props.buffer);
       }}
     >
       <Breadcrumb>{breadcrumbItems}</Breadcrumb>
@@ -130,15 +127,9 @@ function contextmenu(e, buf: Buffer) {
   menu.popup(remote.getCurrentWindow());
 }
 
-const mapStateToProps = (state: {browser: BrowserState}): Props => {
-  return state.browser.tabs[0] || tabDefault();
-};
-
-const mapDispatchToProps = (_) => {
-  return {
-    buildTabContextMenu,
-  };
-};
+function mapDispatchToProps(_) {
+  return {};
+}
 
 
-export const Tab = connect(mapStateToProps, mapDispatchToProps)(tab);
+export const Tab = connect(null, mapDispatchToProps)(tab);

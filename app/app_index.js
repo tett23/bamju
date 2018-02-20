@@ -16,9 +16,8 @@ import {
   type Window,
 } from './actions/windows';
 import {
-  openBuffer,
-  bufferContentUpdated,
-} from './actions/tab';
+  updateTab
+} from './actions/browser';
 import {
   openInputDialog,
   closeAllDialog,
@@ -74,13 +73,13 @@ ipcRenderer.on('open-buffer', (event, [buf, contents]: [Buffer, string]) => {
     return;
   }
 
-  store.dispatch(openBuffer(buf, contents));
+  store.dispatch(updateTab(store.getState().browser.tabs[0].id, buf.id, contents));
 });
 
 ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {
   console.log('buffer-content-updated', metaDataID, content);
 
-  store.dispatch(bufferContentUpdated(metaDataID, content));
+  store.dispatch(updateTab(store.getState().browser.tabs[0].id, metaDataID, content));
 });
 
 ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
@@ -105,6 +104,11 @@ ipcRenderer.on('message', (_, message: Message) => {
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
+  // store.dispatch(updateTab(store.getState().browser.tabs[0].id, buf.id, contents));
+  // store.dispatch(updateTab({
+  //   repositoryName: repo,
+  //   itemName: name
+  // }));
   ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: name });
 };
 

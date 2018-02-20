@@ -8,8 +8,10 @@ import {
   type Rectangle,
   type Tab,
   newWindow,
-  addTab,
 } from '../../actions/windows';
+import {
+  addTab,
+} from '../../actions/browser';
 import {
   addRepository,
   removeRepository,
@@ -214,7 +216,7 @@ export function buildContextMenu(
       const win = dispatcher.newWindowDispatcher(rectangle);
       console.log('new window win', win);
       // TODO parseの結果の取得
-      dispatcher.addTabDispatcher(win.windowID, item.id, 'content');
+      dispatcher.addTabDispatcher(item.id, 'content');
     }
   });
   ret.push({
@@ -263,7 +265,7 @@ function mapDispatchToProps(dispatch) {
       return dispatch(newWindow(rectangle, tabs));
     },
     addTab: (windowID: WindowID, metaDataID: MetaDataID, content: string = '') => {
-      return dispatch(addTab(windowID, metaDataID, content));
+      return dispatch(addTab(metaDataID, content));
     },
     addRepository: (absolutePath: string) => {
       return dispatch(addRepository(absolutePath));

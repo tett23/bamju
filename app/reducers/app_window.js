@@ -5,17 +5,10 @@ import {
 } from '../common/util';
 
 import {
-  initializeWindows,
-  newWindow,
-  closeWindow,
   addTab,
   closeTab,
   updateTab,
-} from '../actions/windows';
-import {
-  openBuffer,
-  bufferContentUpdated
-} from '../actions/tab';
+} from '../actions/browser';
 import {
   openInputDialog,
   closeDialog,
@@ -27,11 +20,6 @@ import {
   closeAllMessages
 } from '../actions/messages';
 
-import {
-  windows,
-  type WindowsState,
-  initialWindowsState,
-} from './windows';
 import {
   browser,
   type BrowserState,
@@ -54,12 +42,7 @@ import {
   initialState as initialGlobalState,
 } from './global';
 
-export type Actions = $ReturnType<typeof openBuffer>
-| $ReturnType<typeof bufferContentUpdated>
-| $ReturnType<typeof initializeWindows>
-| $ReturnType<typeof newWindow>
-| $ReturnType<typeof closeWindow>
-| $ReturnType<typeof addTab>
+export type Actions = $ReturnType<typeof addTab>
 | $ReturnType<typeof closeTab>
 | $ReturnType<typeof updateTab>
 | $ReturnType<typeof openInputDialog>
@@ -71,7 +54,6 @@ export type Actions = $ReturnType<typeof openBuffer>
 
 export type State = {
   browser: BrowserState,
-  windows: WindowsState,
   modals: ModalsState,
   messages: MessagesState,
   global: GlobalState
@@ -80,7 +62,6 @@ export type State = {
 export function initialState(): State {
   return {
     browser: initialBrowserState(),
-    windows: initialWindowsState(),
     modals: initialModalsState(),
     messages: initialMessagesState(),
     global: initialGlobalState(),
@@ -91,7 +72,6 @@ export function initialState(): State {
 export function appReducer(s: State, a: Actions) {
   return {
     browser: browser(s.browser, a),
-    windows: windows(s.windows, a),
     modals: modals(s.modals, a),
     messages: messages(s.messages, a),
     global: globalReducer(s.global, a)

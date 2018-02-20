@@ -11,9 +11,6 @@ import {
   newWindow,
   closeWindow,
   updateWindowRectangle,
-  addTab,
-  closeTab,
-  updateTab,
 } from '../../app/actions/windows';
 
 let store;
@@ -170,112 +167,6 @@ describe('windows reducer', () => {
         width: 1024,
         height: 728
       });
-    });
-  });
-
-  describe('ADD_TAB', () => {
-    it('Tabの追加ができる', () => {
-      const window = store.dispatch(newWindow());
-      expect(store.getState()[0].tabs.length).toBe(0);
-      const tab = store.dispatch(addTab(window.payload.windowID, '', ''));
-
-      const newState = store.getState();
-
-      expect(newState.length).toBe(1);
-      expect(newState[0].tabs.length).toBe(1);
-      expect(newState[0].tabs[0]).toMatchObject({
-        id: tab.payload.tabID
-      });
-    });
-
-    it('windowIDが存在しない場合は何も起きない', () => {
-      store.dispatch(newWindow());
-      expect(store.getState()[0].tabs.length).toBe(0);
-
-      store.dispatch(addTab('foo', '', ''));
-
-      expect(store.getState()[0].tabs.length).toBe(0);
-    });
-  });
-
-  describe('CLOSE_TAB', () => {
-    it('Tabの追加ができる', () => {
-      const window = store.dispatch(newWindow());
-      const tab = store.dispatch(addTab(window.payload.windowID, '', ''));
-
-      expect(store.getState().length).toBe(1);
-      expect(store.getState()[0].tabs.length).toBe(1);
-
-      store.dispatch(closeTab(window.payload.windowID, tab.payload.tabID));
-
-      expect(store.getState()[0].tabs.length).toBe(0);
-    });
-
-    it('tabIDが存在しない場合は何も起きない', () => {
-      const window = store.dispatch(newWindow());
-      store.dispatch(addTab(window.payload.windowID, '', ''));
-
-      expect(store.getState().length).toBe(1);
-
-      store.dispatch(closeTab(window.payload.windowID, 'hogehoge'));
-
-      expect(store.getState()[0].tabs.length).toBe(1);
-    });
-  });
-
-  describe('UPDATE_TAB', () => {
-    it('metaDataの変更ができる', () => {
-      const window = store.dispatch(newWindow());
-      const tab = store.dispatch(addTab(window.payload.windowID, 'foo', 'bar'));
-      store.dispatch(updateTab(window.payload.windowID, tab.payload.tabID, 'hoge', 'fuga'));
-
-      const newState = store.getState();
-
-      expect(newState[0].tabs.length).toBe(1);
-      expect(newState[0].tabs[0].metaDataID).toBe('hoge');
-    });
-
-    it('contentの変更ができる', () => {
-      const window = store.dispatch(newWindow());
-      const tab = store.dispatch(addTab(window.payload.windowID, 'foo', 'bar'));
-      store.dispatch(updateTab(window.payload.windowID, tab.payload.tabID, 'hoge', 'fuga'));
-
-      const newState = store.getState();
-
-      expect(newState[0].tabs.length).toBe(1);
-      expect(newState[0].tabs[0].content).toBe('fuga');
-    });
-
-    it('windowIDが存在しない場合何も起きない', () => {
-      const window = store.dispatch(newWindow());
-      const tab = store.dispatch(addTab(window.payload.windowID, 'foo', 'bar'));
-
-      expect(store.getState().length).toBe(1);
-      expect(store.getState()[0].tabs.length).toBe(1);
-
-      store.dispatch(updateTab('a', tab.id, 'hoge', 'fuga'));
-
-      const newState = store.getState();
-
-      expect(newState[0].tabs.length).toBe(1);
-      expect(newState[0].tabs[0].metaDataID).toBe('foo');
-      expect(newState[0].tabs[0].content).toBe('bar');
-    });
-
-    it('tabIDが存在しない場合何も起きない', () => {
-      const window = store.dispatch(newWindow());
-      store.dispatch(addTab(window.payload.windowID, 'foo', 'bar'));
-
-      expect(store.getState().length).toBe(1);
-      expect(store.getState()[0].tabs.length).toBe(1);
-
-      store.dispatch(updateTab(window.payload.windowID, 'b', 'hoge', 'fuga'));
-
-      const newState = store.getState();
-
-      expect(newState[0].tabs.length).toBe(1);
-      expect(newState[0].tabs[0].metaDataID).toBe('foo');
-      expect(newState[0].tabs[0].content).toBe('bar');
     });
   });
 });

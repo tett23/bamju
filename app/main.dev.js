@@ -56,7 +56,7 @@ const store = createStore(
       repositoriesMiddleware,
       windowsMiddleware,
       forwardToRenderer,
-    ), )
+    ))
 );
 
 replayActionMain(store);

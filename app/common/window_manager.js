@@ -14,9 +14,6 @@ import {
   type MetaDataID,
 } from './metadata';
 import {
-  type Buffer
-} from './buffer';
-import {
   Window,
 } from './window';
 import AppWindow from './app_window';

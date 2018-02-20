@@ -4,70 +4,67 @@ import {
   type Actions
 } from './app_window';
 import {
-  OPEN_BUFFER,
-  BUFFER_CONTENT_UPDATED,
-} from '../actions/tab';
+  ADD_TAB,
+  CLOSE_TAB,
+  UPDATE_TAB,
+} from '../actions/browser';
 
 import {
-  ItemTypeUndefined
+  type MetaDataID
 } from '../common/metadata';
-import {
-  type Buffer
-} from '../common/buffer';
+
 import {
   deepCopy,
 } from '../common/util';
 
 export type BrowserState = {
-  tabs: Array<{buffer: Buffer, content: string}>
+  tabs: Array<{id: string, metaDataID: MetaDataID, content: string}>
 };
-
-export function tabDefault() {
-  return {
-    buffer: {
-      id: '',
-      name: '',
-      path: '',
-      repositoryName: '',
-      repositoryPath: '',
-      absolutePath: '',
-      itemType: ItemTypeUndefined,
-      parentID: null,
-      childrenIDs: [],
-      isOpened: false,
-      isLoaded: false,
-      body: ''
-    },
-    content: ''
-  };
-}
 
 export function initialBrowserState(): BrowserState {
   return {
-    tabs: [tabDefault()]
+    tabs: []
   };
 }
 
 export function browser(state: BrowserState = initialBrowserState(), action: Actions): BrowserState {
-  // console.log(`reducer tabReducer ${action.type}`, action, state);
-
   switch (action.type) {
-  case OPEN_BUFFER: {
-    return Object.assign({}, state, {
-      tabs: [{ buffer: action.payload.buffer, content: action.payload.content }]
+  case ADD_TAB: {
+    const newState = deepCopy(state);
+    newState.tabs.push({
+      id: action.payload.id,
+      metaDataID: action.payload.metaDataID,
+      content: action.payload.content,
     });
+
+    return newState;
   }
-  case BUFFER_CONTENT_UPDATED: {
-    const { metaDataID, content } = action.payload;
-    const idx = state.tabs.findIndex((buf) => {
-      return buf.buffer.id === metaDataID;
+  case CLOSE_TAB: {
+    const id = action.payload.id;
+    const tabIdx = state.tabs.findIndex((item) => {
+      return item.id === id;
     });
-    if (idx === -1) {
+    if (tabIdx === -1) {
       return state;
     }
 
     const newState = deepCopy(state);
-    newState.tabs[idx].content = content;
+    newState.tabs.splice(tabIdx, 1);
+
+    return newState;
+  }
+  case UPDATE_TAB: {
+    const id = action.payload.id;
+    const tabIdx = state.tabs.findIndex((item) => {
+      return item.id === id;
+    });
+    if (tabIdx === -1) {
+      return state;
+    }
+
+    const newState = deepCopy(state);
+    newState.tabs[tabIdx].metaDataID = action.payload.metaDataID;
+    newState.tabs[tabIdx].content = action.payload.content;
 
     return newState;
   }

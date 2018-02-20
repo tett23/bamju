@@ -8,9 +8,6 @@ import {
   initializeWindows,
   newWindow,
   closeWindow,
-  addTab,
-  closeTab,
-  updateTab,
 } from '../actions/windows';
 
 import {
@@ -27,10 +24,7 @@ import {
 
 export type Actions = $ReturnType<typeof initializeWindows>
 | $ReturnType<typeof newWindow>
-| $ReturnType<typeof closeWindow>
-| $ReturnType<typeof addTab>
-| $ReturnType<typeof closeTab>
-| $ReturnType<typeof updateTab>;
+| $ReturnType<typeof closeWindow>;
 
 export type State = {
   windows: WindowsState,
