@@ -34,9 +34,7 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreC
     return;
   }
   case NEW_WINDOW: {
-    const a = next(action);
-    console.log('hogehoge', a);
-
+    next(action);
     newWindow(store, action);
     return;
   }
@@ -62,7 +60,11 @@ function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typ
 function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newWindowAction>) {
   const manager = getWindowManagerInstance();
 
-  manager.createAppWindow(action.payload);
+  manager.createAppWindow({
+    id: action.payload.windowID,
+    rectangle: action.payload.rectangle,
+    tabs: action.payload.tabs,
+  });
 }
 
 function closeWindow(store: Store<State, Actions>, action: $ReturnType<typeof closeWindowAction>) {
