@@ -2,7 +2,7 @@
 
 import {
   type Store,
-  type StoreCreator,
+  type Dispatch,
 } from 'redux';
 
 import {
@@ -34,7 +34,7 @@ import {
   addMessage,
 } from '../actions/messages';
 
-export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: StoreCreator<State, Actions>) => (action: Actions) => {
+export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
   switch (action.type) {
   case INITIALIZE_REPOSITORIES: {
     next(action);
@@ -52,7 +52,7 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: S
     return;
   }
   default: {
-    next(action);
+    return next(action);
   }
   }
 };

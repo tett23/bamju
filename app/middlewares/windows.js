@@ -2,7 +2,7 @@
 
 import {
   type Store,
-  type StoreCreator,
+  type Dispatch,
 } from 'redux';
 
 import {
@@ -26,7 +26,7 @@ import {
   closeWindow as closeWindowAction,
 } from '../actions/windows';
 
-export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreCreator<State, Actions>) => (action: Actions) => {
+export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
     next(action);
@@ -44,7 +44,7 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreC
     return;
   }
   default: {
-    next(action);
+    return next(action);
   }
   }
 };
