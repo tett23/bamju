@@ -35,35 +35,18 @@ import {
 import {
   type WindowID,
 } from '../../common/window';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './RepositoriesTreeView.css';
 
-type Props = {
-  buffers: Buffer[],
-  newWindow: typeof newWindow,
-  addTab: typeof addTab,
-  addRepository: typeof addRepository,
-  removeRepository: typeof removeRepository
-};
+type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
-const defaultProps = {
-  buffers: [],
-  newWindow: (_, __) => { return newWindow(_, __); },
-  addTab: (_, __, ___) => { return addTab(_, __, ___); },
-  addRepository: (_) => { return addRepository(_); },
-  removeRepository: (_, __) => { return removeRepository(_, __); }
-};
-
-function repositoriesTreeView({
-  buffers,
-  newWindow: newWindowDispatcher,
-  addTab: addTabDispatcher,
-  addRepository: addRepositoryDispatcher,
-  removeRepository: removeRepositoryDispatcher
-}: Props = defaultProps) {
-  const items = buffers.filter((buf) => {
+function repositoriesTreeView(props: Props) {
+  const items = props.buffers.filter((buf) => {
     return buf.itemType === ItemTypeRepository;
   }).map((rootBuf) => {
-    return buildItems(rootBuf, buffers, newWindowDispatcher, addTabDispatcher, removeRepositoryDispatcher);
+    return buildItems(rootBuf, props.buffers, props.newWindowDispatcher, props.addTabDispatcher, props.removeRepositoryDispatcher);
   });
 
   return (
@@ -71,7 +54,7 @@ function repositoriesTreeView({
       <ul className={styles.treeViewItems}>{items}</ul>
       <div className={styles.menu}>
         <span className={styles.menuItem}>
-          <FontAwesome name="plus" onClick={(e) => { addRepositoryHandler(e, addRepositoryDispatcher); }} />
+          <FontAwesome name="plus" onClick={(e) => { addRepositoryHandler(e, props.addRepositoryDispatcher); }} />
         </span>
       </div>
     </div>
@@ -268,7 +251,7 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: State): {buffers: Buffer[]} => {
+function mapStateToProps(state: State): {buffers: Buffer[]} {
   if (state == null) {
     return {
       buffers: []
@@ -278,10 +261,9 @@ const mapStateToProps = (state: State): {buffers: Buffer[]} => {
   return {
     buffers: state.global.buffers
   };
-};
+}
 
-
-const mapDispatchToProps = (dispatch) => {
+function mapDispatchToProps(dispatch) {
   return {
     newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
       return dispatch(newWindow(rectangle, tabs));
@@ -296,7 +278,7 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(removeRepository(absolutePath, repositoryName));
     }
   };
-};
+}
 
 
 export const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);
