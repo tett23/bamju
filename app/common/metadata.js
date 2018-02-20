@@ -613,8 +613,6 @@ export function resolveInternalPath(itemPath: string): {repositoryName: ?string,
     [retPath] = split;
   }
 
-  retPath = path.join('/', retPath);
-
   return {
     repositoryName,
     path: retPath

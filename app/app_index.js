@@ -26,13 +26,14 @@ import {
   updateBuffers,
   type BufferUpdate,
 } from './actions/buffers';
+import {
+  parseInternalPath
+} from './actions/parser';
 import { addMessage } from './actions/messages';
 import {
-  type MetaDataID
+  type MetaDataID,
+  internalPath,
 } from './common/metadata';
-import {
-  type Buffer
-} from './common/buffer';
 import {
   type Message
 } from './common/util';
@@ -102,12 +103,9 @@ ipcRenderer.on('message', (_, message: Message) => {
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
-  // store.dispatch(updateTab(store.getState().browser.tabs[0].id, buf.id, contents));
-  // store.dispatch(updateTab({
-  //   repositoryName: repo,
-  //   itemName: name
-  // }));
-  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: name });
+  const tabID = store.getState().browser.tabs[0].id;
+
+  store.dispatch(parseInternalPath(tabID, internalPath(repo, name)));
 };
 
 window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {

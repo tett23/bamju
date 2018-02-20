@@ -13,10 +13,12 @@ import path from '../../common/path';
 
 import {
   parseMetaData,
+  parseInternalPath,
 } from '../../actions/parser';
 import {
   isSimilarFile,
   type MetaDataID,
+  internalPath,
 } from '../../common/metadata';
 import {
   type Buffer
@@ -44,13 +46,13 @@ function tab(props: Props) {
         return contextmenu(e, props);
       }}
     >
-      {buildBreadcrumbs(props.buffer)}
+      {buildBreadcrumbs(props.buffer, props)}
       <div className="markdown-body" dangerouslySetInnerHTML={html} />
     </div>
   );
 }
 
-function buildBreadcrumbs(buffer: ?Buffer) {
+function buildBreadcrumbs(buffer: ?Buffer, props: Props) {
   if (buffer == null) {
     return <Breadcrumb />;
   }
@@ -59,7 +61,7 @@ function buildBreadcrumbs(buffer: ?Buffer) {
   const items = [(
     <Breadcrumb.Item
       key="/"
-      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/'); }}
+      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/', props); }}
     >
       {repositoryName}
     </Breadcrumb.Item>
@@ -76,7 +78,7 @@ function buildBreadcrumbs(buffer: ?Buffer) {
     items.push((
       <Breadcrumb.Item
         key={breadcrumbPath}
-        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p); }}
+        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p, props); }}
       >
         {item}
       </Breadcrumb.Item>
@@ -90,11 +92,11 @@ function buildBreadcrumbs(buffer: ?Buffer) {
   );
 }
 
-function breadcrumbItemsOnClick(e, repo: string, itemPath: string) {
+function breadcrumbItemsOnClick(e, repo: string, itemPath: string, props: Props) {
   e.preventDefault();
   e.stopPropagation();
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: itemPath });
+  props.parseInternalPath(props.id, internalPath(repo, itemPath));
 }
 
 export function buildTabContextMenu(props: Props) {
@@ -148,6 +150,9 @@ function mapDispatchToProps(dispatch) {
   return {
     parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
       return dispatch(parseMetaData(tabID, metaDataID));
+    },
+    parseInternalPath: (tabID: string, _internalPath: string) => {
+      return dispatch(parseInternalPath(tabID, _internalPath));
     }
   };
 }
