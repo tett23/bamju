@@ -24,7 +24,7 @@ export type BrowserState = {
 
 export function initialBrowserState(): BrowserState {
   return {
-    tabs: [addTab('', 'empty buffer').payload]
+    tabs: [addTab(null, 'empty buffer').payload]
   };
 }
 
