@@ -36,6 +36,9 @@ import {
 import {
   type Message
 } from './common/util';
+import {
+  windowMetaMiddleware
+} from './middlewares/window_meta';
 import './app.global.css';
 
 const init = Object.assign({}, initialState(), {
@@ -45,7 +48,11 @@ const init = Object.assign({}, initialState(), {
 const store = createStore(
   appReducer,
   init,
-  compose(applyMiddleware(forwardToMain))
+  // $FlowFixMe
+  compose(applyMiddleware(
+    windowMetaMiddleware,
+    forwardToMain
+  ))
 );
 
 replayActionRenderer(store);

@@ -35,9 +35,6 @@ import {
   isSimilarDirectory,
 } from '../../common/metadata';
 import {
-  type WindowID,
-} from '../../common/window';
-import {
   type $ReturnType,
 } from '../../common/util';
 import styles from './RepositoriesTreeView.css';
@@ -264,7 +261,7 @@ function mapDispatchToProps(dispatch) {
     newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
       return dispatch(newWindow(rectangle, tabs));
     },
-    addTab: (windowID: WindowID, metaDataID: MetaDataID, content: string = '') => {
+    addTab: (metaDataID: MetaDataID, content: string = '') => {
       return dispatch(addTab(metaDataID, content));
     },
     addRepository: (absolutePath: string) => {

@@ -24,34 +24,52 @@ import styles from './Browser.css';
 
 type Props = {
   id: string,
-  buffer: Buffer,
+  buffer: ?Buffer,
   content: string
 } & $ReturnType<typeof mapDispatchToProps>;
 
 function tab(props: Props) {
-  const {
-    name, repositoryName, path: itemPath, absolutePath
-  } = props.buffer;
+  const html = {
+    __html: props.content
+  };
 
-  const breadcrumbItems = [];
-  breadcrumbItems.push((
+  return (
+    <div
+      className={styles.tab}
+      onContextMenu={e => {
+        return contextmenu(e, props.buffer);
+      }}
+    >
+      {buildBreadcrumbs(props.buffer)}
+      <div className="markdown-body" dangerouslySetInnerHTML={html} />
+    </div>
+  );
+}
+
+function buildBreadcrumbs(buffer: ?Buffer) {
+  if (buffer == null) {
+    return <Breadcrumb />;
+  }
+
+  const { repositoryName } = buffer;
+  const items = [(
     <Breadcrumb.Item
       key="/"
       onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/'); }}
     >
       {repositoryName}
     </Breadcrumb.Item>
-  ));
+  )];
 
   let breadcrumbPath:string = '';
-  path.split(itemPath).forEach((item: string) => {
+  path.split(buffer.path).forEach((item) => {
     if (item === '') {
       return;
     }
     breadcrumbPath += `/${item}`;
 
     const p = breadcrumbPath;
-    breadcrumbItems.push((
+    items.push((
       <Breadcrumb.Item
         key={breadcrumbPath}
         onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p); }}
@@ -61,21 +79,10 @@ function tab(props: Props) {
     ));
   });
 
-  const html = {
-    __html: props.content
-  };
-
   return (
-    <div
-      className={styles.tab}
-      data-absolute-path={absolutePath}
-      onContextMenu={e => {
-        return contextmenu(e, props.buffer);
-      }}
-    >
-      <Breadcrumb>{breadcrumbItems}</Breadcrumb>
-      <div className="markdown-body" name={name} dangerouslySetInnerHTML={html} />
-    </div>
+    <Breadcrumb>
+      {items}
+    </Breadcrumb>
   );
 }
 
@@ -117,9 +124,13 @@ export function buildTabContextMenu(buf: Buffer) {
   ];
 }
 
-function contextmenu(e, buf: Buffer) {
+function contextmenu(e, buf: ?Buffer) {
   e.preventDefault();
   e.stopPropagation();
+
+  if (buf == null) {
+    return;
+  }
 
   const template = buildTabContextMenu(buf);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);

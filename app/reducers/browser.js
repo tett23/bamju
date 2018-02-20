@@ -7,6 +7,7 @@ import {
   ADD_TAB,
   CLOSE_TAB,
   UPDATE_TAB,
+  addTab,
 } from '../actions/browser';
 
 import {
@@ -18,12 +19,12 @@ import {
 } from '../common/util';
 
 export type BrowserState = {
-  tabs: Array<{id: string, metaDataID: MetaDataID, content: string}>
+  tabs: Array<{id: string, metaDataID: ?MetaDataID, content: string}>
 };
 
 export function initialBrowserState(): BrowserState {
   return {
-    tabs: []
+    tabs: [addTab('', 'empty buffer').payload]
   };
 }
 
@@ -50,6 +51,10 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
 
     const newState = deepCopy(state);
     newState.tabs.splice(tabIdx, 1);
+
+    if (newState.tabs.length === 0) {
+      newState.tabs.push(addTab(null, 'empty buffer').payload);
+    }
 
     return newState;
   }

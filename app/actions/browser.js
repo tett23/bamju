@@ -8,7 +8,7 @@ export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 
-export function addTab(metaDataID: MetaDataID, content: string) {
+export function addTab(metaDataID: ?MetaDataID, content: string) {
   return {
     type: ADD_TAB,
     payload: {
