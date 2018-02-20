@@ -7,42 +7,33 @@ import Browser from '../components/Browser';
 import { Modals } from '../components/Modals';
 import { Messages } from '../components/Messages';
 import styles from './App.css';
-import { initialBrowserState, type BrowserState } from '../../reducers/browser';
-import { initialBuffersState, type BuffersState } from '../../reducers/buffers';
+import {
+  type State,
+} from '../../reducers/app_window';
+import {
+  type $ReturnType,
+} from '../../common/util';
 
-type appState = {
-  buffers: BuffersState,
-  browser: BrowserState
-};
+type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
-const app = ({ buffers, browser }: appState = defaultState) => {
+const app = (props: Props) => {
   return (
     <div className={styles.app} data-tid="app">
-      <RepositoriesTreeView buffers={buffers} />
-      <Browser tabs={[browser.tabs]} />
+      <RepositoriesTreeView buffers={props.global.buffers} />
+      <Browser tabs={[props.browser.tabs]} />
       <Modals />
       <Messages />
     </div>
   );
 };
 
-// FIXME: いらない気がする
-const defaultState = {
-  buffers: initialBuffersState(),
-  browser: initialBrowserState()
-};
-
-const mapStateToProps = (state) => {
-  console.log('App mapStateToProps', state);
-
+function mapStateToProps(state: State): State {
   return state;
-};
+}
 
-const mapDispatchToProps = (dispatch) => {
-  console.log('App mapDispatchToProps', dispatch);
-
+function mapDispatchToProps(_) {
   return {};
-};
+}
 
 const App = connect(mapStateToProps, mapDispatchToProps)(app);
 
