@@ -51,8 +51,9 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: S
     removeRepository(store, action);
     return;
   }
-
-  default: return next(action);
+  default: {
+    next(action);
+  }
   }
 };
 

@@ -45,7 +45,9 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: StoreC
     closeWindow(store, action);
     return;
   }
-  default: return next(action);
+  default: {
+    next(action);
+  }
   }
 };
 
