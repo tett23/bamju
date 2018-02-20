@@ -79,6 +79,10 @@ export function createDummyBufferByPath(repositoryName: string, itemPath:string)
   return ret;
 }
 
+type dummyType = {
+  [string]: Array<string>
+}
+
 export function dummy(items: dummyType): Buffer[] {
   const ret = {};
   const repositoryKeys = Object.keys(items);
