@@ -5,7 +5,7 @@ import path from 'path';
 import { ipcMain } from 'electron';
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
-import { electronEnhancer } from 'redux-electron-store';
+import { forwardToRenderer, replayActionMain } from 'electron-redux';
 import {
   appReducer,
   initialState,
@@ -55,12 +55,11 @@ const store = createStore(
       thunk,
       repositoriesMiddleware,
       windowsMiddleware,
-    ),
-    electronEnhancer({
-      dispatchProxy: a => store.dispatch(a),
-    })
-  )
+      forwardToRenderer,
+    ), )
 );
+
+replayActionMain(store);
 
 setStore(store);
 // store.subscribe(updateConfig);

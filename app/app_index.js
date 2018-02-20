@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { createStore, applyMiddleware, compose } from 'redux';
-import { electronEnhancer } from 'redux-electron-store';
+import { forwardToMain, replayActionRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
@@ -46,15 +46,10 @@ const init = Object.assign({}, initialState(), {
 const store = createStore(
   appReducer,
   init,
-  compose(
-    applyMiddleware(),
-    electronEnhancer({
-      dispatchProxy: a => {
-        return store.dispatch(a);
-      },
-    })
-  )
+  compose(applyMiddleware(forwardToMain))
 );
+
+replayActionRenderer(store);
 
 const root = document.getElementById('root');
 if (root != null) {
