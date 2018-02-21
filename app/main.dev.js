@@ -57,7 +57,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
 function updateConfig() {
   const state = store.getState();
 
-  console.log('updateConfig', JSON.stringify(state.windows, null, 2));
+  // console.log('updateConfig', JSON.stringify(state.windows, null, 2));
   getConfigInstance().updateByState(state);
 }
 
