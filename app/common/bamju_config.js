@@ -105,7 +105,9 @@ export class BamjuConfig {
   }
 
   async updateByState(state: State) {
-    await this.update(state.global);
+    await this.update(Object.assign({}, {
+      windows: state.windows
+    }, state.global));
   }
 
   async quit() {

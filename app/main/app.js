@@ -4,6 +4,7 @@ import { app } from 'electron';
 import expandHomeDir from 'expand-home-dir';
 import {
   dispatch,
+  getState,
 } from './event_dispatcher';
 import {
   initializeWindows,
@@ -61,6 +62,7 @@ app.on('ready', async () => {
 
 app.on('before-quit', async () => {
   // TODO: configからWindowManagerを参照しないようにしたい
+  await config.updateByState(getState());
   await config.quit();
 });
 
