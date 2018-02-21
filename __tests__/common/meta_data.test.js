@@ -221,6 +221,13 @@ describe('MetaData', () => {
         await expect(result.type).toBe(MessageTypeFailed);
       }
     });
+
+    it('ItemTypeMarkdwonのときはファイルの中身がファイル名になる', async () => {
+      const [metaData, _] = await rootItem.addFile('hoge.md');
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+      expect(content).toBe('# hoge');
+    });
   });
 
   describe('addDirectory', () => {

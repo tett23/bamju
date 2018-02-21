@@ -118,15 +118,20 @@ export class MetaData {
     await this.repository().moveNamelessFile(this.id);
   }
 
-  async addFile(itemName: string, content: string): Promise<[?MetaData, Message]> {
-    if (!isSimilarFile(detectItemType(itemName))) {
+  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, Message]> {
+    const itemType = detectItemType(itemName);
+    if (!isSimilarFile(itemType)) {
       return [null, {
         type: MessageTypeFailed,
         message: `MetaData.addFile isSimilarFile check itemName=${itemName}`
       }];
     }
 
-    const [ret, message] = await this._addItem(detectItemType(itemName), itemName);
+    if (content === '' && itemType === ItemTypeMarkdown) {
+      content = `# ${itemName.replace(/(.+?)\..+?$/, '$1')}`; // eslint-disable-line
+    }
+
+    const [ret, message] = await this._addItem(itemType, itemName);
     if (ret == null || message.type === MessageTypeFailed) {
       return [ret, message];
     }
