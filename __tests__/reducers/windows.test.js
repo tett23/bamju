@@ -38,7 +38,8 @@ describe('windows reducer', () => {
             metaDataID: 'bb',
             content: 'cc'
           }]
-        }
+        },
+        repositoriesTreeView: {}
       }];
       store.dispatch(initializeWindows(init));
 
