@@ -26,15 +26,7 @@ import {
   MessageTypeError,
 } from './common/util';
 
-import {
-  repositoriesMiddleware,
-} from './middlewares/repositories';
-import {
-  windowsMiddleware,
-} from './middlewares/windows';
-import {
-  parserMiddleware,
-} from './middlewares/parser';
+console.log(require('./middlewares/repositories'));
 
 const store = createStore(
   appReducer,
@@ -42,9 +34,10 @@ const store = createStore(
   // $FlowFixMe
   compose(applyMiddleware(
     thunk,
-    repositoriesMiddleware,
-    windowsMiddleware,
-    parserMiddleware,
+    require('./middlewares/repositories').repositoriesMiddleware,
+    require('./middlewares/windows').windowsMiddleware,
+    require('./middlewares/parser').parserMiddleware,
+    require('./middlewares/repositories_tree_view').repositoriesTreeViewMiddleware,
     forwardToRenderer
   ))
 );
