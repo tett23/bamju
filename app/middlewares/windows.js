@@ -25,6 +25,9 @@ import {
   newWindow as newWindowAction,
   closeWindow as closeWindowAction,
 } from '../actions/windows';
+import {
+  parseMetaData as parseMetaDataAction,
+} from '../actions/parser';
 
 export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
   switch (action.type) {
@@ -64,6 +67,12 @@ function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newW
     id: action.payload.windowID,
     rectangle: action.payload.rectangle,
     tabs: action.payload.tabs,
+  });
+
+  action.payload.tabs.forEach((item) => {
+    if (item.metaDataID != null) {
+      store.dispatch(parseMetaDataAction(item.id, item.metaDataID));
+    }
   });
 }
 

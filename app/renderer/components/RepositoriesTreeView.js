@@ -221,11 +221,7 @@ export function buildContextMenu(
       const rectangle = remote.getCurrentWindow().getBounds();
       rectangle.x += 50;
       rectangle.y += 50;
-      console.log('new window', rectangle);
-      const win = dispatcher.newWindowDispatcher(rectangle);
-      console.log('new window win', win);
-      // TODO parseの結果の取得
-      dispatcher.addTabDispatcher(item.id, 'content');
+      dispatcher.newWindow(rectangle, [addTab(item.id, '').payload]);
     }
   });
   ret.push({
@@ -270,9 +266,6 @@ function mapDispatchToProps(dispatch) {
   return {
     newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
       return dispatch(newWindow(rectangle, tabs));
-    },
-    addTab: (metaDataID: MetaDataID, content: string = '') => {
-      return dispatch(addTab(metaDataID, content));
     },
     addRepository: (absolutePath: string) => {
       return dispatch(addRepository(absolutePath));
