@@ -4,6 +4,7 @@ import {
   type Actions
 } from './app_window';
 import {
+  INITIALIZE_BROWSER,
   ADD_TAB,
   CLOSE_TAB,
   UPDATE_TAB,
@@ -35,6 +36,9 @@ export function initialBrowserState(): BrowserState {
 
 export function browser(state: BrowserState = initialBrowserState(), action: Actions): BrowserState {
   switch (action.type) {
+  case INITIALIZE_BROWSER: {
+    return action.payload.state;
+  }
   case ADD_TAB: {
     const newState = deepCopy(state);
     newState.tabs.push({

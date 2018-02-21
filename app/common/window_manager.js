@@ -15,6 +15,7 @@ import {
 } from './metadata';
 import {
   Window,
+  type WindowID,
 } from './window';
 import AppWindow from './app_window';
 import EditorWindow from './editor_window';
@@ -130,6 +131,12 @@ export class WindowManager {
     return false;
   }
 
+  findAppWindow(windowID: WindowID): ?AppWindow {
+    return this._appWindows.find((w) => {
+      return w.windowID() === windowID;
+    });
+  }
+
   _updateMenu(window: Window) { /* eslint class-methods-use-this: 0 */
     const menuType: MenuType = window.getType();
 
@@ -139,9 +146,7 @@ export class WindowManager {
 
   _findWindow(windowID: string): ?Window {
     let window:?Window;
-    window = this._appWindows.find((w) => {
-      return w.windowID() === windowID;
-    });
+    window = this.findAppWindow(windowID);
     if (window) {
       return window;
     }

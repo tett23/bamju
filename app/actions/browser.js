@@ -3,11 +3,24 @@
 import {
   type MetaDataID
 } from '../common/metadata';
+import {
+  type BrowserState,
+} from '../reducers/browser';
 
+export const INITIALIZE_BROWSER = 'INITIALIZE_BROWSER';
 export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
+
+export function initializeBrowser(state: BrowserState) {
+  return {
+    type: INITIALIZE_BROWSER,
+    payload: {
+      state
+    }
+  };
+}
 
 export function addTab(metaDataID: ?MetaDataID, content: string) {
   return {

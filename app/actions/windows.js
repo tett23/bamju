@@ -10,8 +10,12 @@ import {
 import {
   type WindowsState
 } from '../reducers/windows';
+import {
+  type BrowserState
+} from '../reducers/browser';
 
 export const INITIALIZE_WINDOWS = 'INITIALIZE_WINDOWS';
+export const WINDOW_INITIALIZED = 'WINDOW_INITIALIZED';
 export const NEW_WINDOW = 'NEW_WINDOW';
 export const CLOSE_WINDOW = 'CLOSE_WINDOW';
 export const UPDATE_WINDOW_RECTANGLE = 'UPDATE_WINDOW_RECTANGLE';
@@ -19,7 +23,7 @@ export const UPDATE_WINDOW_RECTANGLE = 'UPDATE_WINDOW_RECTANGLE';
 export type Window = {
   id: WindowID,
   rectangle: Rectangle,
-  tabs: Tab[]
+  browser: BrowserState
 };
 
 export type Rectangle = {
@@ -47,6 +51,15 @@ export function initializeWindows(state: WindowsState) {
     type: INITIALIZE_WINDOWS,
     payload: {
       state
+    }
+  };
+}
+
+export function windowInitialized(windowID: WindowID) {
+  return {
+    type: WINDOW_INITIALIZED,
+    payload: {
+      windowID,
     }
   };
 }

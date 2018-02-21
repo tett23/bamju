@@ -13,10 +13,15 @@ import {
   initialState,
 } from './reducers/app_window';
 import {
+  initialBrowserState,
+} from './reducers/browser';
+import {
   type Window,
+  windowInitialized,
 } from './actions/windows';
 import {
-  updateTab
+  initializeBrowser,
+  updateTab,
 } from './actions/browser';
 import {
   openInputDialog,
@@ -66,6 +71,10 @@ ipcRenderer.on('initialize', (event, conf: Window) => {
   console.log('initialize', conf);
 
   window.windowID = conf.id;
+
+  store.dispatch(initializeBrowser(conf.browser || initialBrowserState()));
+
+  store.dispatch(windowInitialized(conf.id));
 });
 
 ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {

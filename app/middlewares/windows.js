@@ -19,14 +19,16 @@ import {
 } from '../reducers/main';
 import {
   INITIALIZE_WINDOWS,
+  WINDOW_INITIALIZED,
   NEW_WINDOW,
   CLOSE_WINDOW,
   initializeWindows as initializeWindowsAction,
+  windowInitialized as windowInitializedAction,
   newWindow as newWindowAction,
   closeWindow as closeWindowAction,
 } from '../actions/windows';
 import {
-  parseMetaData as parseMetaDataAction,
+  parseMetaData,
 } from '../actions/parser';
 
 export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
@@ -34,6 +36,11 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispat
   case INITIALIZE_WINDOWS: {
     next(action);
     initializeWindows(store, action);
+    return;
+  }
+  case WINDOW_INITIALIZED: {
+    next(action);
+    windowInitialized(store, action);
     return;
   }
   case NEW_WINDOW: {
@@ -60,18 +67,32 @@ function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typ
   });
 }
 
+function windowInitialized(store: Store<State, Actions>, action: $ReturnType<typeof windowInitializedAction>) {
+  const manager = getWindowManagerInstance();
+
+  const win = manager.findAppWindow(action.payload.windowID);
+  if (win == null) {
+    return;
+  }
+
+  win.conf.browser.tabs.forEach((item) => {
+    if (item.metaDataID == null) {
+      return;
+    }
+
+    store.dispatch(parseMetaData(item.id, item.metaDataID));
+  });
+}
+
 function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newWindowAction>) {
   const manager = getWindowManagerInstance();
 
   manager.createAppWindow({
     id: action.payload.windowID,
     rectangle: action.payload.rectangle,
-    tabs: action.payload.tabs,
-  });
-
-  action.payload.tabs.forEach((item) => {
-    if (item.metaDataID != null) {
-      store.dispatch(parseMetaDataAction(item.id, item.metaDataID));
+    browser: {
+      currentTabID: action.payload.tabs[0].id,
+      tabs: action.payload.tabs,
     }
   });
 }

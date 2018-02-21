@@ -12,6 +12,7 @@ import {
 export const windowMetaMiddleware = (_: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
   const newAction = Object.assign({}, action);
   newAction.meta = newAction.meta || {};
+  // $FlowFixMe
   newAction.meta.windowID = window.windowID;
 
   // $FlowFixMe

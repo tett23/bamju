@@ -13,7 +13,7 @@ import {
 const configPath = '/tmp/test/bamju_config.json';
 let config;
 beforeEach(() => {
-  const configJSON = Object.assign(defaultConfig, {
+  const configJSON = Object.assign(defaultConfig(), {
     repositories: [
       {
         repositoryName: 'test',
@@ -54,7 +54,7 @@ describe('BamjuConfig', () => {
       fs.unlinkSync(configPath);
       config = new BamjuConfig(configPath);
 
-      expect(config.getConfig()).toMatchObject(defaultConfig);
+      expect(config.getConfig().config).toMatchObject(defaultConfig().config);
     });
   });
 

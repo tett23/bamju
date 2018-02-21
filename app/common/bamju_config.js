@@ -11,13 +11,20 @@ import {
   type RepositoryConfig,
 } from './repository';
 import {
+  createWindowID,
+} from './window';
+import {
   type Buffer,
 } from './buffer';
 import {
   type WindowsState,
 } from '../reducers/windows';
 import {
+  initialBrowserState,
+} from '../reducers/browser';
+import {
   type State,
+  initialState,
 } from '../reducers/main';
 
 export type Config = {
@@ -30,24 +37,28 @@ export type Config = {
   buffers: Buffer[]
 };
 
-export const defaultConfig:Config = {
-  repositories: [],
-  windows: [{
-    id: 'init',
-    rectangle: {
-      x: 100,
-      y: 100,
-      width: 1024,
-      height: 728
+export function defaultConfig() {
+  const globalInit = initialState().global;
+
+  return {
+    repositories: globalInit.repositories,
+    windows: [{
+      id: createWindowID(),
+      rectangle: {
+        x: 100,
+        y: 100,
+        width: 1024,
+        height: 728
+      },
+      browser: initialBrowserState(),
+    }],
+    buffers: globalInit.buffers,
+    config: {
+      followChange: true,
+      mkdirP: true
     },
-    tabs: []
-  }],
-  buffers: [],
-  config: {
-    followChange: true,
-    mkdirP: true
-  },
-};
+  };
+}
 
 let _instance: BamjuConfig;
 
@@ -140,7 +151,7 @@ export class BamjuConfig {
   }
 
   _merge(values: Object): Config {
-    return Object.assign({}, defaultConfig, this._config, values);
+    return Object.assign({}, defaultConfig(), this._config, values);
   }
 
   async _updateConfigFile() {

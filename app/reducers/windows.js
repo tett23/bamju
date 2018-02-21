@@ -27,7 +27,10 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
     newState.push({
       id: action.payload.windowID,
       rectangle: action.payload.rectangle,
-      tabs: action.payload.tabs,
+      browser: {
+        currentTabID: '',
+        tabs: action.payload.tabs,
+      }
     });
 
     return newState;

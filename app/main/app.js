@@ -66,7 +66,7 @@ app.on('before-quit', async () => {
 
 app.on('activate', async () => {
   if (getWindowManagerInstance().getAppWindows().length === 0) {
-    dispatch(newWindow(defaultConfig.windows[0].rectangle));
+    dispatch(newWindow(defaultConfig().windows[0].rectangle));
   }
 });
 

@@ -31,11 +31,14 @@ describe('windows reducer', () => {
           width: 3,
           height: 4
         },
-        tabs: [{
-          id: 'aa',
-          metaDataID: 'bb',
-          content: 'cc'
-        }]
+        browser: {
+          currentTabID: 'aa',
+          tabs: [{
+            id: 'aa',
+            metaDataID: 'bb',
+            content: 'cc'
+          }]
+        }
       }];
       store.dispatch(initializeWindows(init));
 
@@ -61,7 +64,9 @@ describe('windows reducer', () => {
 
       expect(newState.length).toBe(1);
       expect(newState[0]).toMatchObject({
-        tabs: []
+        browser: {
+          tabs: []
+        }
       });
     });
 
@@ -98,7 +103,9 @@ describe('windows reducer', () => {
 
       expect(newState.length).toBe(1);
       expect(newState[0]).toMatchObject({
-        tabs
+        browser: {
+          tabs
+        }
       });
     });
   });
