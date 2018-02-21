@@ -75,7 +75,11 @@ describe('<Tab />', () => {
 
   describe('buildTabContextMenu', () => {
     it('メニューのテンプレートが作れる', () => {
-      const contextMenu = buildTabContextMenu(buffer);
+      const contextMenu = buildTabContextMenu({
+        buffer,
+        id: '',
+        content: '',
+      });
 
       expect(contextMenu[0].label).toBe('edit on system editor');
       expect(contextMenu[1].label).toBe('edit on bamju editor');
@@ -84,6 +88,11 @@ describe('<Tab />', () => {
 
     it('edit on bamju editorはisSimilarFileのときのみ有効', () => {
       const tab = store.getState().browser.tabs[0];
+      const props = {
+        buffer,
+        id: '',
+        content: '',
+      };
 
       [
         ItemTypeMarkdown,
@@ -94,7 +103,7 @@ describe('<Tab />', () => {
       ].forEach((itemType) => {
         buffer.itemType = itemType;
         store.dispatch(updateTab(tab.id, buffer.id, ''));
-        const contextMenu = buildTabContextMenu(buffer);
+        const contextMenu = buildTabContextMenu(props);
 
         expect(contextMenu[1].enabled).toBe(true);
       });
@@ -106,7 +115,7 @@ describe('<Tab />', () => {
       ].forEach((itemType) => {
         buffer.itemType = itemType;
         store.dispatch(updateTab(tab.id, buffer.id, ''));
-        const contextMenu = buildTabContextMenu(buffer);
+        const contextMenu = buildTabContextMenu(props);
 
         expect(contextMenu[1].enabled).toBe(false);
       });
