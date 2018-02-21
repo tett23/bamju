@@ -11,27 +11,30 @@ export const INITIALIZE_REPOSITORIES_TREE_VIEW = 'REPOSITORIES_TREE_VIEW:INITIAL
 export const OPEN_BUFFER = 'REPOSITORIES_TREE_VIEW:OPEN_BUFFER';
 export const CLOSE_BUFFER = 'REPOSITORIES_TREE_VIEW:CLOSE_BUFFER';
 
-export function initializeRepositoriesTreeView(state: RepositoriesTreeViewState) {
+export function initializeRepositoriesTreeView(state: RepositoriesTreeViewState, meta: Object = {}) {
   return {
     type: INITIALIZE_REPOSITORIES_TREE_VIEW,
-    payload: state
+    payload: state,
+    meta
   };
 }
 
-export function openBuffer(metaDataID: MetaDataID) {
+export function openBuffer(metaDataID: MetaDataID, meta: Object = {}) {
   return {
     type: OPEN_BUFFER,
     payload: {
       metaDataID
-    }
+    },
+    meta
   };
 }
 
-export function closeBuffer(metaDataID: MetaDataID) {
+export function closeBuffer(metaDataID: MetaDataID, meta: Object = {}) {
   return {
     type: CLOSE_BUFFER,
     payload: {
       metaDataID
-    }
+    },
+    meta
   };
 }

@@ -46,50 +46,55 @@ const rectangleDefault = {
   height: 728
 };
 
-export function initializeWindows(state: WindowsState) {
+export function initializeWindows(state: WindowsState, meta: Object = {}) {
   return {
     type: INITIALIZE_WINDOWS,
     payload: {
       state
-    }
+    },
+    meta
   };
 }
 
-export function windowInitialized(windowID: WindowID) {
+export function windowInitialized(windowID: WindowID, meta: Object = {}) {
   return {
     type: WINDOW_INITIALIZED,
     payload: {
       windowID,
-    }
+    },
+    meta
   };
 }
 
-export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = []) {
+export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = [], meta: Object = {}) {
   return {
     type: NEW_WINDOW,
     payload: {
       windowID: createWindowID(),
       rectangle,
       tabs,
-    }
+    },
+    meta
   };
 }
 
-export function closeWindow(windowID: string) {
+export function closeWindow(windowID: string, meta: Object = {}) {
   return {
     type: CLOSE_WINDOW,
     payload: {
       windowID
-    }
+    },
+    meta
   };
 }
 
-export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle) {
+export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle, meta: Object = {}) {
   return {
     type: UPDATE_WINDOW_RECTANGLE,
     payload: {
       windowID,
       rectangle
-    }
+    },
+    meta
   };
 }

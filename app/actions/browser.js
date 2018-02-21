@@ -13,52 +13,57 @@ export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
 
-export function initializeBrowser(state: BrowserState) {
+export function initializeBrowser(state: BrowserState, meta: Object = {}) {
   return {
     type: INITIALIZE_BROWSER,
     payload: {
       state
-    }
+    },
+    meta,
   };
 }
 
-export function addTab(metaDataID: ?MetaDataID, content: string) {
+export function addTab(metaDataID: ?MetaDataID, content: string, meta: Object = {}) {
   return {
     type: ADD_TAB,
     payload: {
       id: `${Math.random()}`,
       metaDataID,
       content,
-    }
+    },
+    meta,
   };
 }
 
-export function closeTab(id: string) {
+export function closeTab(id: string, meta: Object = {}) {
   return {
     type: CLOSE_TAB,
     payload: {
       id,
-    }
+    },
+    meta,
   };
 }
 
-export function updateTab(id: string, metaDataID: MetaDataID, content: string) {
+export function updateTab(id: string, metaDataID: MetaDataID, content: string, meta: Object = {}) {
   return {
     type: UPDATE_TAB,
     payload: {
       id,
       metaDataID,
       content,
-    }
+    },
+    meta,
   };
 }
 
-export function updateCurrentTab(metaDataID: MetaDataID, content: string) {
+export function updateCurrentTab(metaDataID: MetaDataID, content: string, meta: Object = {}) {
   return {
     type: UPDATE_CURRENT_TAB,
     payload: {
       metaDataID,
       content,
-    }
+    },
+    meta,
   };
 }

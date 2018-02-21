@@ -16,20 +16,22 @@ export type BufferUpdate = {
   changes?: Buffer[]
 };
 
-export function reloadBuffers(buffers: Buffer[]) {
+export function reloadBuffers(buffers: Buffer[], meta: Object = {}) {
   return {
     type: RELOAD_BUFFERS,
     payload: {
       buffers
-    }
+    },
+    meta
   };
 }
 
-export function updateBuffers(updates: BufferUpdate) {
+export function updateBuffers(updates: BufferUpdate, meta: Object = {}) {
   return {
     type: UPDATE_BUFFERS,
     payload: {
       updates,
-    }
+    },
+    meta
   };
 }
