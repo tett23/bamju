@@ -16,12 +16,9 @@ import {
   setStore,
 } from './main/event_dispatcher';
 
-// import {
-//   getInstance,
-// } from './common/repository_manager';
-// import {
-//   getInstance as getConfigInstance
-// } from './common/bamju_config';
+import {
+  getInstance as getConfigInstance
+} from './common/bamju_config';
 import {
   MessageTypeError,
 } from './common/util';
@@ -43,7 +40,7 @@ const store = createStore(
 replayActionMain(store);
 
 setStore(store);
-// store.subscribe(updateConfig);
+store.subscribe(updateConfig);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -57,11 +54,11 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p); // eslint-disable-line
 }
 
-// function updateConfig() {
-//   const state = store.getState();
-//
-//   // getConfigInstance().update(state);
-// }
+function updateConfig() {
+  const state = store.getState();
+
+  getConfigInstance().updateByState(state);
+}
 
 ipcMain.on('get-state', (e) => {
   const state = store.getState();

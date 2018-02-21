@@ -16,6 +16,9 @@ import {
 import {
   type WindowsState,
 } from '../reducers/windows';
+import {
+  type State,
+} from '../reducers/main';
 
 export type Config = {
   repositories: RepositoryConfig[],
@@ -88,6 +91,10 @@ export class BamjuConfig {
 
     this._config = this._merge(values);
     await this._updateConfigFile();
+  }
+
+  async updateByState(state: State) {
+    await this.update(state.global);
   }
 
   async quit() {

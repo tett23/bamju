@@ -6,6 +6,9 @@ import {
   BamjuConfig,
   defaultConfig,
 } from '../../app/common/bamju_config';
+import {
+  initialState,
+} from '../../app/reducers/main';
 
 const configPath = '/tmp/test/bamju_config.json';
 let config;
@@ -117,6 +120,21 @@ describe('BamjuConfig', () => {
 
       expect(config.toJSON()).toBe(beforeJSON);
       expect(jsonString).toBe(beforeJSON);
+    });
+  });
+
+  describe('updateByState', () => {
+    it('state.globalの内容で更新される', async () => {
+      const state = initialState();
+      state.global.repositories.push({
+        repositoryName: 'foo',
+        repositoryPath: 'bar'
+      });
+
+      await config.updateByState(state);
+
+      const output = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      expect(output).toMatchObject(state.global);
     });
   });
 
