@@ -12,133 +12,153 @@ import { connect } from 'react-redux';
 import path from '../../common/path';
 
 import {
-  type BrowserState,
-  tabDefault,
-} from '../reducers/browser';
+  parseMetaData,
+  parseInternalPath,
+} from '../../actions/parser';
+import {
+  newEditorWindow,
+} from '../../actions/windows';
 import {
   isSimilarFile,
+  type MetaDataID,
+  internalPath,
 } from '../../common/metadata';
 import {
   type Buffer
 } from '../../common/buffer';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './Browser.css';
 
 type Props = {
-  buffer: Buffer,
+  id: string,
+  buffer: ?Buffer,
   content: string
-};
+} & $ReturnType<typeof mapDispatchToProps>;
 
-function tab({ buffer, content }: {
-  buffer: Buffer,
-  content: string
-} = tabDefault()) {
-  const {
-    name, repositoryName, path: itemPath, absolutePath
-  } = buffer;
+function tab(props: Props) {
+  const html = {
+    __html: props.content
+  };
 
-  const breadcrumbItems = [];
-  breadcrumbItems.push((
+  return (
+    <div
+      className={styles.tab}
+      onContextMenu={e => {
+        return contextmenu(e, props);
+      }}
+    >
+      {buildBreadcrumbs(props.buffer, props)}
+      <div className="markdown-body" dangerouslySetInnerHTML={html} />
+    </div>
+  );
+}
+
+function buildBreadcrumbs(buffer: ?Buffer, props: Props) {
+  if (buffer == null) {
+    return <Breadcrumb />;
+  }
+
+  const { repositoryName } = buffer;
+  const items = [(
     <Breadcrumb.Item
       key="/"
-      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/'); }}
+      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/', props); }}
     >
       {repositoryName}
     </Breadcrumb.Item>
-  ));
+  )];
 
   let breadcrumbPath:string = '';
-  path.split(itemPath).forEach((item: string) => {
+  path.split(buffer.path).forEach((item) => {
     if (item === '') {
       return;
     }
     breadcrumbPath += `/${item}`;
 
     const p = breadcrumbPath;
-    breadcrumbItems.push((
+    items.push((
       <Breadcrumb.Item
         key={breadcrumbPath}
-        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p); }}
+        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p, props); }}
       >
         {item}
       </Breadcrumb.Item>
     ));
   });
 
-  const html = {
-    __html: content
-  };
-
   return (
-    <div
-      className={styles.tab}
-      data-absolute-path={absolutePath}
-      onContextMenu={e => {
-        return contextmenu(e, buffer);
-      }}
-    >
-      <Breadcrumb>{breadcrumbItems}</Breadcrumb>
-      <div className="markdown-body" name={name} dangerouslySetInnerHTML={html} />
-    </div>
+    <Breadcrumb>
+      {items}
+    </Breadcrumb>
   );
 }
 
-function breadcrumbItemsOnClick(e, repo: string, itemPath: string) {
+function breadcrumbItemsOnClick(e, repo: string, itemPath: string, props: Props) {
   e.preventDefault();
   e.stopPropagation();
 
-  ipcRenderer.send('open-page', { windowID: window.windowID, repositoryName: repo, itemName: itemPath });
+  props.parseInternalPath(props.id, internalPath(repo, itemPath));
 }
 
-export function buildTabContextMenu(buf: Buffer) {
+export function buildTabContextMenu(props: Props) {
+  if (props.buffer == null) {
+    return [];
+  }
+
+  const buffer = props.buffer;
+
   return [
     {
       label: 'edit on system editor',
       click: () => {
-        ipcRenderer.send('open-by-system-editor', buf.absolutePath);
+        ipcRenderer.send('open-by-system-editor', buffer.absolutePath);
       }
     },
     {
       label: 'edit on bamju editor',
       click: () => {
-        ipcRenderer.send('open-by-bamju-editor', {
-          parentWindowID: window.windowID,
-          metaDataID: buf.id,
-        });
+        props.newEditorWindow(buffer.id);
       },
-      enabled: isSimilarFile(buf.itemType)
+      enabled: isSimilarFile(buffer.itemType)
     },
     {
       label: 'reload',
       click: () => {
-        ipcRenderer.send('open-page', {
-          windowID: window.windowID,
-          repositoryName: buf.repositoryName,
-          itemName: buf.path,
-        });
+        props.parseMetaData(props.id, buffer.id);
       }
     }
   ];
 }
 
-function contextmenu(e, buf: Buffer) {
+function contextmenu(e, props: Props) {
   e.preventDefault();
   e.stopPropagation();
 
-  const template = buildTabContextMenu(buf);
+  if (props.buffer == null) {
+    return;
+  }
+
+  const template = buildTabContextMenu(props);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
 
-const mapStateToProps = (state: {browser: BrowserState}): Props => {
-  return state.browser.tabs[0] || tabDefault();
-};
-
-const mapDispatchToProps = (_) => {
+function mapDispatchToProps(dispatch) {
   return {
-    buildTabContextMenu,
+    parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
+      return dispatch(parseMetaData(tabID, metaDataID));
+    },
+    parseInternalPath: (tabID: string, _internalPath: string) => {
+      return dispatch(parseInternalPath(tabID, _internalPath));
+    },
+    newEditorWindow: (metaDataID: MetaDataID) => {
+      return dispatch(newEditorWindow(metaDataID));
+    }
   };
-};
+}
 
 
-export const Tab = connect(mapStateToProps, mapDispatchToProps)(tab);
+export const Tab = connect(null, mapDispatchToProps)(tab);

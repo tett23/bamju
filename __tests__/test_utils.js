@@ -32,7 +32,6 @@ export type DummyBuffer = {
   absolutePath?: string,
   itemType?: ItemType,
   isLoaded?: boolean,
-  isOpened?: boolean,
   childrenIDs?: MetaDataID[],
   parentID?: ?MetaDataID,
   body?: string
@@ -48,15 +47,10 @@ export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
     absolutePath: '',
     itemType: ItemTypeUndefined,
     isLoaded: true,
-    isOpened: false,
     parentID: null,
     childrenIDs: [],
     body: ''
   }, obj);
-}
-
-type dummyType = {
-  [string]: Array<string>
 }
 
 export function createDummyBufferByPath(repositoryName: string, itemPath:string): Buffer {
@@ -83,7 +77,11 @@ export function createDummyBufferByPath(repositoryName: string, itemPath:string)
   return ret;
 }
 
-export function dummy(items: dummyType): {[string]: Array<Buffer>} {
+type dummyType = {
+  [string]: Array<string>
+}
+
+export function dummy(items: dummyType): Buffer[] {
   const ret = {};
   const repositoryKeys = Object.keys(items);
 
@@ -165,7 +163,9 @@ export function dummy(items: dummyType): {[string]: Array<Buffer>} {
     });
   });
 
-  return ret;
+  return Object.keys(ret).reduce((r, key) => {
+    return r.concat(ret[key]);
+  }, []);
 }
 
 Enzyme.configure({ adapter: new Adapter() });

@@ -9,20 +9,16 @@ import EditorRoot from './renderer/containers/EditorRoot';
 import {
   appReducer,
   initialState,
-} from './renderer/reducers/editor_combined';
-import { openBuffer } from './renderer/actions/editor';
-import { addMessage } from './renderer/actions/messages';
+} from './reducers/editor_window';
+import { openBuffer } from './actions/editor';
 import {
   type Buffer
 } from './common/buffer';
-import {
-  type Message
-} from './common/util';
 import './app.global.css';
 
 const store = createStore(
   appReducer,
-  initialState(),
+  initialState()
 );
 
 const root = document.getElementById('root');
@@ -45,10 +41,4 @@ ipcRenderer.on('send-buffer-information', (_) => {
   const state = store.getState();
 
   ipcRenderer.send('save-buffer', [state.editor.buffer.id, state.editor.content]);
-});
-
-ipcRenderer.on('message', (_, message: Message) => {
-  console.log('message', message);
-
-  store.dispatch(addMessage(message));
 });

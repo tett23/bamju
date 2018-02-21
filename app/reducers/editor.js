@@ -2,13 +2,13 @@
 
 import {
   ItemTypeUndefined
-} from '../../common/metadata';
+} from '../common/metadata';
 import {
   type Buffer
-} from '../../common/buffer';
+} from '../common/buffer';
 import {
-  type ActionTypes
-} from './editor_combined';
+  type Actions
+} from './types';
 import {
   OPEN_BUFFER,
   BURFFER_UPDATED,
@@ -39,18 +39,18 @@ export function initialEditorState(): EditorState {
   };
 }
 
-export function editor(state: EditorState = initialEditorState(), action: ActionTypes): EditorState {
+export function editor(state: EditorState = initialEditorState(), action: Actions): EditorState {
   switch (action.type) {
   case OPEN_BUFFER: {
     return {
-      buffer: action.buffer,
-      content: action.content
+      buffer: action.payload.buffer,
+      content: action.payload.content
     };
   }
   case BURFFER_UPDATED: {
     return {
-      buffer: action.buffer,
-      content: action.content
+      buffer: action.payload.buffer,
+      content: action.payload.content
     };
   }
   default:

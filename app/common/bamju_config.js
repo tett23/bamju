@@ -11,41 +11,55 @@ import {
   type RepositoryConfig,
 } from './repository';
 import {
+  createWindowID,
+} from './window';
+import {
   type Buffer,
 } from './buffer';
 import {
-  type WindowConfig,
-  type WindowID,
-} from './window';
+  type WindowsState,
+} from '../reducers/windows';
+import {
+  initialBrowserState,
+} from '../reducers/browser';
+import {
+  type State,
+  initialState,
+} from '../reducers/main';
 
 export type Config = {
   repositories: RepositoryConfig[],
-  windows: WindowConfig[],
+  windows: WindowsState,
   config: {
     followChange: boolean,
     mkdirP: boolean
   },
-  bufferItems: {[string]: Buffer[]}
+  buffers: Buffer[]
 };
 
-export const defaultConfig:Config = {
-  repositories: [],
-  windows: [{
-    id: 'init',
-    rectangle: {
-      x: 100,
-      y: 100,
-      width: 1024,
-      height: 728
+export function defaultConfig() {
+  const globalInit = initialState().global;
+
+  return {
+    repositories: globalInit.repositories,
+    windows: [{
+      id: createWindowID(),
+      rectangle: {
+        x: 100,
+        y: 100,
+        width: 1024,
+        height: 728
+      },
+      browser: initialBrowserState(),
+      repositoriesTreeView: {}
+    }],
+    buffers: globalInit.buffers,
+    config: {
+      followChange: true,
+      mkdirP: true
     },
-    tabs: []
-  }],
-  bufferItems: {},
-  config: {
-    followChange: true,
-    mkdirP: true
-  },
-};
+  };
+}
 
 let _instance: BamjuConfig;
 
@@ -91,9 +105,15 @@ export class BamjuConfig {
     await this._updateConfigFile();
   }
 
+  async updateByState(state: State) {
+    await this.update(Object.assign({}, {
+      windows: state.windows
+    }, state.global));
+  }
+
   async quit() {
     try {
-      this._config.bufferItems = getRepositoryManagerInstance().toBuffers();
+      this._config.buffers = getRepositoryManagerInstance().toBuffers();
       this._config.repositories = getRepositoryManagerInstance().getRepositories().map((repo) => {
         return repo.toConfig();
       });
@@ -105,47 +125,10 @@ export class BamjuConfig {
     this._quit = true;
   }
 
-  findWindowConfig(id: string): ?WindowConfig {
+  findWindowConfig(id: string) {
     return this._config.windows.find((item) => {
       return id === item.id;
     });
-  }
-
-  async replaceWindow(win: WindowConfig): Promise<void> {
-    const idx = this._config.windows.findIndex((w) => {
-      return w.id === win.id;
-    });
-    if (idx === -1) {
-      this._config.windows.push(win);
-      return;
-    }
-
-    this._config.windows[idx] = win;
-
-    await this.update();
-  }
-
-  async addWindow(win: WindowConfig): Promise<void> {
-    const c = this.findWindowConfig(win.id);
-    if (c) {
-      return;
-    }
-
-    this._config.windows.push(win);
-    await this.update();
-  }
-
-  async removeWindow(id: WindowID): Promise<void> {
-    const idx = this._config.windows.findIndex((w) => {
-      return w.id === id;
-    });
-    if (idx === -1) {
-      return;
-    }
-
-    this._config.windows.splice(idx, 1);
-
-    await this.update();
   }
 
   async addRepository(repo: RepositoryConfig) {
@@ -171,7 +154,7 @@ export class BamjuConfig {
   }
 
   _merge(values: Object): Config {
-    return Object.assign({}, defaultConfig, this._config, values);
+    return Object.assign({}, defaultConfig(), this._config, values);
   }
 
   async _updateConfigFile() {

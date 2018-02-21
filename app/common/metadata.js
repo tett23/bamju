@@ -53,7 +53,6 @@ export class MetaData {
   parentID: ?MetaDataID;
   childrenIDs: Array<MetaDataID>;
   isLoaded: boolean;
-  isOpened: boolean;
   body: string;
 
   constructor(buffer: Buffer) {
@@ -70,7 +69,6 @@ export class MetaData {
     this.parentID = buffer.parentID;
     this.childrenIDs = buffer.childrenIDs;
     this.isLoaded = buffer.isLoaded;
-    this.isOpened = buffer.isOpened;
     this.body = buffer.body;
   }
 
@@ -120,15 +118,20 @@ export class MetaData {
     await this.repository().moveNamelessFile(this.id);
   }
 
-  async addFile(itemName: string, content: string): Promise<[?MetaData, Message]> {
-    if (!isSimilarFile(detectItemType(itemName))) {
+  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, Message]> {
+    const itemType = detectItemType(itemName);
+    if (!isSimilarFile(itemType)) {
       return [null, {
         type: MessageTypeFailed,
         message: `MetaData.addFile isSimilarFile check itemName=${itemName}`
       }];
     }
 
-    const [ret, message] = await this._addItem(detectItemType(itemName), itemName);
+    if (content === '' && itemType === ItemTypeMarkdown) {
+      content = `# ${itemName.replace(/(.+?)\..+?$/, '$1')}`; // eslint-disable-line
+    }
+
+    const [ret, message] = await this._addItem(itemType, itemName);
     if (ret == null || message.type === MessageTypeFailed) {
       return [ret, message];
     }
@@ -347,20 +350,6 @@ export class MetaData {
     }];
   }
 
-  async open(): Promise<MetaData> {
-    await this.load();
-
-    this.isOpened = true;
-
-    return this;
-  }
-
-  close(): MetaData {
-    this.isOpened = false;
-
-    return this;
-  }
-
   internalPath(): string {
     return internalPath(this.repositoryName, this.path);
   }
@@ -377,7 +366,6 @@ export class MetaData {
       parentID: this.parentID,
       childrenIDs: this.childrenIDs,
       isLoaded: this.isLoaded,
-      isOpened: this.isOpened,
       body: this.body,
     };
   }
@@ -408,7 +396,6 @@ export class MetaData {
       parentID: this.id,
       childrenIDs: [],
       isLoaded: false,
-      isOpened: false,
       body: '',
     });
     this.childrenIDs.push(ret.id);
@@ -612,8 +599,6 @@ export function resolveInternalPath(itemPath: string): {repositoryName: ?string,
   } else {
     [retPath] = split;
   }
-
-  retPath = path.join('/', retPath);
 
   return {
     repositoryName,

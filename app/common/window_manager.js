@@ -7,15 +7,14 @@ import {
   MenuTypeInit,
 } from '../menu';
 import {
-  MetaData,
+  type Window as WindowConfig,
+} from '../reducers/windows';
+import {
   type MetaDataID,
 } from './metadata';
 import {
-  type Buffer
-} from './buffer';
-import {
   Window,
-  type WindowConfig,
+  type WindowID,
 } from './window';
 import AppWindow from './app_window';
 import EditorWindow from './editor_window';
@@ -57,8 +56,8 @@ export class WindowManager {
     this._appWindows.push(w);
   }
 
-  createEditorWindow(metaData: MetaData, parentWindowID: ?string) {
-    const w = new EditorWindow(metaData, parentWindowID);
+  createEditorWindow(windowID: WindowID, metaDataID: MetaDataID) {
+    const w = new EditorWindow(windowID, metaDataID);
 
     this._editorWindows.push(w);
   }
@@ -79,6 +78,9 @@ export class WindowManager {
       return w.windowID() === windowID;
     });
     if (idx !== -1) {
+      // if (this._appWindows[idx].browserWindow != null) {
+      //   this._appWindows[idx].browserWindow.close();
+      // }
       this._appWindows.splice(idx);
       return true;
     }
@@ -87,6 +89,9 @@ export class WindowManager {
       return w.windowID() === windowID;
     });
     if (idx !== -1) {
+      // if (this._editorWindows[idx].browserWindow != null) {
+      //   this._editorWindows[idx].browserWindow.close();
+      // }
       this._editorWindows.splice(idx);
       return true;
     }
@@ -125,6 +130,12 @@ export class WindowManager {
     return false;
   }
 
+  findAppWindow(windowID: WindowID): ?AppWindow {
+    return this._appWindows.find((w) => {
+      return w.windowID() === windowID;
+    });
+  }
+
   _updateMenu(window: Window) { /* eslint class-methods-use-this: 0 */
     const menuType: MenuType = window.getType();
 
@@ -134,9 +145,7 @@ export class WindowManager {
 
   _findWindow(windowID: string): ?Window {
     let window:?Window;
-    window = this._appWindows.find((w) => {
-      return w.windowID() === windowID;
-    });
+    window = this.findAppWindow(windowID);
     if (window) {
       return window;
     }
@@ -157,21 +166,8 @@ export class WindowManager {
 
   getEditorWindow(metaDataID: MetaDataID): ?EditorWindow {
     return this._editorWindows.find((w) => {
-      return w.metaData.id === metaDataID;
+      return w.metaDataID === metaDataID;
     });
-  }
-
-  async reloadBuffers(buffers: Buffer[]): Promise<void> {
-    const p: Array<Promise<void>> = this._appWindows.map(async (item: AppWindow): Promise<void> => {
-      console.log('Manager updateTreeView before updateTreeView await');
-      await item.reloadRepositories(buffers);
-      console.log('Manager updateTreeView after updateTreeView await');
-    });
-    console.log('Manager updateTreeView create promise array');
-
-    console.log('Manager updateTreeView before Promise.all');
-    await Promise.all(p);
-    console.log('Manager updateTreeView after Promise.all');
   }
 }
 

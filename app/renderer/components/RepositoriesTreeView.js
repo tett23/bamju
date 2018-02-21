@@ -4,11 +4,36 @@ import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import type { RepositoriesState } from '../reducers/repositories';
+import {
+  type Rectangle,
+  type Tab,
+  newWindow,
+  newEditorWindow,
+} from '../../actions/windows';
+import {
+  addTab,
+} from '../../actions/browser';
+import {
+  openBuffer,
+  closeBuffer,
+} from '../../actions/repositories_tree_view';
+import {
+  addRepository,
+  removeRepository,
+} from '../../actions/repositories';
+import {
+  parseMetaData,
+} from '../../actions/parser';
+import type { State } from '../../reducers/app_window';
+import {
+  type BufferState,
+  initialBufferState,
+} from '../../reducers/repositories_tree_view';
 import {
   type Buffer
 } from '../../common/buffer';
 import {
+  type MetaDataID,
   type ItemType,
   ItemTypeMarkdown,
   ItemTypeText,
@@ -21,23 +46,18 @@ import {
   isSimilarFile,
   isSimilarDirectory,
 } from '../../common/metadata';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './RepositoriesTreeView.css';
-import { reloadRepositories } from '../actions/repositories';
 
-// type Props = RepositoriesState;
-type Props = {
-  buffers: Buffer[]
-};
+type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
-const defaultProps = {
-  buffers: []
-};
-
-function repositoriesTreeView({ buffers }: Props = defaultProps) {
-  const items = buffers.filter((buf) => {
+function repositoriesTreeView(props: Props) {
+  const items = props.buffers.filter((buf) => {
     return buf.itemType === ItemTypeRepository;
   }).map((rootBuf) => {
-    return buildItems(rootBuf, buffers);
+    return buildItems(rootBuf, props);
   });
 
   return (
@@ -45,24 +65,29 @@ function repositoriesTreeView({ buffers }: Props = defaultProps) {
       <ul className={styles.treeViewItems}>{items}</ul>
       <div className={styles.menu}>
         <span className={styles.menuItem}>
-          <FontAwesome name="plus" onClick={addRepository} />
+          <FontAwesome name="plus" onClick={(e) => { addRepositoryHandler(e, props); }} />
         </span>
       </div>
     </div>
   );
 }
 
-function buildItems(item: Buffer, repository: Buffer[]) {
+function buildItems(
+  item: Buffer,
+  props: Props,
+) {
   const spanClass = `${itemType(item.itemType)}`;
 
+  const itemState = props.treeView[item.id] || initialBufferState();
+
   let children = [];
-  if (item.isOpened) {
+  if (itemState.isOpened) {
     children = item.childrenIDs.map((childrenID) => {
-      return repository.find((child) => {
+      return props.buffers.find((child) => {
         return child.id === childrenID;
       });
     }).filter(Boolean).map((child) => {
-      return buildItems(child, repository);
+      return buildItems(child, props);
     });
   }
 
@@ -70,12 +95,12 @@ function buildItems(item: Buffer, repository: Buffer[]) {
     <ul className={styles.repositoryItem} key={item.id}>
       <li
         role="menuitem"
-        onClick={e => { return onClickItem(e, item); }}
-        onKeyUp={e => { return onClickItem(e, item); }}
-        onContextMenu={e => { return contextmenu(e, item); }}
+        onClick={e => { return onClickItem(e, item, props.currentTabID, props); }}
+        onKeyUp={e => { return onClickItem(e, item, props.currentTabID, props); }}
+        onContextMenu={e => { return contextmenu(e, item, props); }}
       >
         <div>
-          {icon(item)}
+          {icon(item, itemState, props)}
           <span className={spanClass}>
             {item.name}
           </span>
@@ -88,35 +113,35 @@ function buildItems(item: Buffer, repository: Buffer[]) {
   return ret;
 }
 
-function onClickItem(e, item: Buffer) {
+function onClickItem(e, item: Buffer, tabID: string, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
   if (isSimilarFile(item.itemType) || isSimilarDirectory(item.itemType)) {
-    return openFile(item);
+    return openFile(item, tabID, dispatcher);
   }
 }
 
-function toggleTreeView(e, buffer: Buffer) {
+function toggleTreeView(e, buffer: Buffer, bufferState: BufferState, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (buffer.isOpened) {
-    ipcRenderer.send('close-item', buffer.id);
+  if (bufferState.isOpened) {
+    dispatcher.closeBuffer(buffer.id);
   } else {
-    ipcRenderer.send('open-item', buffer.id);
+    dispatcher.openBuffer(buffer.id);
   }
 }
 
-function icon(item: Buffer) {
+function icon(item: Buffer, bufferState: BufferState, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   switch (item.itemType) {
   case ItemTypeRepository:
-    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
+    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
   case ItemTypeDirectory:
-    if (item.isOpened) {
-      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
+    if (bufferState.isOpened) {
+      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
     }
-    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
+    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
 
   case ItemTypeMarkdown:
     return <FontAwesome name="file-text" />;
@@ -133,7 +158,7 @@ function icon(item: Buffer) {
   }
 }
 
-function addRepository(e) {
+function addRepositoryHandler(e, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -143,30 +168,37 @@ function addRepository(e) {
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
-      ipcRenderer.send('add-repository', { absolutePath: directory });
+      dispatcher.addRepositoryDispatcher(directory);
     });
   });
 }
 
-function openFile(item: Buffer) {
+function openFile(item: Buffer, tabID: string, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   if (item.itemType === ItemTypeUndefined) {
     return;
   }
 
-  ipcRenderer.send('open-page', { repositoryName: item.repositoryName, itemName: item.path });
+  dispatcher.parseMetaData(tabID, item.id);
 }
 
-function contextmenu(e, item: Buffer) {
+function contextmenu(
+  e,
+  item: Buffer,
+  dispatcher: $ReturnType<typeof mapDispatchToProps>
+) {
   e.preventDefault();
   e.stopPropagation();
 
-  const template = buildContextMenu(item);
+  const template = buildContextMenu(item, dispatcher);
   const menu = remote.require('electron').Menu.buildFromTemplate(template);
 
   menu.popup(remote.getCurrentWindow());
 }
 
-export function buildContextMenu(item: Buffer) {
+export function buildContextMenu(
+  item: Buffer,
+  dispatcher: $ReturnType<typeof mapDispatchToProps>
+) {
   const ret = [];
   ret.push({
     label: 'edit on system editor',
@@ -177,20 +209,17 @@ export function buildContextMenu(item: Buffer) {
   ret.push({
     label: 'edit on bamju editor',
     click: () => {
-      ipcRenderer.send('open-by-bamju-editor', {
-        parentWindowID: window.windowID,
-        metaDataID: item.id,
-      });
+      dispatcher.newEditorWindow(item.id);
     },
     enabled: isSimilarFile(item.itemType),
   });
   ret.push({
     label: 'open new window',
     click: () => {
-      ipcRenderer.send('open-new-window', {
-        windowID: window.windowID,
-        metaDataID: item.id,
-      });
+      const rectangle = remote.getCurrentWindow().getBounds();
+      rectangle.x += 50;
+      rectangle.y += 50;
+      dispatcher.newWindow(rectangle, [addTab(item.id, '').payload]);
     }
   });
   ret.push({
@@ -204,7 +233,7 @@ export function buildContextMenu(item: Buffer) {
         message: '削除しますか'
       });
       if (choice === 0) {
-        ipcRenderer.send('remove-repository', { absolutePath: item.absolutePath });
+        dispatcher.removeRepositoryDispatcher(item.absolutePath, item.repositoryName);
       }
     },
     enabled: item.itemType === ItemTypeRepository
@@ -221,26 +250,41 @@ function itemType(t: ItemType) {
   return styles.itemTypeUnavailable;
 }
 
-const mapStateToProps = (state: {repositories: RepositoriesState}): Props => {
-  if (state == null) {
-    return {
-      buffers: []
-    };
-  }
+function mapStateToProps(state: State) {
+  const currentTabID = state.browser.tabs[0].id;
 
   return {
-    buffers: state.repositories.buffers
+    buffers: state.global.buffers,
+    treeView: state.repositoriesTreeView,
+    currentTabID
   };
-};
+}
 
-
-const mapDispatchToProps = (dispatch) => {
+function mapDispatchToProps(dispatch) {
   return {
-    reloadRepositories: (buffers: Buffer[]) => {
-      dispatch(reloadRepositories(buffers));
+    newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
+      return dispatch(newWindow(rectangle, tabs));
+    },
+    addRepository: (absolutePath: string) => {
+      return dispatch(addRepository(absolutePath));
+    },
+    removeRepository: (absolutePath: string, repositoryName: string) => {
+      return dispatch(removeRepository(absolutePath, repositoryName));
+    },
+    parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
+      return dispatch(parseMetaData(tabID, metaDataID));
+    },
+    openBuffer: (metaDataID: MetaDataID) => {
+      return dispatch(openBuffer(metaDataID));
+    },
+    closeBuffer: (metaDataID: MetaDataID) => {
+      return dispatch(closeBuffer(metaDataID));
+    },
+    newEditorWindow: (metaDataID: MetaDataID) => {
+      return dispatch(newEditorWindow(metaDataID));
     }
   };
-};
+}
 
 
 export const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);

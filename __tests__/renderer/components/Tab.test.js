@@ -4,15 +4,25 @@ import * as React from 'react';
 import { createStore } from 'redux';
 
 import '../../global_config.test';
-import { mountWithStore } from '../../test_utils';
+import {
+  mountWithStore,
+  dummy,
+} from '../../test_utils';
 
 import {
   appReducer,
   initialState,
-} from '../../../app/renderer/reducers/combined';
+} from '../../../app/reducers/app_window';
+import {
+  reloadBuffers,
+} from '../../../app/actions/buffers';
 import {
   openBuffer,
-} from '../../../app/renderer/actions/tab';
+} from '../../../app/actions/repositories_tree_view';
+import {
+  addTab,
+  updateTab,
+} from '../../../app/actions/browser';
 import {
   ItemTypeMarkdown,
   ItemTypeText,
@@ -30,34 +40,49 @@ import {
 } from '../../../app/renderer/components/Tab';
 
 let store;
+let buffer;
 beforeEach(() => {
   store = createStore(appReducer, initialState());
+
+  const dummyBuffers = dummy({
+    test: ['/foo.md', '/a/b/c.md']
+  });
+  dummyBuffers.forEach((item) => {
+    store.dispatch(openBuffer(item.id));
+  });
+  buffer = dummyBuffers[0]; // eslint-disable-line
+
+  store.dispatch(reloadBuffers(dummyBuffers));
+  store.dispatch(addTab(buffer.id, 'bar'));
 });
 
 describe('<Tab />', () => {
   it('contentの内容が表示できる', () => {
-    const tab = store.getState().browser.tabs[0];
-    store.dispatch(openBuffer(tab.buffer, 'hogehoge'));
-
-    const component = mountWithStore(<Tab buffer={tab.buffer} content={tab.content} />, store);
+    const component = mountWithStore(<Tab id="foo" buffer={buffer} content="hogehoge" />, store);
 
     expect(component.find('.markdown-body').text()).toBe('hogehoge');
   });
 
   it('Breadcrumbの内容が表示できる', () => {
-    const tab = store.getState().browser.tabs[0];
-    tab.buffer.path = '/foo/bar/baz';
-    store.dispatch(openBuffer(tab.buffer, 'hogehoge'));
+    buffer.path = '/foo/bar/baz';
 
-    const component = mountWithStore(<Tab buffer={tab.buffer} content={tab.content} />, store);
+    const component = mountWithStore(<Tab id="foo" buffer={buffer} content="" />, store);
+    const breadcrumbs = component.find('BreadcrumbItem');
 
-    expect(component.find('.markdown-body').text()).toBe('hogehoge');
+    expect(breadcrumbs.length).toBe(4);
+    expect(breadcrumbs.at(0).text()).toBe(buffer.repositoryName);
+    expect(breadcrumbs.at(1).text()).toBe('foo');
+    expect(breadcrumbs.at(2).text()).toBe('bar');
+    expect(breadcrumbs.at(3).text()).toBe('baz');
   });
 
   describe('buildTabContextMenu', () => {
     it('メニューのテンプレートが作れる', () => {
-      const tab = store.getState().browser.tabs[0];
-      const contextMenu = buildTabContextMenu(tab.buffer);
+      const contextMenu = buildTabContextMenu({
+        buffer,
+        id: '',
+        content: '',
+      });
 
       expect(contextMenu[0].label).toBe('edit on system editor');
       expect(contextMenu[1].label).toBe('edit on bamju editor');
@@ -65,6 +90,13 @@ describe('<Tab />', () => {
     });
 
     it('edit on bamju editorはisSimilarFileのときのみ有効', () => {
+      const tab = store.getState().browser.tabs[0];
+      const props = {
+        buffer,
+        id: '',
+        content: '',
+      };
+
       [
         ItemTypeMarkdown,
         ItemTypeText,
@@ -72,10 +104,9 @@ describe('<Tab />', () => {
         ItemTypeTSV,
         ItemTypeHTML
       ].forEach((itemType) => {
-        const { buffer } = initialState().browser.tabs[0];
         buffer.itemType = itemType;
-        store.dispatch(openBuffer(buffer, ''));
-        const contextMenu = buildTabContextMenu(buffer);
+        store.dispatch(updateTab(tab.id, buffer.id, ''));
+        const contextMenu = buildTabContextMenu(props);
 
         expect(contextMenu[1].enabled).toBe(true);
       });
@@ -85,10 +116,9 @@ describe('<Tab />', () => {
         ItemTypeDirectory,
         ItemTypeUndefined
       ].forEach((itemType) => {
-        const { buffer } = initialState().browser.tabs[0];
         buffer.itemType = itemType;
-        store.dispatch(openBuffer(buffer, ''));
-        const contextMenu = buildTabContextMenu(buffer);
+        store.dispatch(updateTab(tab.id, buffer.id, ''));
+        const contextMenu = buildTabContextMenu(props);
 
         expect(contextMenu[1].enabled).toBe(false);
       });

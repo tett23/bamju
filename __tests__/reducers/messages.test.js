@@ -5,15 +5,15 @@ import { createStore } from 'redux';
 import {
   initialMessagesState,
   messages,
-} from '../../../app/renderer/reducers/messages';
+} from '../../app/reducers/messages';
 import {
   addMessage,
   closeMessage,
   closeAllMessages,
-} from '../../../app/renderer/actions/messages';
+} from '../../app/actions/messages';
 import {
   MessageTypeInfo,
-} from '../../../app/common/util';
+} from '../../app/common/util';
 
 let store;
 beforeEach(() => {
@@ -32,8 +32,8 @@ describe('messages reducer', () => {
 
       const newState = store.getState();
       expect(newState.length).toBe(1);
-      expect(newState[0].id).toBe(message.id);
-      expect(newState[0].message).toMatchObject(message.message);
+      expect(newState[0].id).toBe(message.payload.id);
+      expect(newState[0].message).toMatchObject(message.payload.message);
     });
   });
 
@@ -45,7 +45,7 @@ describe('messages reducer', () => {
       }));
       expect(store.getState().length).toBe(1);
 
-      store.dispatch(closeMessage(message.id));
+      store.dispatch(closeMessage(message.payload.id));
 
       expect(store.getState().length).toBe(0);
     });

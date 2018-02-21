@@ -9,11 +9,17 @@ import {
   MenuTypeApp,
 } from '../menu';
 import {
-  getInstance as getConfigInstance
-} from '../common/bamju_config';
+  dispatch,
+} from '../main/event_dispatcher';
+import {
+  updateWindowRectangle,
+  closeWindow,
+} from '../actions/windows';
+import {
+  type Window as WindowConfig,
+} from '../reducers/windows';
 import {
   Window,
-  type WindowConfig,
 } from './window';
 import {
   getInstance as getWindowManagerInstance,
@@ -21,9 +27,6 @@ import {
 import {
   type MetaDataID,
 } from './metadata';
-import {
-  type Buffer,
-} from './buffer';
 
 export default class AppWindow implements Window {
   browserWindow: BrowserWindow;
@@ -51,8 +54,6 @@ export default class AppWindow implements Window {
         throw new Error('"browserWindow" is not defined');
       }
 
-      getConfigInstance().addWindow(this.conf);
-
       if (process.platform !== 'darwin') {
         const menuItems = buildMenu(MenuTypeApp, this);
         browserWindow.setMenu(menuItems);
@@ -65,9 +66,10 @@ export default class AppWindow implements Window {
     });
 
     browserWindow.on('closed', () => {
-      getConfigInstance().removeWindow(this.conf.id);
+      dispatch(closeWindow(this.conf.id, { targetWindowID: this.windowID() }));
       this.browserWindow = null;
       getWindowManagerInstance().removeWindow(this.windowID());
+      dispatch(closeWindow(this.conf.id, { targetWindowID: this.windowID() }));
     });
 
     browserWindow.on('resize', () => {
@@ -84,14 +86,7 @@ export default class AppWindow implements Window {
 
     const updateRectangle = () => {
       const rectangle = browserWindow.getBounds();
-      this.conf.rectangle = {
-        x: rectangle.x,
-        y: rectangle.y,
-        width: rectangle.width,
-        height: rectangle.height
-      };
-
-      getConfigInstance().replaceWindow(this.conf);
+      dispatch(updateWindowRectangle(this.conf.id, rectangle, { targetWindowID: this.windowID() }));
     };
   }
 
@@ -118,9 +113,5 @@ export default class AppWindow implements Window {
 
   async initializeRenderer() {
     this.browserWindow.webContents.send('initialize', this.conf);
-  }
-
-  async reloadRepositories(buffers: Buffer[]): Promise<void> {
-    this.browserWindow.webContents.send('reload-buffers', buffers);
   }
 }

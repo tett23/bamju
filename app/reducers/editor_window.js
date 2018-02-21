@@ -1,9 +1,6 @@
 // @flow
 
-import {
-  openBuffer,
-  bufferUpdated,
-} from '../actions/editor';
+import { type Actions } from './types';
 import {
   type EditorState,
   editor,
@@ -14,13 +11,6 @@ import {
   messages,
   initialMessagesState,
 } from './messages';
-
-type __ReturnType<B, F: (...any) => B> = B; /* eslint no-unused-vars:0, flowtype/no-weak-types: 0 */
-type $ReturnType<F> = __ReturnType<*, F>;
-
-export type ActionTypes =
-  $ReturnType<typeof openBuffer> |
-  $ReturnType<typeof bufferUpdated>;
 
 type State = {
   editor: EditorState,
@@ -34,7 +24,7 @@ export function initialState(): State {
   };
 }
 
-export function appReducer(s: State, a: ActionTypes) {
+export function appReducer(s: State, a: Actions) {
   return {
     editor: editor(s.editor, a),
     messages: messages(s.messages, a),

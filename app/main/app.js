@@ -3,6 +3,17 @@
 import { app } from 'electron';
 import expandHomeDir from 'expand-home-dir';
 import {
+  dispatch,
+  getState,
+} from './event_dispatcher';
+import {
+  initializeWindows,
+  newWindow,
+} from '../actions/windows';
+import {
+  initializeRepositories,
+} from '../actions/repositories';
+import {
   RepositoryManager
 } from '../common/repository_manager';
 import {
@@ -40,20 +51,24 @@ app.on('ready', async () => {
   config = new BamjuConfig(configPath);
   const conf = config.getConfig();
 
-  const repositoryManager = new RepositoryManager(conf.bufferItems, conf.repositories);
+  const repositoryManager = new RepositoryManager(conf.buffers, conf.repositories);
   await repositoryManager.loadRepositories();
+  dispatch(initializeRepositories(conf.repositories));
 
-  const _ = new WindowManager(conf.windows);
+  console.log('ready', conf.windows);
+  const _ = new WindowManager([]);
+  dispatch(initializeWindows(conf.windows));
 });
 
 app.on('before-quit', async () => {
   // TODO: configからWindowManagerを参照しないようにしたい
+  await config.updateByState(getState());
   await config.quit();
 });
 
 app.on('activate', async () => {
   if (getWindowManagerInstance().getAppWindows().length === 0) {
-    getWindowManagerInstance().createAppWindow(defaultConfig.windows[0]);
+    dispatch(newWindow(defaultConfig().windows[0].rectangle));
   }
 });
 

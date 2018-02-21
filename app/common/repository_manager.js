@@ -18,24 +18,14 @@ import {
   type Buffer,
 } from './buffer';
 
-type initBuffer = {
-  [string]: Array<Buffer>
-};
-
 export class RepositoryManager {
   _repositories: Array<Repository>
 
-  constructor(bufferItems: initBuffer, config: Array<RepositoryConfig>) {
+  constructor(buffers: Buffer[], config: Array<RepositoryConfig>) {
     this._repositories = [];
     config.forEach((conf) => {
-      let items: Array<Buffer> = [];
-      Object.keys(bufferItems).some((key) => {
-        if (bufferItems[key] != null) {
-          items = bufferItems[key];
-          return true;
-        }
-
-        return false;
+      const items = buffers.filter((item) => {
+        return item.repositoryName === conf.repositoryName;
       });
 
       const [_, result] = this.addRepository(conf, items);
@@ -144,11 +134,10 @@ export class RepositoryManager {
     return ret;
   }
 
-  toBuffers(): {[string]: Array<Buffer>} {
-    const ret = {};
-    this._repositories.forEach((item) => {
-      ret[item.name] = item.toBuffers();
-    });
+  toBuffers(): Buffer[] {
+    const ret = this._repositories.reduce((r, item) => {
+      return r.concat(item.toBuffers());
+    }, []);
 
     return ret;
   }

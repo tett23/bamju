@@ -9,10 +9,10 @@ import { mountWithStore } from '../../test_utils';
 import {
   appReducer,
   initialState,
-} from '../../../app/renderer/reducers/combined';
+} from '../../../app/reducers/app_window';
 import {
   openInputDialog,
-} from '../../../app/renderer/actions/modals';
+} from '../../../app/actions/modals';
 
 import {
   Modals,

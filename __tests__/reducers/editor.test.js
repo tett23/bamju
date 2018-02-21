@@ -5,15 +5,15 @@ import { createStore } from 'redux';
 import {
   initialEditorState,
   editor,
-} from '../../../app/renderer/reducers/editor';
+} from '../../app/reducers/editor';
 import {
   openBuffer,
   bufferUpdated,
-} from '../../../app/renderer/actions/editor';
+} from '../../app/actions/editor';
 import {
   ItemTypeUndefined,
   createMetaDataID,
-} from '../../../app/common/metadata';
+} from '../../app/common/metadata';
 
 let buffer;
 let store;

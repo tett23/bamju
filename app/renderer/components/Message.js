@@ -16,7 +16,7 @@ import {
 import {
   closeMessage,
   closeAllMessages,
-} from '../actions/messages';
+} from '../../actions/messages';
 import { Button } from './Button';
 import styles from './Message.css';
 

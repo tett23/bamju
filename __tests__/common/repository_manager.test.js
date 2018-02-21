@@ -34,14 +34,14 @@ beforeEach(() => {
 describe('RepositoryManager', () => {
   describe('constructor', () => {
     it('引数が空なら値も空になる', () => {
-      manager = new RepositoryManager({}, []);
+      manager = new RepositoryManager([], []);
 
       expect(manager.getRepositories()).toMatchObject([]);
     });
 
     it('引数のBufferをロードする', () => {
       fs.mkdirSync('/tmp/bamju/test-test');
-      manager = new RepositoryManager({}, [{
+      manager = new RepositoryManager([], [{
         repositoryName: 'hoge',
         absolutePath: '/tmp/bamju/test-test'
       }]);
@@ -54,7 +54,7 @@ describe('RepositoryManager', () => {
     it('Configにある項目がRepositoryに存在しなかったら追加する', () => {
       fs.mkdirSync('/tmp/bamju/test-test1');
       fs.mkdirSync('/tmp/bamju/test-test2');
-      manager = new RepositoryManager({}, [
+      manager = new RepositoryManager([], [
         {
           repositoryName: 'test1',
           absolutePath: '/tmp/bamju/test-test1'
@@ -74,7 +74,7 @@ describe('RepositoryManager', () => {
     it('同名のrepositoryが追加されるとFailedのメッセージが返る', () => {
       fs.mkdirSync('/tmp/bamju/foo');
       const testFunc = () => {
-        return new RepositoryManager({}, [
+        return new RepositoryManager([], [
           {
             repositoryName: 'foo',
             absolutePath: '/tmp/bamju/foo'
@@ -90,7 +90,7 @@ describe('RepositoryManager', () => {
 
     it('absolutePathが同じrepositoryが追加されるとFailedのメッセージが返る', () => {
       const testFunc = () => {
-        return new RepositoryManager({}, [
+        return new RepositoryManager([], [
           {
             repositoryName: 'foo',
             absolutePath: '/tmp/bamju/foo'
@@ -218,27 +218,25 @@ describe('RepositoryManager', () => {
 
   describe('toBuffer', () => {
     it('Bufferの取得ができる', () => {
-      manager = new RepositoryManager({
-        test: [{
-          id: '',
-          name: '/',
-          path: '/',
-          repositoryName: 'test',
-          repositoryPath: '/tmp/test',
-          absolutePath: '/tmp/test',
-          itemType: ItemTypeDirectory,
-          isLoaded: false,
-          isOpened: false,
-          childrenIDs: [],
-          parentID: null,
-        }]
-      }, [{
+      manager = new RepositoryManager([{
+        id: '',
+        name: '/',
+        path: '/',
+        repositoryName: 'test',
+        repositoryPath: '/tmp/test',
+        absolutePath: '/tmp/test',
+        itemType: ItemTypeDirectory,
+        isLoaded: false,
+        isOpened: false,
+        childrenIDs: [],
+        parentID: null,
+      }], [{
         repositoryName: 'test',
         absolutePath: '/tmp/bamju/test'
       }]);
       const buffers = manager.toBuffers();
 
-      expect(buffers.test[0].path).toBe('/');
+      expect(buffers[0].path).toBe('/');
     });
   });
 });

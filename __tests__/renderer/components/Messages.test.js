@@ -9,10 +9,10 @@ import { mountWithStore } from '../../test_utils';
 import {
   appReducer,
   initialState,
-} from '../../../app/renderer/reducers/combined';
+} from '../../../app/reducers/app_window';
 import {
   addMessage,
-} from '../../../app/renderer/actions/messages';
+} from '../../../app/actions/messages';
 import {
   MessageTypeInfo
 } from '../../../app/common/util';

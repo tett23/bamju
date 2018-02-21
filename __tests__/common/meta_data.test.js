@@ -221,6 +221,13 @@ describe('MetaData', () => {
         await expect(result.type).toBe(MessageTypeFailed);
       }
     });
+
+    it('ItemTypeMarkdwonのときはファイルの中身がファイル名になる', async () => {
+      const [metaData, _] = await rootItem.addFile('hoge.md');
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+      expect(content).toBe('# hoge');
+    });
   });
 
   describe('addDirectory', () => {
@@ -351,7 +358,6 @@ describe('MetaData', () => {
       absolutePath: '/tmp/test',
       itemType: ItemTypeRepository,
       isLoaded: false,
-      isOpened: false,
       childrenIDs: [],
       parentID: null,
     });
@@ -392,7 +398,6 @@ describe('MetaData', () => {
       absolutePath: '/tmp/test',
       itemType: ItemTypeRepository,
       isLoaded: false,
-      isOpened: false,
       childrenIDs: [],
       parentID: null,
     });
@@ -435,7 +440,6 @@ describe('MetaData', () => {
         absolutePath: '/tmp/test',
         itemType: ItemTypeRepository,
         isLoaded: false,
-        isOpened: false,
         childrenIDs: [],
         parentID: null,
       };
@@ -455,7 +459,6 @@ describe('MetaData', () => {
         absolutePath: '/tmp/test',
         itemType: ItemTypeRepository,
         isLoaded: false,
-        isOpened: false,
         children: [],
         parent: null,
       };
@@ -615,47 +618,5 @@ describe('MetaData', () => {
     // TODO: tableの中身のタグ解釈
     // TODO: Markdown.parseのcurrentの解釈
     // TODO: aa.md が aaa.md にもマッチする問題
-  });
-
-  describe('open', () => {
-    it('isOpenedがtrueになる', async () => {
-      let metaData = repository.getItemByPath('/');
-      expect(metaData.isOpened).toBe(false);
-      metaData = await metaData.open();
-      expect(metaData.isOpened).toBe(true);
-
-      metaData = repository.getItemByPath('/');
-      expect(metaData.isOpened).toBe(true);
-    });
-
-    it('isSimilarDirectoryのときtrueになる', async () => {
-      let metaData = repository.getItemByPath('/foo');
-      expect(metaData.isSimilarDirectory()).toBe(true);
-      metaData = await metaData.open();
-      expect(metaData.isOpened).toBe(true);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(true);
-    });
-
-    it('isSimilarFileのときもtrueになる', async () => {
-      let metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
-      expect(metaData.isSimilarFile()).toBe(true);
-      metaData = await metaData.open();
-      expect(metaData.isOpened).toBe(true);
-
-      metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
-      expect(metaData.isOpened).toBe(true);
-    });
-  });
-
-  describe('close', () => {
-    it('isOpenedがfalseになる', () => {
-      let metaData = repository.getItemByPath('/foo');
-      expect(metaData.close().isOpened).toBe(false);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(false);
-    });
   });
 });

@@ -9,35 +9,47 @@ import {
   MenuTypeEditor,
 } from '../menu';
 import {
+  type WindowID,
   Window,
-  createWindowID,
 } from './window';
 import {
   getInstance as getWindowManagerInstance,
 } from './window_manager';
 import {
-  MetaData,
+  getInstance as getRepositoryManagerInstance,
+} from './repository_manager';
+import {
+  type MetaDataID,
 } from './metadata';
 import {
   isSimilarError,
+  MessageTypeFailed,
 } from './util';
+import {
+  addMessage,
+} from '../actions/messages';
+import {
+  dispatch,
+} from '../main/event_dispatcher';
 
 export default class EditorWindow implements Window {
   browserWindow: BrowserWindow;
-  metaData: MetaData;
-  parentWindowID: ?string;
+  metaDataID: MetaDataID;
   _windowID: string;
   _menuType: MenuType;
 
-  static create(metaData: MetaData, parentWindowID: ?string) {
-    new EditorWindow(metaData, parentWindowID); /* eslint no-new: 0 */
+  static create(windowID: WindowID, metaData: MetaDataID) {
+    new EditorWindow(windowID, metaData); // eslint-disable-line no-new
   }
 
-  constructor(metaData: MetaData, parentWindowID: ?string) {
-    this.metaData = metaData;
-    this.parentWindowID = parentWindowID;
-    this._windowID = createWindowID();
+  constructor(windowID: WindowID, metaDataID: MetaDataID) {
+    this.metaDataID = metaDataID;
+    this._windowID = windowID;
     this._menuType = MenuTypeEditor;
+    const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
+    if (metaData == null) {
+      throw Error(`EditorWindow.constructor getItemByID error metaDataID=${metaDataID}`);
+    }
     const browserWindow = new BrowserWindow({
       show: false,
       title: `${metaData.internalPath()}`,
@@ -95,14 +107,22 @@ export default class EditorWindow implements Window {
   }
 
   async initializeRenderer() {
-    const [content, message] = await this.metaData.getContent();
+    const metaData = getRepositoryManagerInstance().getItemByID(this.metaDataID);
+    if (metaData == null) {
+      dispatch(addMessage({
+        type: MessageTypeFailed,
+        message: `EditorWindow.initializeRenderer error metaDataID=${this.metaDataID}`
+      }, { targetWindowID: this.windowID() }));
+      return;
+    }
+    const [content, message] = await metaData.getContent();
 
     if (isSimilarError(message)) {
-      this.browserWindow.webContents.send('message', message);
+      dispatch(addMessage(message, { targetWindowID: this.windowID() }));
       return;
     }
 
-    this.browserWindow.webContents.send('initialize', [this.metaData.toBuffer(), content]);
+    this.browserWindow.webContents.send('initialize', [metaData.toBuffer(), content]);
   }
 
   sendSaveEvent() {

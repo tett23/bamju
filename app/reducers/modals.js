@@ -1,8 +1,8 @@
 // @flow
 
 import {
-  type ActionTypes
-} from './combined';
+  type Actions
+} from './types';
 import {
   OPEN_INPUT_DIALOG,
   CLOSE_DIALOG,
@@ -19,25 +19,25 @@ export function initialModalsState() {
 
 export function modals(
   state: ModalsState = initialModalsState(),
-  action: ActionTypes
+  action: Actions
 ): ModalsState {
   switch (action.type) {
   case OPEN_INPUT_DIALOG: {
     const newState = state.slice();
     newState.push({
-      id: action.modalID,
+      id: action.payload.modalID,
       type: 'inputDialog',
-      label: action.argument.label,
-      formValue: action.argument.formValue,
-      placeholder: action.argument.placeholder,
-      onEnter: action.argument.onEnter,
-      onClose: action.argument.onClose
+      label: action.payload.argument.label,
+      formValue: action.payload.argument.formValue,
+      placeholder: action.payload.argument.placeholder,
+      onEnter: action.payload.argument.onEnter,
+      onClose: action.payload.argument.onClose
     });
 
     return newState;
   }
   case CLOSE_DIALOG: {
-    const { modalID } = action;
+    const { modalID } = action.payload;
     const idx = state.findIndex((item) => {
       return item.id === modalID;
     });
