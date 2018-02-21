@@ -22,23 +22,15 @@ import {
   openInputDialog,
 } from './actions/modals';
 import {
-  updateBuffers,
-  type BufferUpdate,
-} from './actions/buffers';
-import {
   parseInternalPath
 } from './actions/parser';
 import {
   createFile,
 } from './actions/repositories';
-import { addMessage } from './actions/messages';
 import {
   type MetaDataID,
   internalPath,
 } from './common/metadata';
-import {
-  type Message
-} from './common/util';
 import {
   windowMetaMiddleware
 } from './middlewares/window_meta';
@@ -72,7 +64,6 @@ if (root != null) {
 
 ipcRenderer.on('initialize', (event, conf: Window) => {
   console.log('initialize', conf);
-  ipcRenderer.sendSync('buffers');
 
   window.windowID = conf.id;
 });
@@ -81,18 +72,6 @@ ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDat
   console.log('buffer-content-updated', metaDataID, content);
 
   store.dispatch(updateTab(store.getState().browser.tabs[0].id, metaDataID, content));
-});
-
-ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
-  console.log('update-buffers', updates);
-
-  store.dispatch(updateBuffers(updates));
-});
-
-ipcRenderer.on('message', (_, message: Message) => {
-  console.log('message', message);
-
-  store.dispatch(addMessage(message));
 });
 
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {

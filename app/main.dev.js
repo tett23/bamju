@@ -16,9 +16,9 @@ import {
   setStore,
 } from './main/event_dispatcher';
 
-import {
-  getInstance,
-} from './common/repository_manager';
+// import {
+//   getInstance,
+// } from './common/repository_manager';
 // import {
 //   getInstance as getConfigInstance
 // } from './common/bamju_config';
@@ -91,63 +91,5 @@ ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
   e.returnValue = true;
 });
 
-ipcMain.on('buffers', async (e) => {
-  console.log('buffers');
-  const ret = getInstance().toBuffers();
-
-  e.sender.send('reload-buffers', ret);
-  e.returnValue = ret;
-});
-
-// TODO: windowの更新
-// ipcMain.on('create-file', async (e, arg: {repositoryName: string, path: string}) => {
-//   console.log('create-file', arg);
-//   const result:Buffer | Message = await createFile(arg);
-//   if (result == null || isSimilarMessage(result)) {
-//     e.sender.send('message', result);
-//     e.returnValue = result;
-//     return;
-//   }
-//
-//   if (result.id == null) {
-//     return;
-//   }
-//
-//   const buffer:Buffer = (result: any);
-//
-//   const openPageResult = await openBuffer({ repositoryName: buffer.repositoryName, itemName: buffer.path });
-//   if (!isSimilarMessage(openPageResult)) {
-//     e.sender.send('open-buffer', openPageResult);
-//   }
-//
-//   const repo = getInstance().find(buffer.repositoryName);
-//   if (repo == null) {
-//     e.returnValue = null;
-//     return;
-//   }
-//
-//   let tmp = buffer;
-//   const parents = [];
-//   while (tmp.parentID != null) {
-//     const parent = repo.getItemByID(tmp.parentID);
-//     if (parent == null) {
-//       break;
-//     }
-//
-//     parents.push(parent);
-//     tmp = parent;
-//   }
-//
-//   const ret = {
-//     additons: [result],
-//     changes: parents,
-//   };
-//
-//   e.sender.send('file-created', ret);
-//   e.returnValue = ret;
-// });
-
-
 require('./main/app');
 require('./main/window');
-// require('./main/repository');
