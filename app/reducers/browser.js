@@ -7,6 +7,7 @@ import {
   ADD_TAB,
   CLOSE_TAB,
   UPDATE_TAB,
+  UPDATE_CURRENT_TAB,
   addTab,
 } from '../actions/browser';
 
@@ -19,12 +20,16 @@ import {
 } from '../common/util';
 
 export type BrowserState = {
+  currentTabID: string,
   tabs: Array<{id: string, metaDataID: ?MetaDataID, content: string}>
 };
 
 export function initialBrowserState(): BrowserState {
+  const tab = addTab(null, 'empty buffer').payload;
+
   return {
-    tabs: [addTab(null, 'empty buffer').payload]
+    currentTabID: tab.id,
+    tabs: [tab]
   };
 }
 
@@ -37,6 +42,7 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
       metaDataID: action.payload.metaDataID,
       content: action.payload.content,
     });
+    newState.currentTabID = action.payload.id;
 
     return newState;
   }
@@ -53,7 +59,9 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
     newState.tabs.splice(tabIdx, 1);
 
     if (newState.tabs.length === 0) {
-      newState.tabs.push(addTab(null, 'empty buffer').payload);
+      const tab = addTab(null, 'empty buffer').payload;
+      newState.tabs.push(tab);
+      newState.currentTabID = tab.id;
     }
 
     return newState;
@@ -62,6 +70,20 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
     const id = action.payload.id;
     const tabIdx = state.tabs.findIndex((item) => {
       return item.id === id;
+    });
+    if (tabIdx === -1) {
+      return state;
+    }
+
+    const newState = deepCopy(state);
+    newState.tabs[tabIdx].metaDataID = action.payload.metaDataID;
+    newState.tabs[tabIdx].content = action.payload.content;
+
+    return newState;
+  }
+  case UPDATE_CURRENT_TAB: {
+    const tabIdx = state.tabs.findIndex((item) => {
+      return item.id === state.currentTabID;
     });
     if (tabIdx === -1) {
       return state;

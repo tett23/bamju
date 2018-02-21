@@ -20,7 +20,6 @@ import {
 } from './actions/browser';
 import {
   openInputDialog,
-  closeAllDialog,
 } from './actions/modals';
 import {
   updateBuffers,
@@ -29,6 +28,9 @@ import {
 import {
   parseInternalPath
 } from './actions/parser';
+import {
+  createFile,
+} from './actions/repositories';
 import { addMessage } from './actions/messages';
 import {
   type MetaDataID,
@@ -87,13 +89,6 @@ ipcRenderer.on('update-buffers', (event, updates: BufferUpdate) => {
   store.dispatch(updateBuffers(updates));
 });
 
-ipcRenderer.on('file-created', (event, updates: BufferUpdate) => {
-  console.log('file-created', updates);
-
-  store.dispatch(closeAllDialog());
-  store.dispatch(updateBuffers(updates));
-});
-
 ipcRenderer.on('message', (_, message: Message) => {
   console.log('message', message);
 
@@ -115,10 +110,7 @@ window.wikiLinkOnClickUnAvailable = (repo: string, formValue: string) => {
     formValue,
     placeholder: 'input file name',
     onEnter: (itemPath) => {
-      ipcRenderer.send('create-file', {
-        repositoryName: repo,
-        path: itemPath
-      });
+      store.dispatch(createFile(repo, itemPath));
     }
   }));
 };

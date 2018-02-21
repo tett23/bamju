@@ -10,6 +10,7 @@ import {
   addTab,
   closeTab,
   updateTab,
+  updateCurrentTab,
 } from '../../app/actions/browser';
 
 let store;
@@ -109,6 +110,18 @@ describe('browser reducer', () => {
       expect(newState.tabs.length).toBe(2);
       expect(newState.tabs[1].metaDataID).toBe('foo');
       expect(newState.tabs[1].content).toBe('bar');
+    });
+  });
+
+  describe('UPDATE_CURRENT_TAB', () => {
+    it('metaDataの変更ができる', () => {
+      store.dispatch(addTab('foo', 'bar'));
+      store.dispatch(updateCurrentTab('hoge', 'fuga'));
+
+      const newState = store.getState();
+
+      expect(newState.tabs.length).toBe(2);
+      expect(newState.tabs[1].metaDataID).toBe('hoge');
     });
   });
 });

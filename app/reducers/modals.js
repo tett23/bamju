@@ -24,6 +24,7 @@ export function modals(
   switch (action.type) {
   case OPEN_INPUT_DIALOG: {
     const newState = state.slice();
+    console.log('OPEN_INPUT_DIALOG', action.payload);
     newState.push({
       id: action.payload.modalID,
       type: 'inputDialog',

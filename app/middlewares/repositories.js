@@ -10,8 +10,14 @@ import {
 } from '../common/repository_manager';
 
 import {
+  resolveInternalPath,
+} from '../common/metadata';
+import {
   type $ReturnType,
   isSimilarError,
+  MessageTypeSucceeded,
+  MessageTypeFailed,
+  MessageTypeError,
 } from '../common/util';
 import path from '../common/path';
 
@@ -23,13 +29,24 @@ import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
   REMOVE_REPOSITORY,
+  CREATE_FILE,
   initializeRepositories as initializeRepositoriesAction,
   addRepository as addRepositoryAction,
   removeRepository as removeRepositoryAction,
+  createFile as createFileAction,
 } from '../actions/repositories';
 import {
   reloadBuffers as reloadBuffersAction,
 } from '../actions/buffers';
+import {
+  closeAllDialog,
+} from '../actions/modals';
+import {
+  updateCurrentTab,
+} from '../actions/browser';
+import {
+  openBuffer as openBufferItem,
+} from '../actions/repositories_tree_view';
 import {
   addMessage,
 } from '../actions/messages';
@@ -49,6 +66,11 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: D
   case REMOVE_REPOSITORY: {
     next(action);
     removeRepository(store, action);
+    return;
+  }
+  case CREATE_FILE: {
+    next(action);
+    createFile(store, action);
     return;
   }
   default: {
@@ -92,6 +114,53 @@ function removeRepository(store: Store<State, Actions>, action: $ReturnType<type
   }
 
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
+}
+
+async function createFile(store: Store<State, Actions>, action: $ReturnType<typeof createFileAction>) {
+  const manager = getRepositoryManagerInstance();
+
+  const info = resolveInternalPath(action.payload.path);
+  if (info.repositoryName == null) {
+    info.repositoryName = action.payload.repositoryName;
+  }
+
+  const repo = manager.find(info.repositoryName || '');
+  if (repo == null) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`,
+    };
+    store.dispatch(addMessage(mes));
+    return;
+  }
+
+  const [metaData, message] = await repo.addFile(info.path, '');
+  if (metaData == null || message.type !== MessageTypeSucceeded) {
+    const mes = {
+      type: MessageTypeFailed,
+      message: `repositoriesMiddleware error: ${message.message}`,
+    };
+    store.dispatch(addMessage(mes));
+    return;
+  }
+
+  const [parseResult, parseMessage] = await metaData.parse();
+  if (isSimilarError(parseMessage)) {
+    store.dispatch(addMessage(parseMessage));
+    return;
+  }
+  if (parseResult == null) {
+    store.dispatch(addMessage({
+      type: MessageTypeError,
+      message: `repositoriesMiddleware parseResult error. repositoryName=${action.payload.repositoryName} path=${action.payload.path}`
+    }));
+    return;
+  }
+
+  store.dispatch(reloadBuffersAction(manager.toBuffers()));
+  store.dispatch(openBufferItem(metaData.id));
+  store.dispatch(updateCurrentTab(metaData.id, parseResult.content));
+  store.dispatch(closeAllDialog());
 }
 
 export default repositoriesMiddleware;

@@ -10,12 +10,12 @@ import {
   closeAllDialog,
 } from '../../actions/modals';
 import { InputDialog } from './InputDialog';
+import {
+  type $ReturnType,
+} from '../../common/util';
 import styles from './Modals.css';
 
-type Props = {
-  modals: ModalsState,
-  closeAllDialog: typeof closeAllDialog
-};
+type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
 function modals(props: Props) {
   const items = props.modals.map((item) => {
@@ -45,6 +45,7 @@ function modals(props: Props) {
   });
 
   const visibility = (items.length >= 1) ? 'block' : 'none';
+  const dispatchClose = props.closeAllDialog;
 
   return (
     <div
@@ -54,13 +55,13 @@ function modals(props: Props) {
         e.stopPropagation();
         e.preventDefault();
 
-        checkEscape(e, props.closeAllDialog);
+        checkEscape(e, dispatchClose);
       }}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
 
-        props.closeAllDialog();
+        dispatchClose();
       }}
     >
       <div className={styles.background} style={{ display: visibility }}>

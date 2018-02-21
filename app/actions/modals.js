@@ -28,12 +28,16 @@ export const CLOSE_DIALOG = 'CLOSE_DIALOG';
 export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
 
 export function openInputDialog(argument: InputDialogValues) {
+  console.log('openInputDialog', argument);
   return {
     type: OPEN_INPUT_DIALOG,
     payload: {
       modalType: ModalInputDialog,
       modalID: `${Math.random()}`,
       argument,
+    },
+    meta: {
+      scope: 'local' // これがないとelectron-reduxがonEnterを消す
     }
   };
 }

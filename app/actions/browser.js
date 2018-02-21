@@ -7,6 +7,7 @@ import {
 export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
+export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
 
 export function addTab(metaDataID: ?MetaDataID, content: string) {
   return {
@@ -33,6 +34,16 @@ export function updateTab(id: string, metaDataID: MetaDataID, content: string) {
     type: UPDATE_TAB,
     payload: {
       id,
+      metaDataID,
+      content,
+    }
+  };
+}
+
+export function updateCurrentTab(metaDataID: MetaDataID, content: string) {
+  return {
+    type: UPDATE_CURRENT_TAB,
+    payload: {
       metaDataID,
       content,
     }

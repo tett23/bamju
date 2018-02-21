@@ -26,8 +26,6 @@ import {
   MessageTypeError,
 } from './common/util';
 
-console.log(require('./middlewares/repositories'));
-
 const store = createStore(
   appReducer,
   initialState(),
