@@ -3,7 +3,7 @@
 import path from '../common/path';
 import {
   type Actions,
-} from './app_window';
+} from './types';
 import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,

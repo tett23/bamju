@@ -10,6 +10,9 @@ import {
 } from '../common/repository_manager';
 
 import {
+  type WindowID,
+} from '../common/window';
+import {
   type $ReturnType,
   isSimilarError,
   MessageTypeFailed,
@@ -21,8 +24,10 @@ import {
 } from '../common/metadata';
 import {
   type State,
-  type Actions,
 } from '../reducers/main';
+import {
+  type Actions,
+} from '../reducers/types';
 import {
   PARSE_METADATA,
   PARSE_INTERNAL_PATH,
@@ -59,11 +64,11 @@ function parseMetaData(store: Store<State, Actions>, action: $ReturnType<typeof 
     store.dispatch(addMessage({
       type: MessageTypeFailed,
       message: `parserMiddleware.parseMetaData MetaData not found. metaDataID=${action.payload.metaDataID}`
-    }));
+    }, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
-  parse(store, action.payload.tabID, metaData);
+  parse(store, action.payload.tabID, metaData, action.meta.fromWindowID);
 }
 
 function parseInternalPath(store: Store<State, Actions>, action: $ReturnType<typeof parseInternalPathAction>) {
@@ -75,7 +80,7 @@ function parseInternalPath(store: Store<State, Actions>, action: $ReturnType<typ
     store.dispatch(addMessage({
       type: MessageTypeFailed,
       message: `parserMiddleware.parseInternalPath internalPath parse error. internalPath=${action.payload.internalPath}`
-    }));
+    }, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
@@ -84,30 +89,30 @@ function parseInternalPath(store: Store<State, Actions>, action: $ReturnType<typ
     store.dispatch(addMessage({
       type: MessageTypeFailed,
       message: `parserMiddleware.parseInternalPath MetaData not found. internalPath=${action.payload.internalPath}`
-    }));
+    }, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
-  parse(store, action.payload.tabID, metaData);
+  parse(store, action.payload.tabID, metaData, action.meta.fromWindowID);
 }
 
-function parse(store: Store<State, Actions>, tabID: string, metaData: MetaData) {
+function parse(store: Store<State, Actions>, tabID: string, metaData: MetaData, windowID: ?WindowID) {
   store.dispatch(async () => {
     const benchID = `parserMiddleware.parseMetaData benchmark ${metaData.repositoryName} ${metaData.path}`;
     const [parseResult, message] = await metaData.parse();
     console.time(benchID);
     if (isSimilarError(message)) {
-      store.dispatch(addMessage(message));
+      store.dispatch(addMessage(message, { targetWindowID: windowID }));
     }
     if (parseResult == null) {
       store.dispatch(addMessage({
         type: MessageTypeError,
         message: `parserMiddleware.parse unexpected error. metaDataID=${metaData.id} path=${metaData.path}`
-      }));
+      }, { targetWindowID: windowID }));
       return;
     }
 
-    store.dispatch(updateTabAction(tabID, metaData.id, parseResult.content));
+    store.dispatch(updateTabAction(tabID, metaData.id, parseResult.content, { targetWindowID: windowID }));
   });
 }
 

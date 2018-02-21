@@ -16,8 +16,10 @@ import {
 
 import {
   type State,
-  type Actions,
 } from '../reducers/main';
+import {
+  type Actions,
+} from '../reducers/types';
 import {
   OPEN_BUFFER,
   openBuffer as openBufferAction,
@@ -53,11 +55,11 @@ async function load(store: Store<State, Actions>, action: $ReturnType<typeof ope
 
   const [_, message] = await metaData.load();
   if (isSimilarError(message)) {
-    store.dispatch(addMessage(message));
+    store.dispatch(addMessage(message, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
-  store.dispatch(reloadBuffers(manager.toBuffers()));
+  store.dispatch(reloadBuffers(manager.toBuffers(), { targetWindowID: action.meta.fromWindowID }));
 }
 
 export default repositoriesTreeViewMiddleware;

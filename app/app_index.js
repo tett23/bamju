@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { createStore, applyMiddleware, compose } from 'redux';
-import { forwardToMain, replayActionRenderer } from 'electron-redux';
+import { replayActionRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
 import { ipcRenderer } from 'electron';
@@ -17,6 +17,8 @@ import {
 } from './reducers/browser';
 import {
   type Window,
+} from './reducers/windows';
+import {
   windowInitialized,
 } from './actions/windows';
 import {
@@ -37,7 +39,8 @@ import {
   internalPath,
 } from './common/metadata';
 import {
-  windowMetaMiddleware
+  filterWindowIDMiddleware,
+  broadcastActionMiddleware,
 } from './middlewares/window_meta';
 import './app.global.css';
 
@@ -50,8 +53,8 @@ const store = createStore(
   init,
   // $FlowFixMe
   compose(applyMiddleware(
-    windowMetaMiddleware,
-    forwardToMain
+    broadcastActionMiddleware,
+    filterWindowIDMiddleware,
   ))
 );
 

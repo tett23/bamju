@@ -1,30 +1,16 @@
 // @flow
 
-import {
-  type $ReturnType,
-} from '../common/util';
-
-import {
-  initializeWindows,
-  newWindow,
-  closeWindow,
-} from '../actions/windows';
-
+import { type Actions } from './types';
 import {
   windows,
   type WindowsState,
   initialWindowsState,
 } from './windows';
-
 import {
   appReducer as globalReducer,
   type State as GlobalState,
   initialState as initialGlobalState,
 } from './global';
-
-export type Actions = $ReturnType<typeof initializeWindows>
-| $ReturnType<typeof newWindow>
-| $ReturnType<typeof closeWindow>;
 
 export type State = {
   windows: WindowsState,

@@ -1,5 +1,6 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
 import {
   type MetaDataID
 } from '../common/metadata';
@@ -13,7 +14,7 @@ export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
 
-export function initializeBrowser(state: BrowserState, meta: Object = {}) {
+export function initializeBrowser(state: BrowserState, meta: Meta = {}) {
   return {
     type: INITIALIZE_BROWSER,
     payload: {
@@ -23,7 +24,7 @@ export function initializeBrowser(state: BrowserState, meta: Object = {}) {
   };
 }
 
-export function addTab(metaDataID: ?MetaDataID, content: string, meta: Object = {}) {
+export function addTab(metaDataID: ?MetaDataID, content: string, meta: Meta = {}) {
   return {
     type: ADD_TAB,
     payload: {
@@ -35,7 +36,7 @@ export function addTab(metaDataID: ?MetaDataID, content: string, meta: Object = 
   };
 }
 
-export function closeTab(id: string, meta: Object = {}) {
+export function closeTab(id: string, meta: Meta = {}) {
   return {
     type: CLOSE_TAB,
     payload: {
@@ -45,7 +46,7 @@ export function closeTab(id: string, meta: Object = {}) {
   };
 }
 
-export function updateTab(id: string, metaDataID: MetaDataID, content: string, meta: Object = {}) {
+export function updateTab(id: string, metaDataID: MetaDataID, content: string, meta: Meta = {}) {
   return {
     type: UPDATE_TAB,
     payload: {
@@ -57,7 +58,7 @@ export function updateTab(id: string, metaDataID: MetaDataID, content: string, m
   };
 }
 
-export function updateCurrentTab(metaDataID: MetaDataID, content: string, meta: Object = {}) {
+export function updateCurrentTab(metaDataID: MetaDataID, content: string, meta: Meta = {}) {
   return {
     type: UPDATE_CURRENT_TAB,
     payload: {

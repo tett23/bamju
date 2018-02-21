@@ -1,5 +1,6 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
 import {
   type Message
 } from '../common/util';
@@ -8,7 +9,7 @@ export const ADD_MESSAGE = 'ADD_MESSAGE';
 export const CLOSE_MESSAGE = 'CLOSE_MESSAGE';
 export const CLOSE_ALL_MESSAGES = 'CLOSE_ALL_MESSAGES';
 
-export function addMessage(message: Message, meta: Object = {}) {
+export function addMessage(message: Message, meta: Meta = {}) {
   return {
     type: ADD_MESSAGE,
     payload: {
@@ -19,7 +20,7 @@ export function addMessage(message: Message, meta: Object = {}) {
   };
 }
 
-export function closeMessage(id: string, meta: Object = {}) {
+export function closeMessage(id: string, meta: Meta = {}) {
   return {
     type: CLOSE_MESSAGE,
     payload: {
@@ -29,7 +30,7 @@ export function closeMessage(id: string, meta: Object = {}) {
   };
 }
 
-export function closeAllMessages(meta: Object = {}) {
+export function closeAllMessages(meta: Meta = {}) {
   return {
     type: CLOSE_ALL_MESSAGES,
     payload: {

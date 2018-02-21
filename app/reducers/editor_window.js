@@ -1,12 +1,6 @@
 // @flow
 
-import {
-  type $ReturnType,
-} from '../common/util';
-import {
-  openBuffer,
-  bufferUpdated,
-} from '../actions/editor';
+import { type Actions } from './types';
 import {
   type EditorState,
   editor,
@@ -17,10 +11,6 @@ import {
   messages,
   initialMessagesState,
 } from './messages';
-
-export type Actions =
-  $ReturnType<typeof openBuffer> |
-  $ReturnType<typeof bufferUpdated>;
 
 type State = {
   editor: EditorState,

@@ -8,7 +8,7 @@ import {
 } from '../common/buffer';
 import {
   type Actions
-} from './editor_window';
+} from './types';
 import {
   OPEN_BUFFER,
   BURFFER_UPDATED,

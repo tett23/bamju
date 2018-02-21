@@ -15,8 +15,10 @@ import {
 
 import {
   type State,
-  type Actions,
 } from '../reducers/main';
+import {
+  type Actions,
+} from '../reducers/types';
 import {
   INITIALIZE_WINDOWS,
   WINDOW_INITIALIZED,

@@ -8,7 +8,7 @@ import {
 } from '../menu';
 import {
   type Window as WindowConfig,
-} from '../actions/windows';
+} from '../reducers/windows';
 import {
   MetaData,
   type MetaDataID,

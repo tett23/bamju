@@ -1,5 +1,6 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
 import {
   type MetaDataID
 } from '../common/metadata';
@@ -10,21 +11,12 @@ import {
 import {
   type WindowsState
 } from '../reducers/windows';
-import {
-  type BrowserState
-} from '../reducers/browser';
 
 export const INITIALIZE_WINDOWS = 'INITIALIZE_WINDOWS';
 export const WINDOW_INITIALIZED = 'WINDOW_INITIALIZED';
 export const NEW_WINDOW = 'NEW_WINDOW';
 export const CLOSE_WINDOW = 'CLOSE_WINDOW';
 export const UPDATE_WINDOW_RECTANGLE = 'UPDATE_WINDOW_RECTANGLE';
-
-export type Window = {
-  id: WindowID,
-  rectangle: Rectangle,
-  browser: BrowserState
-};
 
 export type Rectangle = {
   x: number,
@@ -46,7 +38,7 @@ const rectangleDefault = {
   height: 728
 };
 
-export function initializeWindows(state: WindowsState, meta: Object = {}) {
+export function initializeWindows(state: WindowsState, meta: Meta = {}) {
   return {
     type: INITIALIZE_WINDOWS,
     payload: {
@@ -56,7 +48,7 @@ export function initializeWindows(state: WindowsState, meta: Object = {}) {
   };
 }
 
-export function windowInitialized(windowID: WindowID, meta: Object = {}) {
+export function windowInitialized(windowID: WindowID, meta: Meta = {}) {
   return {
     type: WINDOW_INITIALIZED,
     payload: {
@@ -66,7 +58,7 @@ export function windowInitialized(windowID: WindowID, meta: Object = {}) {
   };
 }
 
-export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = [], meta: Object = {}) {
+export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[] = [], meta: Meta = {}) {
   return {
     type: NEW_WINDOW,
     payload: {
@@ -78,7 +70,7 @@ export function newWindow(rectangle?: Rectangle = rectangleDefault, tabs?: Tab[]
   };
 }
 
-export function closeWindow(windowID: string, meta: Object = {}) {
+export function closeWindow(windowID: string, meta: Meta = {}) {
   return {
     type: CLOSE_WINDOW,
     payload: {
@@ -88,7 +80,7 @@ export function closeWindow(windowID: string, meta: Object = {}) {
   };
 }
 
-export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle, meta: Object = {}) {
+export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle, meta: Meta = {}) {
   return {
     type: UPDATE_WINDOW_RECTANGLE,
     payload: {

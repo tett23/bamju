@@ -1,5 +1,7 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
+
 export const ModalInputDialog = 'inputDialog';
 export const ModalUndefined = 'undefined';
 
@@ -27,7 +29,7 @@ export const OPEN_INPUT_DIALOG = 'OPEN_INPUT_DIALOG';
 export const CLOSE_DIALOG = 'CLOSE_DIALOG';
 export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
 
-export function openInputDialog(argument: InputDialogValues, meta: Object = {}) {
+export function openInputDialog(argument: InputDialogValues, meta: Meta = {}) {
   return {
     type: OPEN_INPUT_DIALOG,
     payload: {
@@ -35,13 +37,13 @@ export function openInputDialog(argument: InputDialogValues, meta: Object = {}) 
       modalID: `${Math.random()}`,
       argument,
     },
-    meta: Object.assign(meta, {
+    meta: Object.assign({}, meta, {
       scope: 'local' // これがないとelectron-reduxがonEnterを消す
     })
   };
 }
 
-export function closeDialog(id: string, meta: Object = {}) {
+export function closeDialog(id: string, meta: Meta = {}) {
   return {
     type: CLOSE_DIALOG,
     payload: {
@@ -51,7 +53,7 @@ export function closeDialog(id: string, meta: Object = {}) {
   };
 }
 
-export function closeAllDialog(meta: Object = {}) {
+export function closeAllDialog(meta: Meta = {}) {
   return {
     type: CLOSE_ALL_DIALOG,
     payload: {},

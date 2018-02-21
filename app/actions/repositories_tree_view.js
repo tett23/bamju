@@ -1,5 +1,6 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
 import {
   type MetaDataID,
 } from '../common/metadata';
@@ -11,7 +12,7 @@ export const INITIALIZE_REPOSITORIES_TREE_VIEW = 'REPOSITORIES_TREE_VIEW:INITIAL
 export const OPEN_BUFFER = 'REPOSITORIES_TREE_VIEW:OPEN_BUFFER';
 export const CLOSE_BUFFER = 'REPOSITORIES_TREE_VIEW:CLOSE_BUFFER';
 
-export function initializeRepositoriesTreeView(state: RepositoriesTreeViewState, meta: Object = {}) {
+export function initializeRepositoriesTreeView(state: RepositoriesTreeViewState, meta: Meta = {}) {
   return {
     type: INITIALIZE_REPOSITORIES_TREE_VIEW,
     payload: state,
@@ -19,7 +20,7 @@ export function initializeRepositoriesTreeView(state: RepositoriesTreeViewState,
   };
 }
 
-export function openBuffer(metaDataID: MetaDataID, meta: Object = {}) {
+export function openBuffer(metaDataID: MetaDataID, meta: Meta = {}) {
   return {
     type: OPEN_BUFFER,
     payload: {
@@ -29,7 +30,7 @@ export function openBuffer(metaDataID: MetaDataID, meta: Object = {}) {
   };
 }
 
-export function closeBuffer(metaDataID: MetaDataID, meta: Object = {}) {
+export function closeBuffer(metaDataID: MetaDataID, meta: Meta = {}) {
   return {
     type: CLOSE_BUFFER,
     payload: {

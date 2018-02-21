@@ -2,7 +2,7 @@
 
 import {
   type Actions
-} from './app_window';
+} from './types';
 import {
   type MetaDataID,
 } from '../common/metadata';

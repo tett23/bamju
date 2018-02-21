@@ -2,7 +2,7 @@
 
 import {
   type Actions
-} from './app_window';
+} from './types';
 import {
   INITIALIZE_BROWSER,
   ADD_TAB,

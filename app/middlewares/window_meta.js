@@ -5,18 +5,32 @@ import {
   type Dispatch,
 } from 'redux';
 import {
+  forwardToMain,
+} from 'electron-redux';
+import {
   type State,
-  type Actions,
 } from '../reducers/app_window';
+import {
+  type Actions,
+} from '../reducers/types';
 
-export const windowMetaMiddleware = (_: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
-  const newAction = Object.assign({}, action);
-  newAction.meta = newAction.meta || {};
-  // $FlowFixMe
-  newAction.meta.windowID = window.windowID;
+export const filterWindowIDMiddleware = (_: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
+  const targetWindowID = (action.meta || { targetWindowID: null }).targetWindowID;
+  if (action.meta.fromWindowID !== window.windowID) {
+    return next(action);
+  }
+  if (targetWindowID == null) {
+    return next(action);
+  }
+  if (targetWindowID !== window.windowID) {
+    return false;
+  }
 
-  // $FlowFixMe
-  return next(newAction);
+  return next(action);
 };
 
-export default windowMetaMiddleware;
+export const broadcastActionMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
+  action.meta.fromWindowID = window.windowID; // eslint-disable-line no-param-reassign
+
+  return forwardToMain(store)(next)(action);
+};

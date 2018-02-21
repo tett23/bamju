@@ -15,7 +15,6 @@ import {
 import {
   type $ReturnType,
   isSimilarError,
-  MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
 } from '../common/util';
@@ -23,8 +22,10 @@ import path from '../common/path';
 
 import {
   type State,
-  type Actions,
 } from '../reducers/main';
+import {
+  type Actions,
+} from '../reducers/types';
 import {
   INITIALIZE_REPOSITORIES,
   ADD_REPOSITORY,
@@ -130,37 +131,37 @@ async function createFile(store: Store<State, Actions>, action: $ReturnType<type
       type: MessageTypeFailed,
       message: `repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`,
     };
-    store.dispatch(addMessage(mes));
+    store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
   const [metaData, message] = await repo.addFile(info.path, '');
-  if (metaData == null || message.type !== MessageTypeSucceeded) {
+  if (metaData == null || isSimilarError(message)) {
     const mes = {
       type: MessageTypeFailed,
       message: `repositoriesMiddleware error: ${message.message}`,
     };
-    store.dispatch(addMessage(mes));
+    store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
   const [parseResult, parseMessage] = await metaData.parse();
   if (isSimilarError(parseMessage)) {
-    store.dispatch(addMessage(parseMessage));
+    store.dispatch(addMessage(parseMessage, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
   if (parseResult == null) {
     store.dispatch(addMessage({
       type: MessageTypeError,
       message: `repositoriesMiddleware parseResult error. repositoryName=${action.payload.repositoryName} path=${action.payload.path}`
-    }));
+    }, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
-  store.dispatch(openBufferItem(metaData.id));
-  store.dispatch(updateCurrentTab(metaData.id, parseResult.content));
-  store.dispatch(closeAllDialog());
+  store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(updateCurrentTab(metaData.id, parseResult.content, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
 }
 
 export default repositoriesMiddleware;

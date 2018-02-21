@@ -1,5 +1,6 @@
 // @flow
 
+import { type Meta } from '../reducers/types';
 import {
   type Buffer
 } from '../common/buffer';
@@ -16,7 +17,7 @@ export type BufferUpdate = {
   changes?: Buffer[]
 };
 
-export function reloadBuffers(buffers: Buffer[], meta: Object = {}) {
+export function reloadBuffers(buffers: Buffer[], meta: Meta = {}) {
   return {
     type: RELOAD_BUFFERS,
     payload: {
@@ -26,7 +27,7 @@ export function reloadBuffers(buffers: Buffer[], meta: Object = {}) {
   };
 }
 
-export function updateBuffers(updates: BufferUpdate, meta: Object = {}) {
+export function updateBuffers(updates: BufferUpdate, meta: Meta = {}) {
   return {
     type: UPDATE_BUFFERS,
     payload: {

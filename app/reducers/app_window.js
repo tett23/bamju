@@ -1,29 +1,6 @@
 // @flow
 
-import {
-  type $ReturnType,
-} from '../common/util';
-
-import {
-  addTab,
-  closeTab,
-  updateTab,
-} from '../actions/browser';
-import {
-  initializeRepositoriesTreeView,
-  openBuffer,
-  closeBuffer,
-} from '../actions/repositories_tree_view';
-import {
-  openInputDialog,
-  closeDialog,
-  closeAllDialog,
-} from '../actions/modals';
-import {
-  addMessage,
-  closeMessage,
-  closeAllMessages
-} from '../actions/messages';
+import { type Actions } from './types';
 
 import {
   browser,
@@ -51,19 +28,6 @@ import {
   type State as GlobalState,
   initialState as initialGlobalState,
 } from './global';
-
-export type Actions = $ReturnType<typeof addTab>
-| $ReturnType<typeof closeTab>
-| $ReturnType<typeof updateTab>
-| $ReturnType<typeof initializeRepositoriesTreeView>
-| $ReturnType<typeof openBuffer>
-| $ReturnType<typeof closeBuffer>
-| $ReturnType<typeof openInputDialog>
-| $ReturnType<typeof closeDialog>
-| $ReturnType<typeof closeAllDialog>
-| $ReturnType<typeof addMessage>
-| $ReturnType<typeof closeMessage>
-| $ReturnType<typeof closeAllMessages>;
 
 export type State = {
   browser: BrowserState,

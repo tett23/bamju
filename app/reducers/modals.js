@@ -2,7 +2,7 @@
 
 import {
   type Actions
-} from './app_window';
+} from './types';
 import {
   OPEN_INPUT_DIALOG,
   CLOSE_DIALOG,

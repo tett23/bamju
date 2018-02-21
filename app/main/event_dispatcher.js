@@ -4,6 +4,8 @@ import { type Store } from 'redux';
 
 import {
   type Actions,
+} from '../reducers/types';
+import {
   type State,
 } from '../reducers/main';
 

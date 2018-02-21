@@ -2,7 +2,7 @@
 
 import {
   type Actions
-} from './app_window';
+} from './types';
 import {
   RELOAD_BUFFERS,
   UPDATE_BUFFERS,

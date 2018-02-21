@@ -12,10 +12,12 @@ import {
   dispatch,
 } from '../main/event_dispatcher';
 import {
-  type Window as WindowConfig,
   updateWindowRectangle,
   closeWindow,
 } from '../actions/windows';
+import {
+  type Window as WindowConfig,
+} from '../reducers/windows';
 import {
   Window,
 } from './window';

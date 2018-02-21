@@ -2,14 +2,27 @@
 
 import {
   type Actions,
-} from './app_window';
+} from './types';
 import {
-  type Window,
+  type WindowID,
+} from '../common/window';
+import {
+  type BrowserState,
+  browser,
+} from '../reducers/browser';
+import {
+  type Rectangle,
   INITIALIZE_WINDOWS,
   NEW_WINDOW,
   CLOSE_WINDOW,
   UPDATE_WINDOW_RECTANGLE,
 } from '../actions/windows';
+
+export type Window = {
+  id: WindowID,
+  rectangle: Rectangle,
+  browser: BrowserState
+};
 
 export type WindowsState = Window[];
 
@@ -18,6 +31,27 @@ export function initialWindowsState() {
 }
 
 export function windows(state: WindowsState = initialWindowsState(), action: Actions): WindowsState {
+  // $FlowFixMe
+  const targetWindowID = (action.meta || { targetWindowID: null }).targetWindowID;
+  let targetWindows = [];
+  if (targetWindowID == null) {
+    targetWindows = state;
+  } else {
+    const win = state.find((item) => {
+      return item.id === targetWindowID;
+    });
+    if (win != null) {
+      targetWindows = [win];
+    }
+  }
+  targetWindows.forEach((item) => {
+    const beforeBrowserState = item.browser;
+    const newBrowserState = browser(item.browser, action);
+    if (beforeBrowserState !== newBrowserState) {
+      item.browser = newBrowserState; // eslint-disable-line
+    }
+  });
+
   switch (action.type) {
   case INITIALIZE_WINDOWS: {
     return action.payload.state;

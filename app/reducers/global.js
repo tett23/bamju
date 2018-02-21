@@ -1,19 +1,6 @@
 // @flow
 
-import {
-  type $ReturnType,
-} from '../common/util';
-
-import {
-  initializeRepositories,
-  addRepository,
-  removeRepository,
-} from '../actions/repositories';
-import {
-  reloadBuffers,
-  updateBuffers,
-} from '../actions/buffers';
-
+import { type Actions } from './types';
 import {
   repositories,
   type RepositoriesState,
@@ -24,12 +11,6 @@ import {
   type BuffersState,
   initialBuffersState,
 } from './buffers';
-
-export type Actions = $ReturnType<typeof initializeRepositories>
-| $ReturnType<typeof addRepository>
-| $ReturnType<typeof removeRepository>
-| $ReturnType<typeof reloadBuffers>
-| $ReturnType<typeof updateBuffers>;
 
 export type State = {
   repositories: RepositoriesState,
