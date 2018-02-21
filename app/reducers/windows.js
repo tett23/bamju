@@ -11,6 +11,10 @@ import {
   browser,
 } from '../reducers/browser';
 import {
+  type RepositoriesTreeViewState,
+  repositoriesTreeView,
+} from '../reducers/repositories_tree_view';
+import {
   type Rectangle,
   INITIALIZE_WINDOWS,
   NEW_WINDOW,
@@ -21,7 +25,8 @@ import {
 export type Window = {
   id: WindowID,
   rectangle: Rectangle,
-  browser: BrowserState
+  browser: BrowserState,
+  repositoriesTreeView: RepositoriesTreeViewState
 };
 
 export type WindowsState = Window[];
@@ -31,25 +36,13 @@ export function initialWindowsState() {
 }
 
 export function windows(state: WindowsState = initialWindowsState(), action: Actions): WindowsState {
-  // $FlowFixMe
-  const targetWindowID = (action.meta || { targetWindowID: null }).targetWindowID;
-  let targetWindows = [];
-  if (targetWindowID == null) {
-    targetWindows = state;
-  } else {
-    const win = state.find((item) => {
-      return item.id === targetWindowID;
-    });
-    if (win != null) {
-      targetWindows = [win];
+  state.forEach((item) => {
+    if (item.id !== action.meta.fromWindowID) {
+      return;
     }
-  }
-  targetWindows.forEach((item) => {
-    const beforeBrowserState = item.browser;
-    const newBrowserState = browser(item.browser, action);
-    if (beforeBrowserState !== newBrowserState) {
-      item.browser = newBrowserState; // eslint-disable-line
-    }
+
+    item.browser = browser(item.browser, action); // eslint-disable-line no-param-reassign
+    item.repositoriesTreeView = repositoriesTreeView(item.repositoriesTreeView, action); // eslint-disable-line no-param-reassign
   });
 
   switch (action.type) {
@@ -64,7 +57,8 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
       browser: {
         currentTabID: '',
         tabs: action.payload.tabs,
-      }
+      },
+      repositoriesTreeView: {}
     });
 
     return newState;

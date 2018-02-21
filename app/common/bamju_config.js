@@ -51,6 +51,7 @@ export function defaultConfig() {
         height: 728
       },
       browser: initialBrowserState(),
+      repositoriesTreeView: {}
     }],
     buffers: globalInit.buffers,
     config: {

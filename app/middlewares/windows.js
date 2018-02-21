@@ -82,7 +82,7 @@ function windowInitialized(store: Store<State, Actions>, action: $ReturnType<typ
       return;
     }
 
-    store.dispatch(parseMetaData(item.id, item.metaDataID));
+    store.dispatch(parseMetaData(item.id, item.metaDataID, { targetWindowID: action.meta.fromWindowID }));
   });
 }
 
@@ -95,7 +95,8 @@ function newWindow(store: Store<State, Actions>, action: $ReturnType<typeof newW
     browser: {
       currentTabID: action.payload.tabs[0].id,
       tabs: action.payload.tabs,
-    }
+    },
+    repositoriesTreeView: {}
   });
 }
 

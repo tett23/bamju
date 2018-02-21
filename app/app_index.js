@@ -16,6 +16,9 @@ import {
   initialBrowserState,
 } from './reducers/browser';
 import {
+  initialRepositoriesTreeViewState,
+} from './reducers/repositories_tree_view';
+import {
   type Window,
 } from './reducers/windows';
 import {
@@ -34,6 +37,9 @@ import {
 import {
   createFile,
 } from './actions/repositories';
+import {
+  initializeRepositoriesTreeView,
+} from './actions/repositories_tree_view';
 import {
   type MetaDataID,
   internalPath,
@@ -76,6 +82,7 @@ ipcRenderer.on('initialize', (event, conf: Window) => {
   window.windowID = conf.id;
 
   store.dispatch(initializeBrowser(conf.browser || initialBrowserState()));
+  store.dispatch(initializeRepositoriesTreeView(conf.repositoriesTreeView || initialRepositoriesTreeViewState()));
 
   store.dispatch(windowInitialized(conf.id));
 });
