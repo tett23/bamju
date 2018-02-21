@@ -11,13 +11,9 @@ import {
   initialState,
 } from './reducers/editor_window';
 import { openBuffer } from './actions/editor';
-import { addMessage } from './actions/messages';
 import {
   type Buffer
 } from './common/buffer';
-import {
-  type Message
-} from './common/util';
 import './app.global.css';
 
 const store = createStore(

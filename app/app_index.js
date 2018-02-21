@@ -87,12 +87,6 @@ ipcRenderer.on('initialize', (event, conf: Window) => {
   store.dispatch(windowInitialized(conf.id));
 });
 
-ipcRenderer.on('buffer-content-updated', (event, [metaDataID, content]: [MetaDataID, string]) => {
-  console.log('buffer-content-updated', metaDataID, content);
-
-  store.dispatch(updateTab(store.getState().browser.tabs[0].id, metaDataID, content));
-});
-
 window.wikiLinkOnClickAvailable = (repo: string, name: string) => {
   console.log('wikiLinkOnClickAvailable', repo, name);
 
