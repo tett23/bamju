@@ -17,6 +17,9 @@ import {
   reloadBuffers,
 } from '../../../app/actions/buffers';
 import {
+  openBuffer,
+} from '../../../app/actions/repositories_tree_view';
+import {
   addTab,
   updateTab,
 } from '../../../app/actions/browser';
@@ -44,8 +47,8 @@ beforeEach(() => {
   const dummyBuffers = dummy({
     test: ['/foo.md', '/a/b/c.md']
   });
-  dummyBuffers.forEach((_, i) => {
-    dummyBuffers[i].isOpened = true;
+  dummyBuffers.forEach((item) => {
+    store.dispatch(openBuffer(item.id));
   });
   buffer = dummyBuffers[0]; // eslint-disable-line
 

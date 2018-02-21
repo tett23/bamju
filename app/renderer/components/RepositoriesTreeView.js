@@ -25,6 +25,10 @@ import {
 } from '../../actions/parser';
 import type { State } from '../../reducers/app_window';
 import {
+  type BufferState,
+  initialBufferState,
+} from '../../reducers/repositories_tree_view';
+import {
   type Buffer
 } from '../../common/buffer';
 import {
@@ -73,8 +77,10 @@ function buildItems(
 ) {
   const spanClass = `${itemType(item.itemType)}`;
 
+  const itemState = props.treeView[item.id] || initialBufferState();
+
   let children = [];
-  if (item.isOpened) {
+  if (itemState.isOpened) {
     children = item.childrenIDs.map((childrenID) => {
       return props.buffers.find((child) => {
         return child.id === childrenID;
@@ -93,7 +99,7 @@ function buildItems(
         onContextMenu={e => { return contextmenu(e, item, props); }}
       >
         <div>
-          {icon(item)}
+          {icon(item, itemState, props)}
           <span className={spanClass}>
             {item.name}
           </span>
@@ -115,26 +121,26 @@ function onClickItem(e, item: Buffer, tabID: string, dispatcher: $ReturnType<typ
   }
 }
 
-function toggleTreeView(e, buffer: Buffer, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
+function toggleTreeView(e, buffer: Buffer, bufferState: BufferState, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (buffer.isOpened) {
-    dispatcher.openBuffer(buffer.id);
-  } else {
+  if (bufferState.isOpened) {
     dispatcher.closeBuffer(buffer.id);
+  } else {
+    dispatcher.openBuffer(buffer.id);
   }
 }
 
-function icon(item: Buffer) {
+function icon(item: Buffer, bufferState: BufferState, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   switch (item.itemType) {
   case ItemTypeRepository:
-    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item); }} />;
+    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
   case ItemTypeDirectory:
-    if (item.isOpened) {
-      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item); }} />;
+    if (bufferState.isOpened) {
+      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
     }
-    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item); }} />;
+    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
 
   case ItemTypeMarkdown:
     return <FontAwesome name="file-text" />;
@@ -255,6 +261,7 @@ function mapStateToProps(state: State) {
 
   return {
     buffers: state.global.buffers,
+    treeView: state.repositoriesTreeView,
     currentTabID
   };
 }

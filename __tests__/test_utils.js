@@ -32,7 +32,6 @@ export type DummyBuffer = {
   absolutePath?: string,
   itemType?: ItemType,
   isLoaded?: boolean,
-  isOpened?: boolean,
   childrenIDs?: MetaDataID[],
   parentID?: ?MetaDataID,
   body?: string
@@ -48,7 +47,6 @@ export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
     absolutePath: '',
     itemType: ItemTypeUndefined,
     isLoaded: true,
-    isOpened: false,
     parentID: null,
     childrenIDs: [],
     body: ''
