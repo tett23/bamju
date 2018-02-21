@@ -99,8 +99,9 @@ function parseInternalPath(store: Store<State, Actions>, action: $ReturnType<typ
 function parse(store: Store<State, Actions>, tabID: string, metaData: MetaData, windowID: ?WindowID) {
   store.dispatch(async () => {
     const benchID = `parserMiddleware.parseMetaData benchmark ${metaData.repositoryName} ${metaData.path}`;
-    const [parseResult, message] = await metaData.parse();
     console.time(benchID);
+    const [parseResult, message] = await metaData.parse();
+    console.timeEnd(benchID);
     if (isSimilarError(message)) {
       store.dispatch(addMessage(message, { targetWindowID: windowID }));
     }
