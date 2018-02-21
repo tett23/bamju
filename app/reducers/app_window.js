@@ -87,7 +87,7 @@ export function initialState(): State {
 export function appReducer(s: State, a: Actions) {
   return {
     browser: browser(s.browser, a),
-    repositoriesTreeView: repositoriesTreeView(s.repositoriesTreeView, a),
+    repositoriesTreeView: repositoriesTreeView(s.repositoriesTreeView, a, s.global.buffers),
     modals: modals(s.modals, a),
     messages: messages(s.messages, a),
     global: globalReducer(s.global, a)
