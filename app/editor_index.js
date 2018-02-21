@@ -46,9 +46,3 @@ ipcRenderer.on('send-buffer-information', (_) => {
 
   ipcRenderer.send('save-buffer', [state.editor.buffer.id, state.editor.content]);
 });
-
-ipcRenderer.on('message', (_, message: Message) => {
-  console.log('message', message);
-
-  store.dispatch(addMessage(message));
-});
