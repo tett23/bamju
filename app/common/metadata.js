@@ -524,7 +524,9 @@ export class MetaData {
 async function _readdir(absolutePath: string): Promise<[Array<string>, Message]> {
   let ret: Array<string>;
   try {
-    ret = fs.readdirSync(absolutePath);
+    ret = fs.readdirSync(absolutePath).map((item) => {
+      return item.normalize();
+    });
   } catch (e) {
     return [[], {
       type: MessageTypeError,
