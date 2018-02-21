@@ -8,6 +8,7 @@ import {
   type Rectangle,
   type Tab,
   newWindow,
+  newEditorWindow,
 } from '../../actions/windows';
 import {
   addTab,
@@ -208,10 +209,7 @@ export function buildContextMenu(
   ret.push({
     label: 'edit on bamju editor',
     click: () => {
-      ipcRenderer.send('open-by-bamju-editor', {
-        parentWindowID: window.windowID,
-        metaDataID: item.id,
-      });
+      dispatcher.newEditorWindow(item.id);
     },
     enabled: isSimilarFile(item.itemType),
   });
@@ -281,6 +279,9 @@ function mapDispatchToProps(dispatch) {
     },
     closeBuffer: (metaDataID: MetaDataID) => {
       return dispatch(closeBuffer(metaDataID));
+    },
+    newEditorWindow: (metaDataID: MetaDataID) => {
+      return dispatch(newEditorWindow(metaDataID));
     }
   };
 }

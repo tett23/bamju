@@ -10,7 +10,6 @@ import {
   type Window as WindowConfig,
 } from '../reducers/windows';
 import {
-  MetaData,
   type MetaDataID,
 } from './metadata';
 import {
@@ -57,8 +56,8 @@ export class WindowManager {
     this._appWindows.push(w);
   }
 
-  createEditorWindow(metaData: MetaData, parentWindowID: ?string) {
-    const w = new EditorWindow(metaData, parentWindowID);
+  createEditorWindow(windowID: WindowID, metaDataID: MetaDataID) {
+    const w = new EditorWindow(windowID, metaDataID);
 
     this._editorWindows.push(w);
   }
@@ -167,7 +166,7 @@ export class WindowManager {
 
   getEditorWindow(metaDataID: MetaDataID): ?EditorWindow {
     return this._editorWindows.find((w) => {
-      return w.metaData.id === metaDataID;
+      return w.metaDataID === metaDataID;
     });
   }
 }

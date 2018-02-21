@@ -16,6 +16,9 @@ import {
   parseInternalPath,
 } from '../../actions/parser';
 import {
+  newEditorWindow,
+} from '../../actions/windows';
+import {
   isSimilarFile,
   type MetaDataID,
   internalPath,
@@ -116,10 +119,7 @@ export function buildTabContextMenu(props: Props) {
     {
       label: 'edit on bamju editor',
       click: () => {
-        ipcRenderer.send('open-by-bamju-editor', {
-          parentWindowID: window.windowID,
-          metaDataID: buffer.id,
-        });
+        props.newEditorWindow(buffer.id);
       },
       enabled: isSimilarFile(buffer.itemType)
     },
@@ -153,6 +153,9 @@ function mapDispatchToProps(dispatch) {
     },
     parseInternalPath: (tabID: string, _internalPath: string) => {
       return dispatch(parseInternalPath(tabID, _internalPath));
+    },
+    newEditorWindow: (metaDataID: MetaDataID) => {
+      return dispatch(newEditorWindow(metaDataID));
     }
   };
 }

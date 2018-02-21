@@ -8,9 +8,13 @@ import {
 import {
   getInstance as getWindowManagerInstance,
 } from '../common/window_manager';
+import {
+  getInstance as getRepositoryManagerInstance,
+} from '../common/repository_manager';
 
 import {
   type $ReturnType,
+  MessageTypeFailed,
 } from '../common/util';
 
 import {
@@ -24,14 +28,19 @@ import {
   WINDOW_INITIALIZED,
   NEW_WINDOW,
   CLOSE_WINDOW,
+  NEW_EDITOR_WINDOW,
   initializeWindows as initializeWindowsAction,
   windowInitialized as windowInitializedAction,
   newWindow as newWindowAction,
   closeWindow as closeWindowAction,
+  newEditorWindow as newEditorWindowAction,
 } from '../actions/windows';
 import {
   parseMetaData,
 } from '../actions/parser';
+import {
+  addMessage,
+} from '../actions/messages';
 
 export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
   switch (action.type) {
@@ -53,6 +62,11 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispat
   case CLOSE_WINDOW: {
     next(action);
     closeWindow(store, action);
+    return;
+  }
+  case NEW_EDITOR_WINDOW: {
+    next(action);
+    newEditorWindow(store, action);
     return;
   }
   default: {
@@ -104,6 +118,27 @@ function closeWindow(store: Store<State, Actions>, action: $ReturnType<typeof cl
   const manager = getWindowManagerInstance();
 
   manager.removeWindow(action.payload.windowID);
+}
+
+function newEditorWindow(store: Store<State, Actions>, action: $ReturnType<typeof newEditorWindowAction>) {
+  const manager = getWindowManagerInstance();
+
+  const metaDataID = action.payload.metaDataID;
+  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
+  if (metaData == null) {
+    store.dispatch(addMessage({
+      type: MessageTypeFailed,
+      message: `file not found. metaDataID=${metaDataID}`
+    }, { targetWindowID: action.meta.fromWindowID }));
+    return;
+  }
+
+  const editorWindow = getWindowManagerInstance().getEditorWindow(metaDataID);
+  if (editorWindow == null) {
+    manager.createEditorWindow(action.payload.windowID, action.payload.metaDataID);
+  } else {
+    editorWindow.focus();
+  }
 }
 
 export default windowsMiddleware;

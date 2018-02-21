@@ -17,32 +17,8 @@ import {
   MessageTypeFailed,
 } from '../common/util';
 import {
-  type WindowID,
-} from '../common/window';
-import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';
-
-ipcMain.on('open-by-bamju-editor', async (e, { parentWindowID, metaDataID }: {parentWindowID: ?WindowID, metaDataID: MetaDataID}) => {
-  console.log('open-by-bamju-editor', parentWindowID, metaDataID);
-
-  const metaData = getRepositoryManagerInstance().getItemByID(metaDataID);
-  if (metaData == null) {
-    e.send('message', {
-      type: MessageTypeFailed,
-      message: `file not found. metaDataID=${metaDataID}`
-    });
-
-    return;
-  }
-
-  const editorWindow = getWindowManagerInstance().getEditorWindow(metaDataID);
-  if (editorWindow == null) {
-    getWindowManagerInstance().createEditorWindow(metaData, parentWindowID);
-  } else {
-    editorWindow.focus();
-  }
-});
 
 ipcMain.on('save-buffer', async (e, [metaDataID, content]: [MetaDataID, string]) => {
   console.log('save-buffer', metaDataID, content);

@@ -17,6 +17,7 @@ export const WINDOW_INITIALIZED = 'WINDOW_INITIALIZED';
 export const NEW_WINDOW = 'NEW_WINDOW';
 export const CLOSE_WINDOW = 'CLOSE_WINDOW';
 export const UPDATE_WINDOW_RECTANGLE = 'UPDATE_WINDOW_RECTANGLE';
+export const NEW_EDITOR_WINDOW = 'NEW_EDITOR_WINDOW';
 
 export type Rectangle = {
   x: number,
@@ -86,6 +87,17 @@ export function updateWindowRectangle(windowID: WindowID, rectangle: Rectangle, 
     payload: {
       windowID,
       rectangle
+    },
+    meta
+  };
+}
+
+export function newEditorWindow(metaDataID: MetaDataID, meta: Meta = {}) {
+  return {
+    type: NEW_EDITOR_WINDOW,
+    payload: {
+      windowID: createWindowID(),
+      metaDataID,
     },
     meta
   };
