@@ -18,8 +18,6 @@ import {
   openBuffer,
   openBySystemEditor,
   createFile,
-  closeItem,
-  openItem,
 } from './main/repository';
 
 import {

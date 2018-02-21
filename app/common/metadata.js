@@ -53,7 +53,6 @@ export class MetaData {
   parentID: ?MetaDataID;
   childrenIDs: Array<MetaDataID>;
   isLoaded: boolean;
-  isOpened: boolean;
   body: string;
 
   constructor(buffer: Buffer) {
@@ -70,7 +69,6 @@ export class MetaData {
     this.parentID = buffer.parentID;
     this.childrenIDs = buffer.childrenIDs;
     this.isLoaded = buffer.isLoaded;
-    this.isOpened = buffer.isOpened;
     this.body = buffer.body;
   }
 
@@ -347,20 +345,6 @@ export class MetaData {
     }];
   }
 
-  async open(): Promise<MetaData> {
-    await this.load();
-
-    this.isOpened = true;
-
-    return this;
-  }
-
-  close(): MetaData {
-    this.isOpened = false;
-
-    return this;
-  }
-
   internalPath(): string {
     return internalPath(this.repositoryName, this.path);
   }
@@ -377,7 +361,6 @@ export class MetaData {
       parentID: this.parentID,
       childrenIDs: this.childrenIDs,
       isLoaded: this.isLoaded,
-      isOpened: this.isOpened,
       body: this.body,
     };
   }
@@ -408,7 +391,6 @@ export class MetaData {
       parentID: this.id,
       childrenIDs: [],
       isLoaded: false,
-      isOpened: false,
       body: '',
     });
     this.childrenIDs.push(ret.id);

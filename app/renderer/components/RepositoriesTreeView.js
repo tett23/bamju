@@ -13,6 +13,10 @@ import {
   addTab,
 } from '../../actions/browser';
 import {
+  openBuffer,
+  closeBuffer,
+} from '../../actions/repositories_tree_view';
+import {
   addRepository,
   removeRepository,
 } from '../../actions/repositories';
@@ -111,14 +115,14 @@ function onClickItem(e, item: Buffer, tabID: string, dispatcher: $ReturnType<typ
   }
 }
 
-function toggleTreeView(e, buffer: Buffer) {
+function toggleTreeView(e, buffer: Buffer, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
   e.preventDefault();
   e.stopPropagation();
 
   if (buffer.isOpened) {
-    ipcRenderer.send('close-item', buffer.id);
+    dispatcher.openBuffer(buffer.id);
   } else {
-    ipcRenderer.send('open-item', buffer.id);
+    dispatcher.closeBuffer(buffer.id);
   }
 }
 
@@ -271,6 +275,12 @@ function mapDispatchToProps(dispatch) {
     },
     parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
       return dispatch(parseMetaData(tabID, metaDataID));
+    },
+    openBuffer: (metaDataID: MetaDataID) => {
+      return dispatch(openBuffer(metaDataID));
+    },
+    closeBuffer: (metaDataID: MetaDataID) => {
+      return dispatch(closeBuffer(metaDataID));
     }
   };
 }

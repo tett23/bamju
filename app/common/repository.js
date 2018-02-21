@@ -230,36 +230,6 @@ export class Repository {
     return [ret, message];
   }
 
-  async openItem(id: MetaDataID): Promise<?MetaData> {
-    const metaData = this.getItemByID(id);
-    if (metaData == null) {
-      return null;
-    }
-
-    const ret = await metaData.open();
-    let parentID = metaData.parentID;
-    while (parentID != null) {
-      const parent = await this.openItem(parentID);
-      if (parent == null) {
-        parentID = null;
-        continue;
-      }
-
-      parentID = parent.parentID;
-    }
-
-    return ret;
-  }
-
-  closeItem(id: MetaDataID): ?MetaData {
-    const metaData = this.getItemByID(id);
-    if (metaData == null) {
-      return null;
-    }
-
-    return metaData.close();
-  }
-
   // TODO: 無名ファイル実装時には削除ではなく移動になる
   async moveNamelessFile(id: MetaDataID) {
     const idx = this.items.findIndex((item) => {
@@ -363,7 +333,6 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
     absolutePath,
     itemType: ItemTypeRepository,
     isLoaded: false,
-    isOpened: true,
     parentID: null,
     childrenIDs: [],
     body: '',

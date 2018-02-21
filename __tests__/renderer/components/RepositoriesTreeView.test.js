@@ -40,9 +40,6 @@ beforeEach(() => {
   const dummyBuffers = dummy({
     test: ['/foo.md', '/a/b/c.md']
   });
-  dummyBuffers.forEach((_, i) => {
-    dummyBuffers[i].isOpened = true;
-  });
 
   store.dispatch(reloadBuffers(dummyBuffers));
 });

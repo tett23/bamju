@@ -6,8 +6,6 @@ import {
   openBySystemEditor,
   addRepository,
   removeRepository,
-  closeItem,
-  openItem,
   createFile,
 } from '../../app/main/repository';
 import {
@@ -158,64 +156,6 @@ describe('repository events', () => {
 
     it('absolutePathが存在しない場合、エラーが返る', async () => {
       const result = await removeRepository('/tmp/bamju/add-project');
-
-      expect(isSimilarError(result)).toBe(true);
-    });
-  });
-
-  describe('close-item', () => {
-    it('MetaDataを閉じられる', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      if (metaData == null) {
-        expect(true).toBe(false);
-        return;
-      }
-      const result: Buffer | Message = await closeItem(metaData.id);
-      expect(isSimilarError(result)).toBe(false);
-
-      expect(result.isOpened).toBe(false);
-    });
-
-    it('Repositoryが存在しない場合、エラーが返る', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      const { id } = metaData;
-      metaData.id = 'hogehoge';
-      const result = await closeItem(id);
-
-      expect(isSimilarError(result)).toBe(true);
-    });
-
-    it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const result = await closeItem('hogehoge');
-
-      expect(isSimilarError(result)).toBe(true);
-    });
-  });
-
-  describe('open-item', () => {
-    it('MetaDataを開ける', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      if (metaData == null) {
-        expect(true).toBe(false);
-        return;
-      }
-      const result: Buffer | Message = await openItem(metaData.id);
-      expect(isSimilarError(result)).toBe(false);
-
-      expect(result.isOpened).toBe(true);
-    });
-
-    it('Repositoryが存在しない場合、エラーが返る', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      const { id } = metaData;
-      metaData.id = 'hogehoge';
-      const result = await openItem(id);
-
-      expect(isSimilarError(result)).toBe(true);
-    });
-
-    it('MetaDataが存在しない場合、エラーが返る', async () => {
-      const result = await openItem('hogehoge');
 
       expect(isSimilarError(result)).toBe(true);
     });

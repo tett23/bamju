@@ -10,10 +10,8 @@ import {
   Repository,
 } from '../../app/common/repository';
 import {
-  MetaData,
   ItemTypeMarkdown,
   ItemTypeDirectory,
-  ItemTypeUndefined,
 } from '../../app/common/metadata';
 import {
   MessageTypeSucceeded,
@@ -275,7 +273,6 @@ describe('Repository', () => {
         absolutePath: '/tmp/test',
         itemType: ItemTypeDirectory,
         isLoaded: false,
-        isOpened: false,
         childrenIDs: [],
         parentID: null,
       }], {
@@ -295,116 +292,6 @@ describe('Repository', () => {
         repositoryName: 'test',
         absolutePath: '/tmp/bamju/test'
       });
-    });
-  });
-
-  describe('openItem', () => {
-    it('isOpenedがtrueになる', async () => {
-      let metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(false);
-      metaData = await repository.openItem(metaData.id);
-      expect(metaData.isOpened).toBe(true);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(true);
-    });
-
-    it('親のisOpenedもtrueになる', async () => {
-      expect(repository.getItemByPath('/').isOpened).toBe(false);
-      expect(repository.getItemByPath('/foo').isOpened).toBe(false);
-      expect(repository.getItemByPath('/foo/bar').isOpened).toBe(false);
-
-      const metaData = repository.getItemByPath('/foo/bar');
-      await repository.openItem(metaData.id);
-
-      expect(repository.getItemByPath('/').isOpened).toBe(true);
-      expect(repository.getItemByPath('/foo').isOpened).toBe(true);
-      expect(repository.getItemByPath('/foo/bar').isOpened).toBe(true);
-    });
-
-    it('子のアイテムが存在しなくなった場合itemsから削除される', async () => {
-      await repository.addFile('/foo.md', '');
-      expect(repository.items.length).toBe(6);
-
-      let rootItem = repository.rootItem();
-      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo.md'));
-      fs.unlinkSync(path.join(rootItem.absolutePath, 'foo/bar/baz/testItem.md'));
-      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar/baz'));
-      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo/bar'));
-      fs.rmdirSync(path.join(rootItem.absolutePath, 'foo'));
-
-      await repository.openItem(rootItem.id);
-      rootItem = repository.rootItem();
-
-      expect(rootItem.childrenIDs.length).toBe(0);
-      expect(repository.items.length).toBe(1);
-      expect(repository.getItemByPath('/foo')).toBeFalsy();
-      expect(repository.getItemByPath('/foo/bar')).toBeFalsy();
-      expect(repository.getItemByPath('/foo/bar/baz')).toBeFalsy();
-      expect(repository.getItemByPath('/foo/bar/baz/testItem.md')).toBeFalsy();
-    });
-
-    it('管理されていないアイテムが追加されていた場合itemsにも追加される', async () => {
-      const metaData = repository.getItemByPath('/foo/bar/baz');
-      expect(metaData.childrenIDs.length).toBe(1);
-      const newFilePath = path.join(metaData.absolutePath, 'add file.md');
-      expect(() => { fs.statSync(newFilePath); }).toThrowError();
-      fs.writeFile(newFilePath);
-
-      await repository.openItem(metaData.id);
-
-      expect(metaData.childrenIDs.length).toBe(2);
-      const itemPath = newFilePath.replace(metaData.repositoryPath, '');
-      expect(repository.getItemByPath(itemPath)).toBeTruthy();
-    });
-
-    it('ItemTypeUndefinedのものが含まれていても動く', async () => {
-      let metaData = repository.getItemByPath('/');
-      expect(metaData.childrenIDs.length).toBe(1);
-
-      fs.writeFile(path.join(repository.absolutePath, 'foo.bar'));
-      repository.items.push(new MetaData({
-        id: 'testtest',
-        name: 'foo.bar',
-        path: '/foo.bar',
-        repositoryName: repository.name,
-        repositoryPath: repository.absolutePath,
-        absolutePath: path.join(repository.absolutePath, 'foo.bar'),
-        itemType: ItemTypeUndefined,
-        parentID: repository.rootItem().id,
-        childrenIDs: [],
-        isLoaded: false,
-        isOpened: false,
-        body: '',
-      }));
-
-      metaData = repository.getItemByPath('/');
-      await repository.openItem(metaData.id);
-
-      expect(metaData.childrenIDs.length).toBe(2);
-    });
-  });
-
-  describe('closeItem', () => {
-    it('isOpenedがfalseになる', () => {
-      let metaData = repository.getItemByPath('/foo');
-      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(false);
-    });
-
-    it('すでにisOpened == falseの場合、もう一度closeItemしてもfalseのままになる', () => {
-      let metaData = repository.getItemByPath('/foo');
-      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(false);
-
-      expect(repository.closeItem(metaData.id).isOpened).toBe(false);
-
-      metaData = repository.getItemByPath('/foo');
-      expect(metaData.isOpened).toBe(false);
     });
   });
 

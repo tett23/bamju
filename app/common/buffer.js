@@ -16,6 +16,5 @@ export type Buffer = {
   parentID: ?MetaDataID,
   childrenIDs: Array<MetaDataID>,
   isLoaded: boolean,
-  isOpened: boolean,
   body: string
 };
