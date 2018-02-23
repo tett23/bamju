@@ -1,312 +1,254 @@
-/* eslint no-await-in-loop:0, no-plusplus: 0, func-names: 0, flowtype-errors/show-errors: 0, prefer-const: 0 */
 // @flow
 
-import marked from 'marked';
+import remark from 'remark';
+import remarkHTML from 'remark-html';
+// import remarkHTML from 'remark-vdom';
+import remarkMarkdown from 'remark-parse';
+import reporter from 'vfile-reporter';
+import visit from 'unist-util-visit';
+import is from 'unist-util-is';
 import path from '../../common/path';
+// import {
+//   ItemTypeMarkdown,
+//   ItemTypeText,
+//   ItemTypeCSV,
+//   ItemTypeTSV,
+//   MetaData,
+//   type ParseResult,
+//   type ParseResults,
+//   internalPath,
+// } from '../../common/metadata';
 import {
-  ItemTypeMarkdown,
-  ItemTypeText,
-  ItemTypeCSV,
-  ItemTypeTSV,
-  MetaData,
-  type ParseResult,
-  type ParseResults,
-  internalPath,
-} from '../../common/metadata';
-import {
-  getInstance,
+  RepositoryManager
 } from '../../common/repository_manager';
 import {
-  type Message,
-  MessageTypeSucceeded,
-} from '../../common/util';
-import {
-  type StackItem,
-  type StackItems,
-} from './parser';
-
-const { markedParserTok, markedLexerToken } = require('./marked_overrides');
+  type Buffer
+} from '../../common/buffer';
+// import {
+//   type Message,
+//   MessageTypeSucceeded,
+// } from '../../common/util';
 
 export type MarkdownOption = {
-  gfm?: boolean,
-  tables?: boolean,
-  breaks?: boolean,
-  pedantic?: boolean,
-  sanitize?: boolean,
-  sanitizer?: (string)=>string,
-  mangle?: boolean,
-  smartLists?: boolean,
-  silent?: boolean,
-  highlight?: (string, string, (Error, number)=>void) => string,
-  langPrefix?: string,
-  smartypants?: boolean,
-  headerPrefix?: string,
-  renderer?: marked.Renderer,
-  xhtml?: boolean,
-
-  headingLevel?: number
 };
 
-type Token = Object; /* eslint flowtype/no-weak-types: 0 */
+type ParseResult = {
+  content: string
+};
 
-const defaultOption:MarkdownOption = {
+// const defaultOption:MarkdownOption = {
+//   gfm: true,
+//   tables: true,
+//   breaks: true,
+//   renderer: undefined,
+//   headingLevel: 0
+// };
+
+const markdownOptions = {
   gfm: true,
-  tables: true,
-  breaks: true,
-  renderer: undefined,
-  headingLevel: 0
+  footnotes: true,
+  yaml: true
 };
 
-type ParseInlineToken = {
-  repo: string,
-  name: string,
-  fragment: ?string,
-  text: ?string
-};
+const wikiLinkRegExp = /\[\[(.+?)\]\]/;
+const wikiLinkWithTextRegExp = /\[\[(.+?)\]\]\{(.+?)\}/;
+const splitFragmentRegExp = /(.+)#(.+)/;
+const splitRepositoryNameRegExp = /(.+?):(.+)/;
+const splitActionRegExp = /(.+?)\|(.+)/;
+
+function wikiLinkPlugin(options: Object = {}) {
+  return (tree, file) => {
+    if (tree == null || file == null) {
+      return;
+    }
+
+    visit(tree, match, (node, index, parent) => {
+      // console.log('visit', options);
+      if (!wikiLinkRegExp.test(node.value)) {
+        return;
+      }
+
+      let bracket;
+      let aliasText = '';
+      let startIndex;
+      let length;
+      let itemName;
+      let __;
+      if (wikiLinkWithTextRegExp.test(node.value)) {
+        const result = wikiLinkWithTextRegExp.exec(node.value);
+        [__, bracket, aliasText] = result;
+        itemName = bracket.replace(/.+:(.+)/, '$1');
+        startIndex = result.index;
+        length = result.input.length;
+      } else if (wikiLinkRegExp.test(node.value)) {
+        const result = wikiLinkRegExp.exec(node.value);
+        [__, bracket] = result;
+        startIndex = result.index;
+        itemName = bracket.replace(/.+:(.+)/, '$1');
+        aliasText = bracket
+          .replace(/.+?:(.+)/, '$1')
+          .replace(/(.+?)#.+/, '$1')
+          .replace(/.+\/(.+?)/, '$1')
+          .replace(/(.+?)\..+/, '$1');
+        length = result.input.length;
+      } else {
+        return;
+      }
+
+      let fragment = '';
+      if (splitFragmentRegExp.test(bracket)) {
+        [__, bracket, fragment] = splitFragmentRegExp.exec(bracket);
+      }
+      let repositoryName = null;
+      if (splitRepositoryNameRegExp.test(bracket)) {
+        [__, repositoryName, __] = splitRepositoryNameRegExp.exec(bracket);
+      }
+      let action = 'link';
+      if (splitActionRegExp.test(bracket)) {
+        [__, action, __] = splitActionRegExp.exec(bracket);
+      }
+
+      const manager = options.manager;
+      const buffer = options.buffer;
+
+      const metaData = manager.detect(repositoryName || buffer.repositoryName, itemName);
+      const isExist = metaData != null;
+
+      const linkInfo = {
+        internalPath: bracket,
+        aliasText,
+        startIndex,
+        length,
+        itemName,
+        repositoryName,
+        fragment,
+        action,
+        isExist,
+      };
+
+      switch (action) {
+      case 'link': {
+        replaceLink(node, index, parent, linkInfo);
+        break;
+      }
+      case 'inline': {
+        break;
+      }
+      default:
+      }
+
+      // console.log(parent.children);
+    });
+  };
+
+  function replaceLink(node, index, parent, linkInfo) {
+    parent.children = [].concat( // eslint-disable-line no-param-reassign
+      parent.children.slice(0, index - 1),
+      [
+        {
+          type: 'text',
+          value: node.value.slice(0, linkInfo.startIndex)
+        }, {
+          type: 'bamjuLink',
+          value: linkInfo.aliasText,
+          data: {
+            hName: 'span',
+            hProperties: {
+              className: 'bamjuLink',
+              dataInternalPath: linkInfo.internalPath,
+              dataFragment: linkInfo.fragment,
+              dataRepositoryName: linkInfo.repositoryName,
+              dataIsExist: linkInfo.isExist,
+              onClick: ''
+            },
+            hChildren: [{
+              type: 'text',
+              value: linkInfo.aliasText
+            }]
+          }
+        }, {
+          type: 'text',
+          value: node.value.slice(linkInfo.startIndex + linkInfo.length)
+        }
+      ],
+      parent.children.slice(index + 1, parent.children.length),
+    );
+  }
+
+  function replaceInline() {
+
+  }
+}
+
+function match(node, index, parent) {
+  // console.log('match node', node);
+  // console.log('match index', index);
+  // console.log('match parent', parent);
+
+  return (node.type === 'text') && (
+    !is('blockquote', parent)
+    && !is('code', parent)
+    && !is('inlineCode', parent)
+  );
+}
+
+function isMatchLinkReference(node, index, parent) {
+  if (parent == null) {
+    return false;
+  }
+  if (index === 0 || parent.children.legnth < 3) {
+    return false;
+  }
+
+  const prev = parent.children[index - 1];
+  const next = parent.children[index + 1];
+  if (prev == null || next == null) {
+    return false;
+  }
+
+  const isMatchPrev = is('text', prev) && prev.value[prev.value.length - 1] === '[';
+  // console.log('isMatchLinkReference next', next);
+  const isMatchNext = is('text', next) && next.value[0] === ']';
+
+  return isMatchPrev && isMatchNext && is('linkReference', node);
+}
+
+function replaceLinkReference() {
+  return (tree, _) => {
+    visit(tree, null, (node, index, parent) => {
+      if (!isMatchLinkReference(node, index, parent)) {
+        return;
+      }
+
+      const text = `${parent.children[index - 1].value}[${node.children[0].value}]${parent.children[index + 1].value}`;
+      const replaceNode = {
+        type: 'text',
+        value: text
+      };
+
+      parent.children = [].concat( // eslint-disable-line no-param-reassign
+        parent.children.slice(0, index - 1),
+        [replaceNode],
+        parent.children.slice(index + 2, parent.children.length)
+      );
+    });
+  };
+}
+
 
 export class Markdown {
-  static async parse(metaData: MetaData, md: string, stack: StackItems = [], opt: MarkdownOption = {}): Promise<ParseResult> {
-    if (md === '') {
-      return emptyFileBuffer();
-    }
-
-    const options = Object.assign({}, defaultOption, opt);
-    stack.push({ repositoryName: metaData.repositoryName, absolutePath: metaData.absolutePath });
-
-    // $FlowFixMe
-    const renderer:marked.Renderer = new marked.Renderer(options);
-    options.renderer = opt.renderer || renderer;
-    // $FlowFixMe
-    renderer.inlineLink = renderInlineLink;
-    const lexer:marked.Lexer = new marked.Lexer(options);
-    lexer.rules.inlineLink1 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]\{(.+?)\}/;
-    lexer.rules.inlineLink2 = /^\s*\[\[inline\|(.+?):(.+?)#(.+?)\]\]/;
-    lexer.rules.inlineLink3 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]\{(.+?)\}/;
-    lexer.rules.inlineLink4 = /^\s*\[\[inline\|(.+?)#(.+?)\]\]/;
-    lexer.rules.inlineLink5 = /^\s*\[\[inline\|(.+?):(.+?)\]\]\{(.+?)\}/;
-    lexer.rules.inlineLink6 = /^\s*\[\[inline\|(.+?):(.+?)\]\]/;
-    lexer.rules.inlineLink7 = /^\s*\[\[inline\|(.+?)\]\]\{(.+?)\}/;
-    lexer.rules.inlineLink8 = /^\s*\[\[inline\|(.+?)\]\]/;
-    // $FlowFixMe
-    lexer.token = markedLexerToken;
-    const parser:marked.Parser = new marked.Parser(options);
-    parser.tok = markedParserTok;
-    const children:ParseResults = [];
-    let currentHeadingLevel:number = 0;
-    const tokens:Array<Token> = await Promise.all(lexer.lex(md).map(async (tok: Token): Token => {
-      const ret = tok;
-      if (ret.type === 'heading') {
-        ret.depth += options.headingLevel;
-        currentHeadingLevel = ret.depth - 1;
-        if (currentHeadingLevel === 0) {
-          currentHeadingLevel = 1;
-        }
-      }
-      if (ret.type === 'inlineLink') {
-        ret.repo = ret.repo || metaData.repositoryName;
-        const result:ParseResult = await Markdown.parseInline(ret, currentHeadingLevel, stack, path.dirname(metaData.path));
-        children.push(result);
-
-        ret.html = result.content;
-      }
-
-      return ret;
-    }));
-    // $FlowFixMe
-    tokens.links = {};
-    // console.log('Markdown.parse', tokens);
-
-    // $FlowFixMe
-    const parsed:string = parser.parse(tokens);
-
-    const p5 = async (html: string): Promise<string> => {
-      let ret:string = html;
-
-      let re:RegExp = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]\{(.+?)\}/;
-      while (re.test(ret)) {
-        ret = ret.replace(re, (_, r: string, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, text, path.dirname(metaData.path));
-        });
-      }
-
-      re = /\[\[(?!inline\|)([^{[\]]+?):([^{[\]]+?)\]\]/;
-      while (re.test(ret)) {
-        ret = ret.replace(re, (_, r: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(r, name, name, path.dirname(metaData.path));
-        });
-      }
-
-      re = /\[\[(?!inline\|)([^{[\]]+?):(.+?)\]\]/;
-      while (re.test(ret)) {
-        ret = ret.replace(re, (_, repo: string, name: string): string => {
-          return Markdown.wikiLinkReplacer(repo, name, name, path.dirname(metaData.path));
-        });
-      }
-
-      re = /\[\[(?!inline\|)([^{[\]]+?)\]\]\{(.+?)\}/;
-      while (re.test(ret)) {
-        ret = ret.replace(re, (_, name: string, text: string): string => {
-          return Markdown.wikiLinkReplacer(metaData.repositoryName, name, text, path.dirname(metaData.path));
-        });
-      }
-
-      re = /\[\[(?!inline\|)([^{[\]]+?)\]\]/;
-      while (re.test(ret)) {
-        ret = ret.replace(re, (_, name: string): string => {
-          return Markdown.wikiLinkReplacer(metaData.repositoryName, name, name, path.dirname(metaData.path));
-        });
-      }
-
-      return ret;
-    };
-
-    const html:string = await Promise.resolve(parsed)
-      .then(p5);
+  static async parse(buffer: Buffer, md: string, manager: RepositoryManager): Promise<ParseResult> {
+    const processor = remark()
+      .use(remarkMarkdown, markdownOptions)
+      .use(replaceLinkReference)
+      .use(wikiLinkPlugin, { buffer, manager })
+      .use(remarkHTML);
+    const ret = await processor.process(md);
 
     return {
-      content: html,
-      children,
+      content: String(ret)
     };
   }
-
-  static wikiLinkReplacer(repo: string, name: string, text: string, dirname: string): string {
-    const isExist:boolean = Markdown.isExistPage(repo, name);
-
-    return linkString(repo, name, text, dirname, isExist);
-  }
-
-  static async parseInline(token: ParseInlineToken, headingLevel: number = 1, stack: StackItems, dirname: string): Promise<ParseResult> {
-    const metaData:?MetaData = getInstance().detect(token.repo, token.name);
-    if (!metaData) {
-      return inlineNotFoundBuffer(token, dirname);
-    }
-
-    const { itemType } = metaData;
-    let ret:ParseResult = { content: '', children: [] };
-    if (itemType === ItemTypeCSV || itemType === ItemTypeTSV) {
-      const [r, message] = await metaData.parse();
-      if (r != null) {
-        ret = r;
-      }
-      if (message.type !== MessageTypeSucceeded) {
-        ret.content = message.message;
-      }
-    } else if (itemType === ItemTypeMarkdown || itemType === ItemTypeText) {
-      ret = await parseChild(metaData, token, headingLevel, stack);
-    } else {
-      const [r, message] = await metaData.parse();
-      if (r != null) {
-        ret = r;
-      }
-      if (message.type !== MessageTypeSucceeded) {
-        ret.content = message.message;
-      }
-    }
-
-    return ret;
-  }
-
-  static checkInlineLoop(metaData: MetaData, stackItems: StackItems): boolean {
-    let ret:boolean = false;
-
-    stackItems.forEach((stackItem: StackItem) => {
-      if (stackItem.repositoryName === metaData.repositoryName && stackItem.absolutePath === metaData.absolutePath) {
-        ret = true;
-      }
-    });
-
-    return ret;
-  }
-
-  static isExistPage(repo: string, name: string): boolean {
-    const p:?MetaData = getInstance().detect(repo, name);
-    return p != null;
-  }
-}
-
-function linkString(repo: string, name: string, text: string, dirname: string, isExist: boolean): string {
-  let availableClass:string;
-  let onClickString:string;
-  if (isExist) {
-    onClickString = `wikiLinkOnClickAvailable('${repo}', '${name}')`;
-    availableClass = 'available';
-  } else {
-    availableClass = 'unavailable';
-
-    let formValue:string;
-    if (path.isAbsolute(name)) {
-      formValue = `${repo}:${name}.md`;
-    } else {
-      formValue = `${repo}:${path.join('/', dirname, name)}.md`;
-    }
-
-    onClickString = `wikiLinkOnClickUnAvailable('${repo}', '${formValue}')`;
-  }
-
-  return `<span class="wikiLink ${availableClass}" onClick="${onClickString}">${text}</span>`;
-}
-
-function renderInlineLink(html: string): string {
-  return `<div>${html}</div>`;
-}
-
-async function parseChild(metaData, token: ParseInlineToken, headingLevel = 1, stack: StackItems): Promise<ParseResult> {
-  const {
-    repo, name, text
-  } = token;
-
-  let altText:string = !text ? `${metaData.internalPath()}` : text;
-  altText = `{${altText}}`;
-
-  // ループしていると壊れるので
-  if (Markdown.checkInlineLoop(metaData, stack)) {
-    return loopBuffer(metaData, altText);
-  }
-
-  let message:Message;
-  let md = '';
-  [md, message] = await metaData.getContent();
-  if (message.type !== MessageTypeSucceeded) {
-    return {
-      content: `error: ${message.message}`,
-      children: []
-    };
-  }
-
-  // h1のおきかえ
-  md = md.replace(/^#\s*(.+)$/m, `# [[${internalPath(repo, metaData.path)}]]{${text || name}}`);
-
-  const ret = await Markdown.parse(metaData, md, stack, { headingLevel });
-
-  return ret;
-}
-
-function emptyFileBuffer(): ParseResult {
-  return {
-    content: '(empty file)',
-    children: []
-  };
-}
-
-function inlineNotFoundBuffer(token: ParseInlineToken, dirname: string): ParseResult {
-  const {
-    repo, name, fragment
-  } = token;
-
-  const linkText = `[[inline|${internalPath(repo, name)}${fragment ? `#${fragment}` : ''}]]`;
-  const body = linkString(repo, name, linkText, dirname, false);
-
-  return {
-    content: body,
-    children: []
-  };
-}
-
-function loopBuffer(metaData: MetaData, altText: string): ParseResult {
-  return {
-    content: `!loop [[${metaData.internalPath()}]]${altText}`,
-    children: []
-  };
 }
 
 export default Markdown;
