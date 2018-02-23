@@ -196,6 +196,11 @@
     "redux": "^3.7.2",
     "redux-electron-store": "^0.6.2",
     "redux-thunk": "^2.2.0",
-    "source-map-support": "^0.5.3"
+    "remark": "^9.0.0",
+    "remark-html": "^7.0.0",
+    "remark-react": "^4.0.1",
+    "remark-vdom": "^5.0.0",
+    "source-map-support": "^0.5.3",
+    "vfile-reporter": "^4.0.0"
   }
 }
