@@ -86,8 +86,9 @@ function wikiLinkPlugin(options: Object = {}) {
         startIndex = result.index;
         itemName = bracket.replace(/.+:(.+)/, '$1');
         aliasText = bracket
-          .replace(/.+?:(.+)/, '$1')
-          .replace(/(.+?)#.+/, '$1')
+          .replace(splitActionRegExp, '$2')
+          .replace(splitRepositoryNameRegExp, '$2')
+          .replace(splitFragmentRegExp, '$1')
           .replace(/.+\/(.+?)/, '$1')
           .replace(/(.+?)\..+/, '$1');
         length = result.input.length;
@@ -105,7 +106,7 @@ function wikiLinkPlugin(options: Object = {}) {
       }
       let action = 'link';
       if (splitActionRegExp.test(bracket)) {
-        [__, action, __] = splitActionRegExp.exec(bracket);
+        [__, action, bracket] = splitActionRegExp.exec(bracket);
       }
 
       const manager = options.manager;

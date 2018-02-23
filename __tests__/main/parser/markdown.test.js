@@ -96,6 +96,13 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<span.*?data-internal-path="foo".*?>/);
     });
 
+    it('[[link|foo]]', async () => {
+      const html = await Markdown.parse(metaData, '[[link|foo]]', manager);
+
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?>foo<\/span>/);
+      expect(html.content).toMatch(/<span.*?data-internal-path="foo".*?>/);
+    });
+
     it('/を含むときは末尾のものが表示される', async () => {
       const html = await Markdown.parse(metaData, '[[foo/bar]]', manager);
 
