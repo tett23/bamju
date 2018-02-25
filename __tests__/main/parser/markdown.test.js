@@ -235,7 +235,14 @@ describe('Markdown', () => {
       expect(html.content).not.toMatch(/<h1.*?>.*?not exist.*?<\/h1>/);
       expect(html.content).toMatch(/<span.*class="bamjuLink".*?data-is-exist="false".*?>\[\[inline\|not exist\]\]<\/span>/);
     });
-    it('repositoryをまたいで表示');
-    it('ディレクトリの読みこみ');
+
+    it('ディレクトリの読みこみ', async () => {
+      const html = await Markdown.parse(metaData.toBuffer(), '[[inline|/]]', manager);
+
+      expect(html.content).not.toMatch(/<h1.*?>.*?test:\/.*?<\/h1>/);
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?data-is-exist="true".*?>foo<\/span>/);
+    });
+
+    it('何らかの理由でファイルが存在しない場合は赤リンクになる');
   });
 });

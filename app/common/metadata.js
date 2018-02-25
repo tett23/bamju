@@ -7,6 +7,7 @@ import {
   MessageTypeFailed,
   MessageTypeError,
   MessageTypeSucceeded,
+  isSimilarError,
 } from './util';
 import {
   getInstance
@@ -280,27 +281,14 @@ export class MetaData {
   }
 
   async parse(): Promise<[?ParseResult, Message]> {
-    try {
-      fs.statSync(this.absolutePath);
-    } catch (e) {
-      const r = await parseResultNotFound(this);
-      return [r, {
-        type: MessageTypeError,
-        message: `MetaData.parse error: ${e.message}`
-      }];
+    const [content, message] = await this.getContent();
+    if (isSimilarError(message)) {
+      return [null, message];
     }
 
-    if (this.isSimilarFile()) {
-      return this._parseFile();
-    } else if (this.isSimilarDirectory()) {
-      return this._parseDirectory();
-    }
+    const ret = await parse(this, content);
 
-    const ret = await parseResultNotFound(this);
-    return [ret, {
-      type: MessageTypeError,
-      message: 'MetaData.parse unexpected error'
-    }];
+    return ret;
   }
 
   async updateContent(content: string): Promise<Message> {
@@ -327,7 +315,7 @@ export class MetaData {
   }
 
   async getContent(): Promise<[string, Message]> {
-    if (!this.isSimilarFile()) {
+    if (!this.isSimilarFile() && !this.isSimilarDirectory()) {
       return ['', {
         type: MessageTypeFailed,
         message: `MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`
@@ -335,13 +323,10 @@ export class MetaData {
     }
 
     let ret = '';
-    try {
-      ret = fs.readFileSync(this.absolutePath, 'utf8');
-    } catch (e) {
-      return ['', {
-        type: MessageTypeSucceeded,
-        message: `MetaData.getContent readFile error: ${e.message}`
-      }];
+    if (this.isSimilarFile()) {
+      ret = await this._getFileContent();
+    } else if (this.isSimilarDirectory()) {
+      ret = await this._getDirectoryContent();
     }
 
     return [ret, {
@@ -407,30 +392,31 @@ export class MetaData {
     }];
   }
 
-  async _parseFile(): Promise<[?ParseResult, Message]> {
-    const ret = await parseFile(this);
+
+  async _getFileContent(): Promise<string> {
+    const ret = await readFile(this);
 
     return ret;
   }
 
-  async _parseDirectory(): Promise<[?ParseResult, Message]> {
+  async _getDirectoryContent(): Promise<string> {
     let directoryIndexItem = this.childItem('index.md');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
+      const r = await readFile(directoryIndexItem);
       return r;
     }
     directoryIndexItem = this.childItem('index.txt');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
+      const r = await readFile(directoryIndexItem);
       return r;
     }
     directoryIndexItem = this.childItem('index.html');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
+      const r = await readFile(directoryIndexItem);
       return r;
     }
 
-    const ret = await parseDirectory(this);
+    const ret = await getDirectoryContent(this);
 
     return ret;
   }
@@ -687,25 +673,22 @@ function matchItemName(name: string, itemName: string): boolean {
   return false;
 }
 
-async function parseResultNotFound(metaData: MetaData): Promise<ParseResult> {
-  const md: string =
-`
+async function readFile(metaData: MetaData): Promise<string> {
+  let ret = '';
+  try {
+    ret = fs.readFileSync(metaData.absolutePath, 'utf8');
+  } catch (e) {
+    ret = `
 # not found
 
 ${metaData.internalPath()}
 `;
-
-  const ret = await Markdown.parse(metaData.toBuffer(), md, getInstance());
+  }
 
   return ret;
 }
 
-async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
-  const [content, message] = await metaData.getContent();
-  if (message.type !== MessageTypeSucceeded) {
-    return [null, message];
-  }
-
+async function parse(metaData: MetaData, content: string): Promise<[?ParseResult, Message]> {
   let parseResult:ParseResult = { content: '', children: [] };
   switch (metaData.itemType) {
   case ItemTypeMarkdown: {
@@ -728,6 +711,14 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
     parseResult = await TableParser.parse(metaData.toBuffer(), content, { delimiter: '\t' }, getInstance());
     break;
   }
+  case ItemTypeDirectory: {
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
+    break;
+  }
+  case ItemTypeRepository: {
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
+    break;
+  }
   default:
     return [null, {
       type: MessageTypeFailed,
@@ -741,10 +732,14 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
   }];
 }
 
-async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Message]> {
+async function getDirectoryContent(metaData: MetaData): Promise<string> {
   const [directoryItems, readdirResult] = await _readdir(metaData.absolutePath);
   if (readdirResult.type !== MessageTypeSucceeded) {
-    return [null, readdirResult];
+    return `
+# not found
+
+${metaData.internalPath()}
+`;
   }
 
   const items:Array<string> = directoryItems.map((filename) => {
@@ -761,10 +756,5 @@ async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Messag
 ${items.join('\n')}
   `;
 
-  const ret = await Markdown.parse(metaData.toBuffer(), md, getInstance());
-
-  return [ret, {
-    type: MessageTypeSucceeded,
-    message: ''
-  }];
+  return md;
 }

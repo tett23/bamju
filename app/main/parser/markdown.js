@@ -1,15 +1,11 @@
 // @flow
 
-import fs from 'fs';
-
 import remark from 'remark';
 import remarkHTML from 'remark-html';
 // import remarkHTML from 'remark-vdom';
 import remarkMarkdown from 'remark-parse';
-import reporter from 'vfile-reporter';
 import visit from 'unist-util-visit';
 import is from 'unist-util-is';
-import path from '../../common/path';
 import {
   // ItemTypeMarkdown,
   // ItemTypeText,
@@ -28,8 +24,6 @@ import {
 } from '../../common/buffer';
 import {
   isSimilarError,
-  sleep,
-  type $ReturnType,
 } from '../../common/util';
 
 export type MarkdownOption = {
@@ -283,26 +277,24 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
       return;
     }
 
+    const [md, mes] = await metaData.getContent();
+    if (isSimilarError(mes)) {
+      // eslint-disable-next-line no-param-reassign
+      node.hChildren.value = `[[inline|${node.data.internalPath}]]`;
+    }
+
     let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
       .use(replaceLinkReference, { buffer: metaData.toBuffer(), manager })
       .use(replaceBamjuLink, { buffer: metaData.toBuffer(), manager })
       .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
+      .use(remarkHTML)
       .use(() => {
         return (t) => {
           ast = t;
         };
       });
-
-    let md = '';
-    try {
-      md = fs.readFileSync(metaData.absolutePath, 'utf8');
-    } catch (e) {
-      // eslint-disable-next-line no-param-reassign
-      node.hChildren.value = `[[inline|${node.data.internalPath}]]`;
-      return;
-    }
     await processor.process(md);
 
     ast.children.forEach((item) => {
