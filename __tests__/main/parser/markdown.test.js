@@ -203,6 +203,13 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<h2.*?>.*?testItem.*?<\/h2>/);
     });
 
+    it('読みこんだファイルのh1が自身のリンクになる', async () => {
+      const html = await Markdown.parse(metaData, '[[inline|testItem]]', manager);
+
+      expect(html.content).toMatch(/<h1.*?>.*?testItem.*?<\/h1>/);
+      expect(html.content).toMatch(/<h1.*?><span.*class="bamjuLink".*?>testItem<\/span><\/h1>/);
+    });
+
     it('存在しないとき');
     it('repositoryをまたいで表示');
   });

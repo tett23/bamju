@@ -59,10 +59,10 @@ const splitFragmentRegExp = /(.+)#(.+)/;
 const splitRepositoryNameRegExp = /(.+?):(.+)/;
 const splitActionRegExp = /(.+?)\|(.+)/;
 
-function replaceLinkReference() {
+function replaceLinkReference(_) {
   return transformer;
 
-  function transformer(tree, _) {
+  function transformer(tree, __) {
     visit(tree, match, (node, index, parent) => {
       const text = `${parent.children[index - 1].value}[${node.children[0].value}]${parent.children[index + 1].value}`;
       const replaceNode = {
@@ -99,7 +99,7 @@ function replaceLinkReference() {
   }
 }
 
-function replaceBamjuLink() {
+function replaceBamjuLink(options: {buffer: Buffer}) {
   return transformer;
 
   function transformer(tree, _) {
@@ -162,6 +162,7 @@ function replaceBamjuLink() {
         repositoryName,
         fragment,
         action,
+        parentMetaDataID: options.buffer.id,
       };
 
       replaceLink(node, index, parent, linkInfo);
@@ -264,8 +265,8 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
-      .use(replaceLinkReference)
-      .use(replaceBamjuLink)
+      .use(replaceLinkReference, { buffer, manager })
+      .use(replaceBamjuLink, { buffer, manager })
       .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
       .use(() => {
         return (t) => {
@@ -284,10 +285,35 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     await processor.process(md);
 
     ast.children.forEach((item) => {
-      if (is('heading', item)) {
-        // eslint-disable-next-line no-param-reassign
-        item.depth += node.data.headingDepth;
+      if (!is('heading', item)) {
+        return;
       }
+
+      if (item.depth === 1) {
+        // eslint-disable-next-line no-param-reassign
+        item.children = [{
+          type: 'bamjuLink',
+          action: node.action,
+          value: node.data.aliasText,
+          data: {
+            ...node.data,
+            hName: 'span',
+            hProperties: {
+              className: 'bamjuLink',
+              dataInternalPath: node.data.internalPath,
+              dataFragment: node.data.fragment,
+              dataRepositoryName: node.data.repositoryName,
+            },
+            hChildren: [{
+              type: 'text',
+              value: node.data.aliasText
+            }]
+          }
+        }];
+      }
+
+      // eslint-disable-next-line no-param-reassign
+      item.depth += node.data.headingDepth;
     });
 
     // eslint-disable-next-line no-param-reassign
@@ -341,8 +367,8 @@ export class Markdown {
   static async parse(buffer: Buffer, md: string, manager: RepositoryManager): Promise<ParseResult> {
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
-      .use(replaceLinkReference)
-      .use(replaceBamjuLink)
+      .use(replaceLinkReference, { buffer, manager })
+      .use(replaceBamjuLink, { buffer, manager })
       .use(loadInlineLink, { buffer, manager })
       .use(updateLinkStatus, { buffer, manager })
       .use(remarkHTML);
