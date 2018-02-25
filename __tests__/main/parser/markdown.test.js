@@ -1,5 +1,7 @@
 // @flow
 
+import fs from 'fs';
+
 import '../../global_config.test';
 import {
   dummy,
@@ -34,6 +36,9 @@ beforeEach(() => {
     repositoryName: 'testRepo',
     absolutePath: '/tmp/bamju/testRepo'
   }]);
+
+  fs.writeFileSync('/tmp/bamju/test/foo/bar/baz/testItem.md', '# testItem');
+
   // $FlowFixMe
   metaData = manager.find('test').getItemByPath('/foo/bar/baz/testItem.md');
 });
@@ -160,7 +165,8 @@ describe('Markdown', () => {
   });
 
   describe('inline link', () => {
-    it('[[inline|repo:name#paragraph]]{text}', () => {
+    it('[[inline|repo:name#paragraph]]{text}', async () => {
+      // const html = await Markdown.parse(metaData, '[[testRepo:foo]]', manager);
     });
 
     it('[[inline|repo:name#paragraph]]', () => {
@@ -181,9 +187,16 @@ describe('Markdown', () => {
     it('[[inline|name]]{text}', () => {
 
     });
-    it('[[inline|name]]', () => {
+    it('[[inline|name]]', async () => {
+      console.log('\n\n\n\n\n\n aaaaaaaaa');
+      const html = await Markdown.parse(metaData, '[[inline|testItem]]', manager);
+      console.log('bbbb');
 
+      expect(html.content).toMatch(/<h1.*?>.*?testItem.*?<\/h1>/);
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?>testItem<\/span>/);
     });
+
     it('存在しないとき');
+    it('repositoryをまたいで表示');
   });
 });

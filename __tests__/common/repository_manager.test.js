@@ -151,6 +151,12 @@ describe('RepositoryManager', () => {
 
       expect(metaData).not.toBe(expect.anything());
     });
+
+    it('internalPathでrepositoryNameが指定された場合、引数を上書きする', () => {
+      const metaData = manager.detect('test', 'not found:/bar');
+
+      expect(metaData).not.toBe(expect.anything());
+    });
   });
 
   describe('addRepository', () => {

@@ -37,8 +37,8 @@ export type ItemType = 'repository' | 'directory' | 'markdown' | 'text' | 'csv' 
 export type MetaDataID = string;
 
 export type ParseResult = {
-  content: string,
-  children: Array<ParseResult>
+  content: string
+  // children: Array<ParseResult>
 };
 export type ParseResults = Array<ParseResult>;
 
@@ -695,7 +695,7 @@ async function parseResultNotFound(metaData: MetaData): Promise<ParseResult> {
 ${metaData.internalPath()}
 `;
 
-  const ret = await Markdown.parse(metaData, md);
+  const ret = await Markdown.parse(metaData.toBuffer(), md, getInstance());
 
   return ret;
 }
@@ -709,7 +709,7 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
   let parseResult:ParseResult = { content: '', children: [] };
   switch (metaData.itemType) {
   case ItemTypeMarkdown: {
-    parseResult = await Markdown.parse(metaData, content);
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
     break;
   }
   case ItemTypeText: {
@@ -721,11 +721,11 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
     break;
   }
   case ItemTypeCSV: {
-    parseResult = await TableParser.parse(metaData, content, [], { delimiter: ',' });
+    parseResult = await TableParser.parse(metaData.toBuffer(), content, { delimiter: ',' }, getInstance());
     break;
   }
   case ItemTypeTSV: {
-    parseResult = await TableParser.parse(metaData, content, [], { delimiter: '\t' });
+    parseResult = await TableParser.parse(metaData.toBuffer(), content, { delimiter: '\t' }, getInstance());
     break;
   }
   default:
@@ -761,7 +761,7 @@ async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Messag
 ${items.join('\n')}
   `;
 
-  const ret = await Markdown.parse(metaData, md);
+  const ret = await Markdown.parse(metaData.toBuffer(), md, getInstance());
 
   return [ret, {
     type: MessageTypeSucceeded,
