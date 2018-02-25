@@ -210,7 +210,12 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<h1.*?><span.*class="bamjuLink".*?>testItem<\/span><\/h1>/);
     });
 
-    it('存在しないとき');
+    it('存在しないとき', async () => {
+      const html = await Markdown.parse(metaData, '[[inline|not exist]]', manager);
+
+      expect(html.content).not.toMatch(/<h1.*?>.*?not exist.*?<\/h1>/);
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?data-is-exist="false".*?>\[\[inline\|not exist\]\]<\/span>/);
+    });
     it('repositoryをまたいで表示');
   });
 });

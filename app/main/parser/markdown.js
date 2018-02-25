@@ -258,7 +258,28 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     const metaData = manager.detect(repositoryName, node.data.internalPath, buffer);
     if (metaData == null) {
       // eslint-disable-next-line no-param-reassign
-      node.hChildren.value = `[[inline|${node.data.internalPath}]]`;
+      parent.children[index] = {
+        type: 'paragraph',
+        children: [{
+          type: 'bamjuLink',
+          action: 'link',
+          data: {
+            ...node.data,
+            hName: 'span',
+            hProperties: {
+              className: 'bamjuLink',
+              dataInternalPath: node.data.internalPath,
+              dataFragment: node.data.fragment,
+              dataRepositoryName: node.data.repositoryName,
+              dataIsExist: false,
+            },
+            hChildren: [{
+              type: 'text',
+              value: `[[inline|${node.data.internalPath}]]`
+            }]
+          }
+        }]
+      };
       return;
     }
 
@@ -293,8 +314,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
         // eslint-disable-next-line no-param-reassign
         item.children = [{
           type: 'bamjuLink',
-          action: node.action,
-          value: node.data.aliasText,
+          action: 'link',
           data: {
             ...node.data,
             hName: 'span',
