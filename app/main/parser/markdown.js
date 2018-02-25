@@ -167,7 +167,11 @@ function replaceBamjuLink() {
       replaceLink(node, index, parent, linkInfo);
     });
 
+    let headingDepth = 0;
     tree.children.forEach((__, i) => {
+      if (is('heading', tree.children[i])) {
+        headingDepth = tree.children[i].depth;
+      }
       if (!is('paragraph', tree.children[i])) {
         return;
       }
@@ -178,6 +182,8 @@ function replaceBamjuLink() {
       if (inlineLink == null) {
         return;
       }
+
+      inlineLink.data.headingDepth = headingDepth;
 
       // eslint-disable-next-line
       tree.children[i] = inlineLink;
@@ -277,6 +283,13 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     }
     await processor.process(md);
 
+    ast.children.forEach((item) => {
+      if (is('heading', item)) {
+        // eslint-disable-next-line no-param-reassign
+        item.depth += node.data.headingDepth;
+      }
+    });
+
     // eslint-disable-next-line no-param-reassign
     parent.children = [
       ...parent.children.slice(0, index),
@@ -307,7 +320,7 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
   const { buffer, manager } = options;
 
   function transformer(tree, _) {
-    visit(tree, match, (node, _, __) => {
+    visit(tree, match, (node, __, ___) => {
       const repositoryName = node.data.repositoryName || buffer.repositoryName;
       const metaData = manager.detect(repositoryName, node.data.internalPath, buffer);
 

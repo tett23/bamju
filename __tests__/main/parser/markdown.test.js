@@ -187,11 +187,20 @@ describe('Markdown', () => {
     it('[[inline|name]]{text}', () => {
 
     });
+
     it('[[inline|name]]', async () => {
-      await Markdown.parse(metaData, '# foo', manager);
       const html = await Markdown.parse(metaData, '[[inline|testItem]]', manager);
 
       expect(html.content).toMatch(/<h1.*?>.*?testItem.*?<\/h1>/);
+    });
+
+    it('heading深さの引きつぎ', async () => {
+      const html = await Markdown.parse(metaData, `
+# heading
+[[inline|testItem]]
+        `, manager);
+
+      expect(html.content).toMatch(/<h2.*?>.*?testItem.*?<\/h2>/);
     });
 
     it('存在しないとき');
