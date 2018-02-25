@@ -10,16 +10,16 @@ import reporter from 'vfile-reporter';
 import visit from 'unist-util-visit';
 import is from 'unist-util-is';
 import path from '../../common/path';
-// import {
-//   ItemTypeMarkdown,
-//   ItemTypeText,
-//   ItemTypeCSV,
-//   ItemTypeTSV,
-//   MetaData,
-//   type ParseResult,
-//   type ParseResults,
-//   internalPath,
-// } from '../../common/metadata';
+import {
+  // ItemTypeMarkdown,
+  // ItemTypeText,
+  // ItemTypeCSV,
+  // ItemTypeTSV,
+  MetaData,
+  // type ParseResult,
+  // type ParseResults,
+  // internalPath,
+} from '../../common/metadata';
 import {
   RepositoryManager
 } from '../../common/repository_manager';
@@ -255,7 +255,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     }
 
     const repositoryName = node.data.repositoryName || buffer.repositoryName;
-    const metaData = manager.detect(repositoryName, node.data.internalPath, buffer);
+    const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
     if (metaData == null) {
       // eslint-disable-next-line no-param-reassign
       parent.children[index] = {
@@ -286,8 +286,8 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
-      .use(replaceLinkReference, { buffer, manager })
-      .use(replaceBamjuLink, { buffer, manager })
+      .use(replaceLinkReference, { buffer: metaData.toBuffer(), manager })
+      .use(replaceBamjuLink, { buffer: metaData.toBuffer(), manager })
       .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
       .use(() => {
         return (t) => {
@@ -368,7 +368,7 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
   function transformer(tree, _) {
     visit(tree, match, (node, __, ___) => {
       const repositoryName = node.data.repositoryName || buffer.repositoryName;
-      const metaData = manager.detect(repositoryName, node.data.internalPath, buffer);
+      const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
 
       // eslint-disable-next-line no-param-reassign
       node.data.isExist = node.data.hProperties.dataIsExist = metaData != null;
