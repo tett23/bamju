@@ -93,7 +93,6 @@ function replaceLinkReference() {
     }
 
     const isMatchPrev = is('text', prev) && prev.value[prev.value.length - 1] === '[';
-    // console.log('isMatchLinkReference next', next);
     const isMatchNext = is('text', next) && next.value[0] === ']';
 
     return isMatchPrev && isMatchNext && is('linkReference', node);
@@ -167,13 +166,25 @@ function replaceBamjuLink() {
 
       replaceLink(node, index, parent, linkInfo);
     });
+
+    tree.children.forEach((__, i) => {
+      if (!is('paragraph', tree.children[i])) {
+        return;
+      }
+
+      const inlineLink = tree.children[i].children.find((item) => {
+        return item.type === 'bamjuLink' && item.action === 'inline';
+      });
+      if (inlineLink == null) {
+        return;
+      }
+
+      // eslint-disable-next-line
+      tree.children[i] = inlineLink;
+    });
   }
 
   function match(node, index, parent) {
-  // console.log('match node', node);
-  // console.log('match index', index);
-  // console.log('match parent', parent);
-
     return (node.type === 'text') && (
       !is('blockquote', parent)
       && !is('code', parent)
@@ -244,7 +255,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
       return;
     }
 
-    let ast;
+    let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
       .use(replaceLinkReference)
@@ -264,18 +275,14 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
       node.hChildren.value = `[[inline|${node.data.internalPath}]]`;
       return;
     }
-    const ret = await processor.process(md);
+    await processor.process(md);
 
-
-    console.log(ret);
-    console.log(ret.contents);
     // eslint-disable-next-line no-param-reassign
-    node.children = ast.children;
-    delete node.data;
-    console.log(ast);
-    console.log(parent);
-    // node.data.hName = 'div';
-    // node.data.hChildren = ast.children;
+    parent.children = [
+      ...parent.children.slice(0, index),
+      ...ast.children,
+      ...parent.children.slice(index + 1, parent.children.length)
+    ];
   }
 
   function match(node, _, __) {
@@ -301,7 +308,6 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
 
   function transformer(tree, _) {
     visit(tree, match, (node, _, __) => {
-      console.log(node.children);
       const repositoryName = node.data.repositoryName || buffer.repositoryName;
       const metaData = manager.detect(repositoryName, node.data.internalPath, buffer);
 

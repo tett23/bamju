@@ -188,12 +188,10 @@ describe('Markdown', () => {
 
     });
     it('[[inline|name]]', async () => {
-      console.log('\n\n\n\n\n\n aaaaaaaaa');
+      await Markdown.parse(metaData, '# foo', manager);
       const html = await Markdown.parse(metaData, '[[inline|testItem]]', manager);
-      console.log('bbbb');
 
       expect(html.content).toMatch(/<h1.*?>.*?testItem.*?<\/h1>/);
-      expect(html.content).toMatch(/<span.*class="bamjuLink".*?>testItem<\/span>/);
     });
 
     it('存在しないとき');
