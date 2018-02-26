@@ -2,8 +2,8 @@
 
 import remark from 'remark';
 import remarkHTML from 'remark-html';
-// import remarkHTML from 'remark-vdom';
 import remarkMarkdown from 'remark-parse';
+import remarkBreaks from 'remark-breaks';
 import visit from 'unist-util-visit';
 import is from 'unist-util-is';
 import {
@@ -385,6 +385,7 @@ export class Markdown {
   static async parse(buffer: Buffer, md: string, manager: RepositoryManager): Promise<ParseResult> {
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
+      .use(remarkBreaks)
       .use(replaceBamjuLink, { buffer, manager })
       .use(loadInlineLink, { buffer, manager })
       .use(updateLinkStatus, { buffer, manager })

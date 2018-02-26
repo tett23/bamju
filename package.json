@@ -197,6 +197,7 @@
     "redux-electron-store": "^0.6.2",
     "redux-thunk": "^2.2.0",
     "remark": "^9.0.0",
+    "remark-breaks": "^1.0.0",
     "remark-html": "^7.0.0",
     "remark-react": "^4.0.1",
     "remark-vdom": "^5.0.0",

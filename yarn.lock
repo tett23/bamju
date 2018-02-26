@@ -9129,6 +9129,10 @@ relateurl@0.2.x:
   version "0.2.7"
   resolved "https://registry.yarnpkg.com/relateurl/-/relateurl-0.2.7.tgz#54dbf377e51440aca90a4cd274600d3ff2d888a9"
 
+remark-breaks@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/remark-breaks/-/remark-breaks-1.0.0.tgz#f7d701d14cf6cf6f225ff93f1c3a10b3c353a9a3"
+
 remark-html@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/remark-html/-/remark-html-7.0.0.tgz#d13dc1ba9352e257fce8800c42c7690d9e3690c8"
