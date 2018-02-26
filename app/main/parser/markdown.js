@@ -47,185 +47,189 @@ const markdownOptions = {
   yaml: true
 };
 
-const wikiLinkRegExp = /\[\[(.+?)\]\]/;
-const wikiLinkWithTextRegExp = /\[\[(.+?)\]\]\{(.+?)\}/;
+const wikiLinkRegExp = /^\[\[(.+?)\]\]/;
+const wikiLinkWithTextRegExp = /^\[\[(.+?)\]\]\{(.+?)\}/;
 const splitFragmentRegExp = /(.+)#(.+)/;
 const splitRepositoryNameRegExp = /(.+?):(.+)/;
 const splitActionRegExp = /(.+?)\|(.+)/;
 
-function replaceLinkReference(_) {
-  return transformer;
-
-  function transformer(tree, __) {
-    visit(tree, match, (node, index, parent) => {
-      const text = `${parent.children[index - 1].value}[${node.children[0].value}]${parent.children[index + 1].value}`;
-      const replaceNode = {
-        type: 'text',
-        value: text
-      };
-
-      parent.children = [].concat( // eslint-disable-line no-param-reassign
-        parent.children.slice(0, index - 1),
-        [replaceNode],
-        parent.children.slice(index + 2, parent.children.length)
-      );
-    });
-  }
-
-  function match(node, index, parent) {
-    if (parent == null) {
-      return false;
-    }
-    if (index === 0 || parent.children.legnth < 3) {
-      return false;
-    }
-
-    const prev = parent.children[index - 1];
-    const next = parent.children[index + 1];
-    if (prev == null || next == null) {
-      return false;
-    }
-
-    const isMatchPrev = is('text', prev) && prev.value[prev.value.length - 1] === '[';
-    const isMatchNext = is('text', next) && next.value[0] === ']';
-
-    return isMatchPrev && isMatchNext && is('linkReference', node);
-  }
-}
-
 function replaceBamjuLink(options: {buffer: Buffer}) {
+  // console.log('Parser', this.Parser);
+  // console.log('Parser', this.Parser.prototype.blockMethods);
+  // console.log('Parser', Object.keys(this.Parser.prototype));
+  const Parser = this.Parser.prototype;
+
+  Parser.inlineTokenizers.bamjuLink = inlineTokenizer;
+  // console.log(Parser.inlineMethods);
+  Parser.inlineMethods.splice(Parser.inlineMethods.indexOf('link'), 1);
+  Parser.inlineMethods = [
+    ...Parser.inlineMethods.slice(0, Parser.inlineMethods.indexOf('code') + 1),
+    'bamjuLink',
+    ...Parser.inlineMethods.slice(Parser.inlineMethods.indexOf('code') + 1),
+  ];
+  // console.log('1', Parser.inlineMethods);
+
+  Parser.blockTokenizers.bamjuLink = blockTokenizer;
+  Parser.blockMethods = [
+    ...Parser.blockMethods.slice(0, Parser.blockMethods.indexOf('table') + 1),
+    'bamjuLink',
+    ...Parser.blockMethods.slice(Parser.blockMethods.indexOf('table') + 1),
+  ];
+  // console.log('Parser 2', this.Parser.prototype.blockMethods);
+
+  inlineTokenizer.locator = locator;
+  blockTokenizer.locator = locator;
+
+  if (!(this.Compiler && this.Compiler.prototype.visitors)) {
+    return;
+  }
+
+  this.Compiler.prototype.visitors.bamjuLink = (node) => {
+    const data = node.data;
+    return `[[${data.action}|${data.internalPath}#${data.fragment}]]{${data.aliasText}}`;
+  };
+
+  function locator(value, fromIndex) {
+    return value.indexOf('[[', fromIndex);
+  }
+
+  function inlineTokenizer(eat, value) {
+    const match = wikiLinkWithTextRegExp.exec(value) || wikiLinkRegExp.exec(value);
+    if (!match) {
+      return;
+    }
+
+    const linkInfo = parseBracket(match[0]);
+
+    return eat(match[0])({
+      type: 'bamjuLink',
+      action: linkInfo.action,
+      value: linkInfo.aliasText,
+      data: {
+        ...linkInfo,
+        hName: 'span',
+        hProperties: {
+          className: 'bamjuLink',
+          dataInternalPath: linkInfo.internalPath,
+          dataFragment: linkInfo.fragment,
+          dataRepositoryName: linkInfo.repositoryName,
+        },
+        hChildren: [{
+          type: 'text',
+          value: linkInfo.aliasText
+        }]
+      }
+    });
+  }
+
+  function blockTokenizer(eat, value) {
+    const match = wikiLinkWithTextRegExp.exec(value) || wikiLinkRegExp.exec(value);
+    if (!match) {
+      return;
+    }
+
+    const linkInfo = parseBracket(match[0]);
+    if (linkInfo.action !== 'inline') {
+      return;
+    }
+
+    return eat(match[0])({
+      type: 'bamjuLink',
+      action: linkInfo.action,
+      value: linkInfo.aliasText,
+      data: {
+        ...linkInfo,
+        headingDepth: 0,
+        hName: 'span',
+        hProperties: {
+          className: 'bamjuLink',
+          dataInternalPath: linkInfo.internalPath,
+          dataFragment: linkInfo.fragment,
+          dataRepositoryName: linkInfo.repositoryName,
+        },
+        hChildren: [{
+          type: 'text',
+          value: linkInfo.aliasText
+        }]
+      }
+    });
+  }
+
+  function parseBracket(text) {
+    let bracket;
+    let aliasText = '';
+    let startIndex;
+    let length;
+    let itemName;
+    let __;
+    if (wikiLinkWithTextRegExp.test(text)) {
+      const result = wikiLinkWithTextRegExp.exec(text);
+      [__, bracket, aliasText] = result;
+      itemName = bracket
+        .replace(splitActionRegExp, '$2')
+        .replace(splitFragmentRegExp, '$1')
+        .replace(/.+:(.+)/, '$1');
+      startIndex = result.index;
+      length = result.input.length;
+    } else {
+      const result = wikiLinkRegExp.exec(text);
+      [__, bracket] = result;
+      startIndex = result.index;
+      itemName = bracket
+        .replace(splitActionRegExp, '$2')
+        .replace(splitFragmentRegExp, '$1')
+        .replace(/.+:(.+)/, '$1');
+      aliasText = itemName
+        .replace(splitRepositoryNameRegExp, '$2')
+        .replace(/.+\/(.+?)/, '$1')
+        .replace(/(.+?)\..+/, '$1');
+      length = result.input.length;
+    }
+
+    let fragment = '';
+    if (splitFragmentRegExp.test(bracket)) {
+      [__, bracket, fragment] = splitFragmentRegExp.exec(bracket);
+    }
+    let repositoryName = null;
+    if (splitRepositoryNameRegExp.test(bracket)) {
+      [__, repositoryName, __] = splitRepositoryNameRegExp.exec(bracket);
+      repositoryName = repositoryName.replace(splitActionRegExp, '$2');
+    }
+    let action = 'link';
+    if (splitActionRegExp.test(bracket)) {
+      [__, action, bracket] = splitActionRegExp.exec(bracket);
+    }
+
+    const linkInfo = {
+      internalPath: bracket,
+      aliasText,
+      startIndex,
+      length,
+      itemName,
+      repositoryName,
+      fragment,
+      action,
+      parentMetaDataID: options.buffer.id,
+    };
+
+    return linkInfo;
+  }
+
+  function transformer(tree) {
+    let depth = 0;
+    tree.children.forEach((item) => {
+      if (is('heading', item)) {
+        depth = item.depth;
+      }
+
+      if (is('bamjuLink', item)) {
+        // eslint-disable-next-line no-param-reassign
+        item.data.headingDepth = depth;
+      }
+    });
+  }
+
   return transformer;
-
-  function transformer(tree, _) {
-    visit(tree, match, (node, index, parent) => {
-      if (!wikiLinkRegExp.test(node.value)) {
-        return;
-      }
-
-      let bracket;
-      let aliasText = '';
-      let startIndex;
-      let length;
-      let itemName;
-      let __;
-      if (wikiLinkWithTextRegExp.test(node.value)) {
-        const result = wikiLinkWithTextRegExp.exec(node.value);
-        [__, bracket, aliasText] = result;
-        itemName = bracket
-          .replace(splitActionRegExp, '$2')
-          .replace(splitFragmentRegExp, '$1')
-          .replace(/.+:(.+)/, '$1');
-        startIndex = result.index;
-        length = result.input.length;
-      } else if (wikiLinkRegExp.test(node.value)) {
-        const result = wikiLinkRegExp.exec(node.value);
-        [__, bracket] = result;
-        startIndex = result.index;
-        itemName = bracket
-          .replace(splitActionRegExp, '$2')
-          .replace(splitFragmentRegExp, '$1')
-          .replace(/.+:(.+)/, '$1');
-        aliasText = itemName
-          .replace(splitRepositoryNameRegExp, '$2')
-          .replace(/.+\/(.+?)/, '$1')
-          .replace(/(.+?)\..+/, '$1');
-        length = result.input.length;
-      } else {
-        return;
-      }
-
-      let fragment = '';
-      if (splitFragmentRegExp.test(bracket)) {
-        [__, bracket, fragment] = splitFragmentRegExp.exec(bracket);
-      }
-      let repositoryName = null;
-      if (splitRepositoryNameRegExp.test(bracket)) {
-        [__, repositoryName, __] = splitRepositoryNameRegExp.exec(bracket);
-      }
-      let action = 'link';
-      if (splitActionRegExp.test(bracket)) {
-        [__, action, bracket] = splitActionRegExp.exec(bracket);
-      }
-
-      const linkInfo = {
-        internalPath: bracket,
-        aliasText,
-        startIndex,
-        length,
-        itemName,
-        repositoryName,
-        fragment,
-        action,
-        parentMetaDataID: options.buffer.id,
-      };
-
-      replaceLink(node, index, parent, linkInfo);
-    });
-
-    let headingDepth = 0;
-    tree.children.forEach((__, i) => {
-      if (is('heading', tree.children[i])) {
-        headingDepth = tree.children[i].depth;
-      }
-      if (!is('paragraph', tree.children[i])) {
-        return;
-      }
-
-      const inlineLink = tree.children[i].children.find((item) => {
-        return item.type === 'bamjuLink' && item.action === 'inline';
-      });
-      if (inlineLink == null) {
-        return;
-      }
-
-      inlineLink.data.headingDepth = headingDepth;
-
-      // eslint-disable-next-line
-      tree.children[i] = inlineLink;
-    });
-  }
-
-  function match(node, index, parent) {
-    return (node.type === 'text') && (
-      !is('blockquote', parent)
-      && !is('code', parent)
-      && !is('inlineCode', parent)
-    );
-  }
-
-  function replaceLink(node, index, parent, linkInfo) {
-    parent.children = [].concat( // eslint-disable-line no-param-reassign
-      parent.children.slice(0, index - 1),
-      [
-        {
-          type: 'text',
-          value: node.value.slice(0, linkInfo.startIndex)
-        }, {
-          type: 'bamjuLink',
-          action: linkInfo.action,
-          value: linkInfo.aliasText,
-          data: {
-            ...linkInfo,
-            hName: 'span',
-            hProperties: {
-              className: 'bamjuLink',
-              dataInternalPath: linkInfo.internalPath,
-              dataFragment: linkInfo.fragment,
-              dataRepositoryName: linkInfo.repositoryName,
-            },
-            hChildren: [{
-              type: 'text',
-              value: linkInfo.aliasText
-            }]
-          }
-        }, {
-          type: 'text',
-          value: node.value.slice(linkInfo.startIndex + linkInfo.length)
-        }
-      ],
-      parent.children.slice(index + 1, parent.children.length),
-    );
-  }
 }
 
 function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
@@ -234,6 +238,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
   return transformer;
 
   async function transformer(tree, file, next) {
+    // console.log('loadInlineLink', tree.children);
     const pp = tree.children.reduce((r, __, i) => {
       return r.concat(applyChildren(tree.children[i], i, tree, replace));
     }, []);
@@ -286,7 +291,6 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
-      .use(replaceLinkReference, { buffer: metaData.toBuffer(), manager })
       .use(replaceBamjuLink, { buffer: metaData.toBuffer(), manager })
       .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
       .use(remarkHTML)
@@ -336,8 +340,8 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     ];
   }
 
-  function match(node, _, __) {
-    return is('bamjuLink', node) && node.action === 'inline';
+  function match(node, _, parent) {
+    return is('root', parent) && is('bamjuLink', node) && node.action === 'inline';
   }
 }
 
@@ -379,10 +383,14 @@ export class Markdown {
   static async parse(buffer: Buffer, md: string, manager: RepositoryManager): Promise<ParseResult> {
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
-      .use(replaceLinkReference, { buffer, manager })
       .use(replaceBamjuLink, { buffer, manager })
       .use(loadInlineLink, { buffer, manager })
       .use(updateLinkStatus, { buffer, manager })
+      .use(() => {
+        return (tree) => {
+          // console.log('spy', tree);
+        };
+      })
       .use(remarkHTML);
     const ret = await processor.process(md);
 

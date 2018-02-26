@@ -123,6 +123,13 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<span.*?data-internal-path="foo.bar".*?>/);
     });
 
+    it('連続したリンクを解釈できる', async () => {
+      const html = await Markdown.parse(metaData.toBuffer(), '[[foo]]bar[[baz]]', manager);
+
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?>foo<\/span>/);
+      expect(html.content).toMatch(/<span.*class="bamjuLink".*?>baz<\/span>/);
+    });
+
     // TODO: そのうち対応する
     it('blockquote内では無効');
 
@@ -214,10 +221,10 @@ describe('Markdown', () => {
     });
 
     it('heading深さの引きつぎ', async () => {
-      const html = await Markdown.parse(metaData.toBuffer(), `
-# heading
+      const html = await Markdown.parse(metaData.toBuffer(), `# heading
+
 [[inline|testItem]]
-        `, manager);
+`, manager);
 
       expect(html.content).toMatch(/<h2.*?>.*?testItem.*?<\/h2>/);
     });
