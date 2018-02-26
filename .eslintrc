@@ -39,6 +39,8 @@
     }, {
       "enforceForRenamedProperties": false
     }],
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": "off",
     "flowtype-errors/show-errors": "error",
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,

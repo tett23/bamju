@@ -10,7 +10,8 @@ export type MessageType = 'info' | 'succeeded' | 'failed' | 'warning' | 'error' 
 
 export type Message = {
   type: MessageType,
-  message: string
+  message: string,
+  stack?: string[]
 };
 
 // eslint-disable-next-line flowtype/no-weak-types
@@ -30,3 +31,70 @@ export function isSimilarError(mes: Message | any): boolean {
 export function isSimilarMessage(mes: Message | any): boolean {
   return mes.type != null;
 }
+
+export function wrap(text: string, mes: Message, type?: MessageType): Message {
+  return {
+    type: type || mes.type,
+    message: `${text}. ${mes.message}`,
+    stack: [stack()].concat(mes.stack || [])
+  };
+}
+
+export function create(type: MessageType, text: string): Message {
+  return {
+    type,
+    message: text,
+    stack: [stack()]
+  };
+}
+
+export function error(mes: string): Message {
+  return {
+    type: MessageTypeFailed,
+    message: mes,
+    stack: [stack()]
+  };
+}
+
+export function fail(mes: string): Message {
+  return {
+    type: MessageTypeFailed,
+    message: mes,
+    stack: [stack()]
+  };
+}
+
+export function stack(): string {
+  const a = {};
+  Error.captureStackTrace(a);
+
+  const mes = a.stack.split('\n').slice(1).find((item) => {
+    return !item.match(/message.js/);
+  });
+  if (mes == null) {
+    return '';
+  }
+
+  const [_, fn, file] = mes.trim().split(' ');
+  const f = file.replace(/\((.+)\)/, '$1');
+  const [fullPath, lineNumber] = f.split(':');
+  const pathItems = fullPath.split('/');
+  const filename = pathItems[pathItems.length - 1].replace(/\.js$/, '');
+
+  return `${filename}.${fn}:${lineNumber}`;
+}
+
+export default {
+  MessageTypeInfo,
+  MessageTypeSucceeded,
+  MessageTypeDebug,
+  MessageTypeError,
+  MessageTypeFailed,
+  MessageTypeWarning,
+  isSimilarError,
+  isSimilarMessage,
+  wrap,
+  create,
+  error,
+  fail,
+};
