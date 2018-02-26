@@ -21,7 +21,7 @@ import {
 } from './common/bamju_config';
 import {
   MessageTypeError,
-} from './common/util';
+} from './common/message';
 
 const store = createStore(
   appReducer,

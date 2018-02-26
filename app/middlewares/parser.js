@@ -14,10 +14,12 @@ import {
 } from '../common/window';
 import {
   type $ReturnType,
+} from '../common/util';
+import {
   isSimilarError,
   MessageTypeFailed,
   MessageTypeError,
-} from '../common/util';
+} from '../common/message';
 import {
   type MetaData,
   resolveInternalPath,

@@ -15,7 +15,7 @@ import {
 import {
   MessageTypeSucceeded,
   MessageTypeFailed,
-} from '../common/util';
+} from '../common/message';
 import {
   getInstance as getWindowManagerInstance
 } from '../common/window_manager';

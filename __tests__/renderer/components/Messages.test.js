@@ -15,7 +15,7 @@ import {
 } from '../../../app/actions/messages';
 import {
   MessageTypeInfo
-} from '../../../app/common/util';
+} from '../../../app/common/message';
 
 import {
   Messages,

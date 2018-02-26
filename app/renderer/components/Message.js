@@ -12,7 +12,7 @@ import {
   MessageTypeWarning,
   MessageTypeSucceeded,
   isSimilarError,
-} from '../../common/util';
+} from '../../common/message';
 import {
   closeMessage,
   closeAllMessages,

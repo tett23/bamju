@@ -14,8 +14,10 @@ import {
 
 import {
   type $ReturnType,
-  MessageTypeFailed,
 } from '../common/util';
+import {
+  MessageTypeFailed,
+} from '../common/message';
 
 import {
   type State,

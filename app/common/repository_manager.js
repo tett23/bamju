@@ -5,7 +5,7 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
-} from './util';
+} from './message';
 import {
   MetaData,
   type MetaDataID,

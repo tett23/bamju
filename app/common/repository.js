@@ -18,7 +18,7 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
-} from './util';
+} from './message';
 
 export type RepositoryConfig = {
   repositoryName: string,

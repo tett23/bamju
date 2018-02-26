@@ -8,7 +8,7 @@ import {
   MessageTypeError,
   MessageTypeSucceeded,
   isSimilarError,
-} from './util';
+} from './message';
 import {
   getInstance
 } from './repository_manager';
