@@ -250,6 +250,13 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<span.*class="bamjuLink".*?data-is-exist="true".*?>foo<\/span>/);
     });
 
+    it('連続したリンクを解釈できる', async () => {
+      const html = await Markdown.parse(metaData.toBuffer(), '[[inline|foo]]\n[[inline|bar]]', manager);
+
+      expect(html.content).toMatch(/<h1.*?>.*?foo.*?<\/h1>/);
+      expect(html.content).toMatch(/<h1.*?>.*?bar.*?<\/h1>/);
+    });
+
     it('何らかの理由でファイルが存在しない場合は赤リンクになる');
   });
 });

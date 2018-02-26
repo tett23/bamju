@@ -238,7 +238,6 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
   return transformer;
 
   async function transformer(tree, file, next) {
-    // console.log('loadInlineLink', tree.children);
     const pp = tree.children.reduce((r, __, i) => {
       return r.concat(applyChildren(tree.children[i], i, tree, replace));
     }, []);
@@ -332,11 +331,14 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
       item.depth += node.data.headingDepth;
     });
 
+    const idx = parent.children.findIndex((item) => {
+      return is('bamjuLink', item) && item.value === node.value;
+    });
     // eslint-disable-next-line no-param-reassign
     parent.children = [
-      ...parent.children.slice(0, index),
+      ...parent.children.slice(0, idx),
       ...ast.children,
-      ...parent.children.slice(index + 1, parent.children.length)
+      ...parent.children.slice(idx + 1)
     ];
   }
 
@@ -388,7 +390,7 @@ export class Markdown {
       .use(updateLinkStatus, { buffer, manager })
       .use(() => {
         return (tree) => {
-          // console.log('spy', tree);
+          // console.log('spy', tree.children);
         };
       })
       .use(remarkHTML);
