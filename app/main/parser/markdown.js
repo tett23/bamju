@@ -5,10 +5,7 @@ import remarkHTML from 'remark-html';
 // $FlowFixMe
 import remarkMarkdown from 'remark-parse';
 import remarkBreaks from 'remark-breaks';
-// $FlowFixMe
-import visit from 'unist-util-visit';
-// $FlowFixMe
-import is from 'unist-util-is';
+import Bluebird from 'bluebird';
 import {
   MetaData,
 } from '../../common/metadata';
@@ -42,20 +39,15 @@ const splitRepositoryNameRegExp = /(.+?):(.+)/;
 const splitActionRegExp = /(.+?)\|(.+)/;
 
 function replaceBamjuLink(options: {buffer: Buffer}) {
-  // console.log('Parser', this.Parser);
-  // console.log('Parser', this.Parser.prototype.blockMethods);
-  // console.log('Parser', Object.keys(this.Parser.prototype));
   const Parser = this.Parser.prototype;
 
   Parser.inlineTokenizers.bamjuLink = inlineTokenizer;
-  // console.log(Parser.inlineMethods);
   Parser.inlineMethods.splice(Parser.inlineMethods.indexOf('link'), 1);
   Parser.inlineMethods = [
     ...Parser.inlineMethods.slice(0, Parser.inlineMethods.indexOf('code') + 1),
     'bamjuLink',
     ...Parser.inlineMethods.slice(Parser.inlineMethods.indexOf('code') + 1),
   ];
-  // console.log('1', Parser.inlineMethods);
 
   Parser.blockTokenizers.bamjuLink = blockTokenizer;
   Parser.blockMethods = [
@@ -63,7 +55,6 @@ function replaceBamjuLink(options: {buffer: Buffer}) {
     'bamjuLink',
     ...Parser.blockMethods.slice(Parser.blockMethods.indexOf('table') + 1),
   ];
-  // console.log('Parser 2', this.Parser.prototype.blockMethods);
 
   inlineTokenizer.locator = locator;
   blockTokenizer.locator = locator;
@@ -206,11 +197,11 @@ function replaceBamjuLink(options: {buffer: Buffer}) {
   function transformer(tree) {
     let depth = 0;
     tree.children.forEach((item) => {
-      if (is('heading', item)) {
+      if (item.type === 'heading') {
         depth = item.depth;
       }
 
-      if (is('bamjuLink', item)) {
+      if (item.type === 'bamjuLink') {
         // eslint-disable-next-line no-param-reassign
         item.data.headingDepth = depth;
       }
@@ -226,10 +217,17 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
   return transformer;
 
   async function transformer(tree, file, next) {
-    const pp = tree.children.reduce((r, __, i) => {
-      return r.concat(applyChildren(tree.children[i], i, tree, replace));
-    }, []);
+    const benchID1 = `1 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
+    console.time(benchID1);
+    const pp = [];
+    tree.children.forEach((__, i) => {
+      pp.push(replace(tree.children[i], i, tree));
+    });
+    console.timeEnd(benchID1);
+    const benchID2 = `2 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
+    console.time(benchID2);
     await Promise.all(pp);
+    console.timeEnd(benchID2);
 
     next(null, tree, file);
     return tree;
@@ -278,9 +276,9 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     let ast = {};
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
+      .use(remarkBreaks)
       .use(replaceBamjuLink, { buffer: metaData.toBuffer(), manager })
       .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
-      .use(remarkHTML)
       .use(() => {
         return (t) => {
           ast = t;
@@ -289,7 +287,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     await processor.process(md);
 
     ast.children.forEach((item) => {
-      if (!is('heading', item)) {
+      if (item.type !== 'heading') {
         return;
       }
 
@@ -320,7 +318,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
     });
 
     const idx = parent.children.findIndex((item) => {
-      return is('bamjuLink', item) && item.value === node.value;
+      return item.type === 'bamjuLink' && item.value === node.value;
     });
     // eslint-disable-next-line no-param-reassign
     parent.children = [
@@ -331,41 +329,123 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
   }
 
   function match(node, _, parent) {
-    return is('root', parent) && is('bamjuLink', node) && node.action === 'inline';
+    return parent.type === 'root' && node.type === 'bamjuLink' && node.action === 'inline';
   }
 }
 
 // eslint-disable-next-line flowtype/no-weak-types
-function applyChildren<N:Object, R, Fn:(N, number, N) => Promise<R>>(node: N, index: number, parent: N, fn: Fn): Promise<R>[] {
-  let ret = [fn(node, index, parent)];
+function applyChildren<
+  N:Object,
+  R,
+  Fn:(
+    N, number, N
+  ) => Promise<R>
+>(
+  node: N,
+  index: number,
+  parent: N,
+  fn: Fn,
+  init: Promise<R>[] = []
+): Promise<void> {
+  // eslint-disable-next-line
+  return new Bluebird((resolve, reject) => {
+    const benchID = `applyChildren ${node.type} children=${node.children ? node.children.length : 0} ${node.data ? node.data.internalPath : ''} ${Math.random()}`;
+    console.time(benchID);
+    init.push(fn(node, index, parent));
 
-  if (node.children != null) {
-    ret = node.children.reduce((r, _, i) => {
-      return r.concat(applyChildren(node.children[i], i, node, fn));
-    }, ret);
-  }
+    if (node.children == null) {
+      console.timeEnd(benchID);
+      resolve();
+      return;
+    }
 
-  return ret;
+    const len = node.children.length;
+    const pp = [];
+    for (let i = 0; i < len; i += 1) {
+      // eslint-disable-next-line
+      pp.push(new Bluebird((rr, _) => {
+        applyChildren(node.children[i], i, node, fn, init);
+        rr();
+      }));
+    }
+    // eslint-disable-next-line
+    Bluebird.all(pp).then((r) => {
+      console.timeEnd(benchID);
+      resolve();
+      return r;
+    });
+  });
 }
 
 function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager}) {
   const { buffer, manager } = options;
 
-  function transformer(tree, _) {
-    visit(tree, match, (node, __, ___) => {
+  return (tree, file, next) => {
+    return new Bluebird((resolve, reject) => {
+      transformer(tree, file, next).then((r) => {
+        resolve(r);
+        next(null, tree);
+        return r;
+      }).catch((err) => {
+        reject(err);
+        next(Error(err));
+      });
+    });
+  };
+
+  function transformer(tree, _, __) {
+    return new Bluebird((resolve, reject) => {
+      const benchID1 = `1 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
+      const benchID2 = `2 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
+      console.time(benchID1);
+      const replacePromises = [];
+      const len = tree.children.length;
+      const pp = [];
+      for (let i = 0; i < len; i += 1) {
+        pp.push(applyChildren(tree.children[i], i, tree, replace, replacePromises));
+      }
+      console.log('pp', pp.length);
+      Bluebird.all(pp).then((r) => {
+        console.timeEnd(benchID1);
+        console.time(benchID2);
+        Bluebird.all(replacePromises).then((rr) => {
+          console.timeEnd(benchID2);
+          console.log('replacePromises length', replacePromises.length);
+
+          resolve(rr);
+          return rr;
+        }).catch((err) => {
+          console.log('err replacePromises', err);
+          reject(err);
+        });
+        return r;
+      }).catch((err) => {
+        console.log('err pp', err);
+        reject(err);
+      });
+    });
+  }
+
+  function replace(node, index, parent): Promise<void> {
+    // eslint-disable-next-line
+    return new Bluebird((resolve, reject) => {
+      if (!match(node, index, parent)) {
+        resolve();
+        return;
+      }
+
       const repositoryName = node.data.repositoryName || buffer.repositoryName;
       const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
 
       // eslint-disable-next-line no-param-reassign
       node.data.isExist = node.data.hProperties.dataIsExist = metaData != null;
+      resolve();
     });
   }
 
-  function match(node) {
-    return is('bamjuLink', node) && node.action === 'link';
+  function match(node, _, __) {
+    return node.type === 'bamjuLink' && node.action === 'link';
   }
-
-  return transformer;
 }
 
 

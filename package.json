@@ -166,6 +166,7 @@
     "webpack-merge": "^4.1.1"
   },
   "dependencies": {
+    "bluebird": "^3.5.1",
     "brace": "^0.11.0",
     "chokidar": "^2.0.1",
     "csv": "^2.0.0",

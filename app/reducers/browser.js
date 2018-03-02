@@ -37,7 +37,14 @@ export function initialBrowserState(): BrowserState {
 export function browser(state: BrowserState = initialBrowserState(), action: Actions): BrowserState {
   switch (action.type) {
   case INITIALIZE_BROWSER: {
-    return action.payload.state;
+    const newState = deepCopy(action.payload.state);
+    if (newState.tabs.length === 0) {
+      const tab = addTab(null, '');
+      newState.tabs = [tab.payload];
+      newState.currentTabID = tab.payload.id;
+    }
+
+    return newState;
   }
   case ADD_TAB: {
     const newState = deepCopy(state);

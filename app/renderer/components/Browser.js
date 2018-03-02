@@ -4,7 +4,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import type { State } from '../../reducers/app_window';
 import { Tab } from './Tab';
-import { addTab } from '../../actions/browser';
 import {
   type $ReturnType,
 } from '../../common/util';
@@ -37,15 +36,8 @@ const browser = (props: Props) => {
 };
 
 function mapStateToProps(state: State) {
-  const browserState = state.browser;
-  if (browserState.tabs.length === 0) {
-    const tab = addTab(null, '');
-    browserState.tabs = [tab.payload];
-    browserState.currentTabID = tab.payload.id;
-  }
-
   return {
-    browser: browserState,
+    browser: state.browser,
     buffers: state.global.buffers
   };
 }
