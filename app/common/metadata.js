@@ -85,7 +85,7 @@ export class MetaData {
       this.isLoaded = true;
     } else if (this.isSimilarDirectory()) {
       const loadDirResult = await this._loadDirectory();
-      if (!Message.isSimilarError(loadDirResult)) {
+      if (Message.isSimilarError(loadDirResult)) {
         return [null, Message.wrap(loadDirResult)];
       }
     } else if (this.itemType === ItemTypeUndefined) {
