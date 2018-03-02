@@ -575,7 +575,9 @@ export function isValidItemName(name: string): boolean {
 }
 
 export function internalPath(repositoryName: string, itemPath: string): string {
-  return `${repositoryName}:${itemPath}`;
+  const pathInfo = resolveInternalPath(itemPath);
+
+  return `${pathInfo.repositoryName || repositoryName}:${pathInfo.path}`;
 }
 
 export function resolveInternalPath(itemPath: string): {repositoryName: ?string, path: string} {
