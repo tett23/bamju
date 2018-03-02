@@ -24,7 +24,7 @@ import {
 } from '../../common/buffer';
 import {
   isSimilarError,
-} from '../../common/util';
+} from '../../common/message';
 
 export type MarkdownOption = {
 };

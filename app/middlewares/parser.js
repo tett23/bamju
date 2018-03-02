@@ -15,11 +15,7 @@ import {
 import {
   type $ReturnType,
 } from '../common/util';
-import {
-  isSimilarError,
-  MessageTypeFailed,
-  MessageTypeError,
-} from '../common/message';
+import Message from '../common/message';
 import {
   type MetaData,
   resolveInternalPath,
@@ -63,10 +59,10 @@ function parseMetaData(store: Store<State, Actions>, action: $ReturnType<typeof 
 
   const metaData = manager.getItemByID(action.payload.metaDataID);
   if (metaData == null) {
-    store.dispatch(addMessage({
-      type: MessageTypeFailed,
-      message: `parserMiddleware.parseMetaData MetaData not found. metaDataID=${action.payload.metaDataID}`
-    }, { targetWindowID: action.meta.fromWindowID }));
+    store.dispatch(addMessage(
+      Message.fail(`MetaData not found. metaDataID=${action.payload.metaDataID}`),
+      { targetWindowID: action.meta.fromWindowID }
+    ));
     return;
   }
 
@@ -79,19 +75,19 @@ function parseInternalPath(store: Store<State, Actions>, action: $ReturnType<typ
   const { repositoryName, path } = resolveInternalPath(action.payload.internalPath);
 
   if (repositoryName == null) {
-    store.dispatch(addMessage({
-      type: MessageTypeFailed,
-      message: `parserMiddleware.parseInternalPath internalPath parse error. internalPath=${action.payload.internalPath}`
-    }, { targetWindowID: action.meta.fromWindowID }));
+    store.dispatch(addMessage(
+      Message.fail(`internalPath parse error. internalPath=${action.payload.internalPath}`),
+      { targetWindowID: action.meta.fromWindowID }
+    ));
     return;
   }
 
   const metaData = manager.detect(repositoryName, path);
   if (metaData == null) {
-    store.dispatch(addMessage({
-      type: MessageTypeFailed,
-      message: `parserMiddleware.parseInternalPath MetaData not found. internalPath=${action.payload.internalPath}`
-    }, { targetWindowID: action.meta.fromWindowID }));
+    store.dispatch(addMessage(
+      Message.fail(`MetaData not found. internalPath=${action.payload.internalPath}`),
+      { targetWindowID: action.meta.fromWindowID }
+    ));
     return;
   }
 
@@ -104,14 +100,18 @@ function parse(store: Store<State, Actions>, tabID: string, metaData: MetaData, 
     console.time(benchID);
     const [parseResult, message] = await metaData.parse();
     console.timeEnd(benchID);
-    if (isSimilarError(message)) {
-      store.dispatch(addMessage(message, { targetWindowID: windowID }));
+    if (Message.isSimilarError(message)) {
+      store.dispatch(addMessage(
+        Message.wrap(message),
+        { targetWindowID: windowID }
+      ));
+      return;
     }
     if (parseResult == null) {
-      store.dispatch(addMessage({
-        type: MessageTypeError,
-        message: `parserMiddleware.parse unexpected error. metaDataID=${metaData.id} path=${metaData.path}`
-      }, { targetWindowID: windowID }));
+      store.dispatch(addMessage(
+        Message.error(`unexpected error. metaDataID=${metaData.id} path=${metaData.path}`),
+        { targetWindowID: windowID }
+      ));
       return;
     }
 

@@ -32,10 +32,10 @@ export function isSimilarMessage(mes: Message | any): boolean {
   return mes.type != null;
 }
 
-export function wrap(text: string, mes: Message, type?: MessageType): Message {
+export function wrap(mes: Message, text?: string, type?: MessageType): Message {
   return {
     type: type || mes.type,
-    message: `${text}. ${mes.message}`,
+    message: [text, mes.message].filter(Boolean).join('. '),
     stack: [stack()].concat(mes.stack || [])
   };
 }
@@ -44,6 +44,14 @@ export function create(type: MessageType, text: string): Message {
   return {
     type,
     message: text,
+    stack: [stack()]
+  };
+}
+
+export function success(mes: string): Message {
+  return {
+    type: MessageTypeSucceeded,
+    message: mes,
     stack: [stack()]
   };
 }
@@ -75,13 +83,7 @@ export function stack(): string {
     return '';
   }
 
-  const [_, fn, file] = mes.trim().split(' ');
-  const f = file.replace(/\((.+)\)/, '$1');
-  const [fullPath, lineNumber] = f.split(':');
-  const pathItems = fullPath.split('/');
-  const filename = pathItems[pathItems.length - 1].replace(/\.js$/, '');
-
-  return `${filename}.${fn}:${lineNumber}`;
+  return mes.trim();
 }
 
 export default {
@@ -95,6 +97,7 @@ export default {
   isSimilarMessage,
   wrap,
   create,
+  success,
   error,
   fail,
 };

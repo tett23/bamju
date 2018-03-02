@@ -36,6 +36,7 @@ function message(props: Props) {
     }, 10000);
   }
 
+  console.log(props);
   return (
     <div role="alert" className={messageClass}>
       <Button
@@ -52,6 +53,27 @@ function message(props: Props) {
       <p className={styles.messageTitle}>{props.message.type}</p>
       <hr />
       <p className={styles.messageBody}>{props.message.message}</p>
+      {messageDebug(props.message) }
+    </div>
+  );
+}
+
+function messageDebug(mes: _Message) {
+  if (!isSimilarError(mes)) {
+    return null;
+  }
+  if (mes.stack == null) {
+    return null;
+  }
+
+  const stackItems = (mes.stack || []).map((item) => {
+    return <li>{item}</li>;
+  });
+
+  return (
+    <div>
+      <hr />
+      <ul>{stackItems}</ul>
     </div>
   );
 }

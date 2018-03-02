@@ -17,7 +17,7 @@ describe('Message', () => {
   });
 
   it('wrap', () => {
-    const mes = Message.wrap('foo', Message.create(Message.MessageTypeInfo, 'bar'));
+    const mes = Message.wrap(Message.create(Message.MessageTypeInfo, 'bar'), 'foo');
 
     expect(mes).toMatchObject({
       type: Message.MessageTypeInfo,

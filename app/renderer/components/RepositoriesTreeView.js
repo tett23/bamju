@@ -251,7 +251,7 @@ function itemType(t: ItemType) {
 }
 
 function mapStateToProps(state: State) {
-  const currentTabID = state.browser.tabs[0].id;
+  const currentTabID = state.browser.currentTabID;
 
   return {
     buffers: state.global.buffers,
