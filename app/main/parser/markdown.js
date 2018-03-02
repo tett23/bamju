@@ -2,19 +2,15 @@
 
 import remark from 'remark';
 import remarkHTML from 'remark-html';
+// $FlowFixMe
 import remarkMarkdown from 'remark-parse';
 import remarkBreaks from 'remark-breaks';
+// $FlowFixMe
 import visit from 'unist-util-visit';
+// $FlowFixMe
 import is from 'unist-util-is';
 import {
-  // ItemTypeMarkdown,
-  // ItemTypeText,
-  // ItemTypeCSV,
-  // ItemTypeTSV,
   MetaData,
-  // type ParseResult,
-  // type ParseResults,
-  // internalPath,
 } from '../../common/metadata';
 import {
   RepositoryManager
@@ -32,14 +28,6 @@ export type MarkdownOption = {
 type ParseResult = {
   content: string
 };
-
-// const defaultOption:MarkdownOption = {
-//   gfm: true,
-//   tables: true,
-//   breaks: true,
-//   renderer: undefined,
-//   headingLevel: 0
-// };
 
 const markdownOptions = {
   gfm: true,
@@ -389,11 +377,6 @@ export class Markdown {
       .use(replaceBamjuLink, { buffer, manager })
       .use(loadInlineLink, { buffer, manager })
       .use(updateLinkStatus, { buffer, manager })
-      .use(() => {
-        return (tree) => {
-          // console.log('spy', tree.children);
-        };
-      })
       .use(remarkHTML);
     const ret = await processor.process(md);
 
