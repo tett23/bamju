@@ -11,7 +11,7 @@ import {
 import {
   MessageTypeFailed,
   MessageTypeError,
-} from '../../app/common/util';
+} from '../../app/common/message';
 
 import '../global_config.test';
 import {

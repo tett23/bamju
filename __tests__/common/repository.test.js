@@ -17,7 +17,7 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
-} from '../../app/common/util';
+} from '../../app/common/message';
 
 import {
   dummy,
