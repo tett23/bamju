@@ -346,35 +346,24 @@ function applyChildren<
   parent: N,
   fn: Fn,
   init: Promise<R>[] = []
-): Promise<void> {
+) {
   // eslint-disable-next-line
-  return new Bluebird((resolve, reject) => {
-    const benchID = `applyChildren ${node.type} children=${node.children ? node.children.length : 0} ${node.data ? node.data.internalPath : ''} ${Math.random()}`;
-    console.time(benchID);
-    init.push(fn(node, index, parent));
+  const benchID = `applyChildren ${node.type} children=${node.children ? node.children.length : 0} ${node.data ? node.data.internalPath : ''} ${Math.random()}`;
+  console.time(benchID);
+  init.push(fn(node, index, parent));
 
-    if (node.children == null) {
-      console.timeEnd(benchID);
-      resolve();
-      return;
-    }
+  if (node.children == null) {
+    console.timeEnd(benchID);
+    return;
+  }
 
-    const len = node.children.length;
-    const pp = [];
-    for (let i = 0; i < len; i += 1) {
-      // eslint-disable-next-line
-      pp.push(new Bluebird((rr, _) => {
-        applyChildren(node.children[i], i, node, fn, init);
-        rr();
-      }));
-    }
+  const len = node.children.length;
+  for (let i = 0; i < len; i += 1) {
     // eslint-disable-next-line
-    Bluebird.all(pp).then((r) => {
-      console.timeEnd(benchID);
-      resolve();
-      return r;
-    });
-  });
+    applyChildren(node.children[i], i, node, fn, init);
+  }
+  // eslint-disable-next-line
+  console.timeEnd(benchID);
 }
 
 function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager}) {
@@ -426,21 +415,16 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
     });
   }
 
-  function replace(node, index, parent): Promise<void> {
-    // eslint-disable-next-line
-    return new Bluebird((resolve, reject) => {
-      if (!match(node, index, parent)) {
-        resolve();
-        return;
-      }
+  async function replace(node, index, parent): Promise<void> {
+    if (!match(node, index, parent)) {
+      return;
+    }
 
-      const repositoryName = node.data.repositoryName || buffer.repositoryName;
-      const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
+    const repositoryName = node.data.repositoryName || buffer.repositoryName;
+    const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
 
-      // eslint-disable-next-line no-param-reassign
-      node.data.isExist = node.data.hProperties.dataIsExist = metaData != null;
-      resolve();
-    });
+    // eslint-disable-next-line no-param-reassign
+    node.data.isExist = node.data.hProperties.dataIsExist = metaData != null;
   }
 
   function match(node, _, __) {
