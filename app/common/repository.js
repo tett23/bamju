@@ -13,12 +13,7 @@ import {
   createMetaDataID,
   ItemTypeRepository
 } from './metadata';
-import {
-  type Message,
-  MessageTypeSucceeded,
-  MessageTypeFailed,
-  MessageTypeError,
-} from './message';
+import * as Message from './message';
 
 export type RepositoryConfig = {
   repositoryName: string,
@@ -50,21 +45,15 @@ export class Repository {
     }
   }
 
-  async load(): Promise<[?Repository, Message]> {
+  async load(): Promise<[?Repository, Message.Message]> {
     const rootItem = this.rootItem();
     try {
       const stat = fs.statSync(rootItem.absolutePath);
       if (!stat.isDirectory()) {
-        return [null, {
-          type: MessageTypeFailed,
-          message: `Repository.load stat.isDirectory absolutePath=${rootItem.absolutePath}`
-        }];
+        return [null, Message.fail(`Repository.load stat.isDirectory absolutePath=${rootItem.absolutePath}`)];
       }
     } catch (e) {
-      return [null, {
-        type: MessageTypeError,
-        message: `Repository.load stat error: ${e.message}`
-      }];
+      return [null, Message.error(`Repository.load stat error: ${e.message}`)];
     }
 
     const promiseAll = this.items.map(async (item) => {
@@ -74,16 +63,13 @@ export class Repository {
     const results = await Promise.all(promiseAll);
 
     const errorResult = results.find(([_, message]) => {
-      return message.type !== MessageTypeSucceeded;
+      return Message.isSimilarError(message);
     });
     if (errorResult != null) {
       return errorResult;
     }
 
-    return [this, {
-      type: MessageTypeSucceeded,
-      message: ''
-    }];
+    return [this, Message.success('')];
   }
 
   loadItems(items: Array<MetaData>) {
@@ -193,27 +179,21 @@ export class Repository {
     return this.items.push(metaData);
   }
 
-  async addFile(filePath: string, content: string): Promise<[?MetaData, Message]> {
+  async addFile(filePath: string, content: string): Promise<[?MetaData, Message.Message]> {
     const normalizedPath = path.normalize(filePath);
     if (!path.isAbsolute(normalizedPath)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `RepositoryManager.addFile.isAbsolute ${normalizedPath}`,
-      }];
+      return [null, Message.fail(`RepositoryManager.addFile.isAbsolute ${normalizedPath}`)];
     }
 
     const parentPath = path.dirname(normalizedPath);
     const [_, addDirectoryResult] = await this.addDirectory(parentPath);
-    if (addDirectoryResult.type !== MessageTypeSucceeded) {
-      return [null, addDirectoryResult];
+    if (Message.isSimilarError(addDirectoryResult)) {
+      return [null, Message.wrap(addDirectoryResult)];
     }
 
     const parentItem = this.getItemByPath(parentPath);
     if (parentItem == null) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `RepositoryManager.addFile.isExist ${parentPath}`,
-      }];
+      return [null, Message.fail(`RepositoryManager.addFile.isExist ${parentPath}`)];
     }
 
     const itemName = path.basename(normalizedPath);
@@ -222,30 +202,24 @@ export class Repository {
     return [metaData, message];
   }
 
-  async addDirectory(dirPath: string): Promise<[?MetaData, Message]> {
+  async addDirectory(dirPath: string): Promise<[?MetaData, Message.Message]> {
     const normalizedPath = path.normalize(dirPath);
     if (normalizedPath === '/') {
-      return [this.rootItem(), {
-        type: MessageTypeSucceeded,
-        message: ''
-      }];
+      return [this.rootItem(), Message.success('')];
     }
 
     if (!path.isAbsolute(normalizedPath)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'RepositoryManager.addDirectory.isAbsolute',
-      }];
+      return [null, Message.fail('RepositoryManager.addDirectory.isAbsolute')];
     }
 
     const [createdItems, message] = await _mkdir(normalizedPath, this.rootItem());
-    if (message.type === MessageTypeFailed) {
-      return [null, message];
+    if (message.type === Message.MessageTypeFailed) {
+      return [null, Message.wrap(message)];
     }
 
     const ret = createdItems[createdItems.length - 1];
 
-    return [ret, message];
+    return [ret, Message.wrap(message)];
   }
 
   // TODO: 無名ファイル実装時には削除ではなく移動になる
@@ -290,13 +264,10 @@ export class Repository {
   }
 }
 
-async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaData>, Message]> {
+async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaData>, Message.Message]> {
   const pathItems = path.split(path.normalize(dirPath));
   if (pathItems.length === 0) {
-    return [[], {
-      type: MessageTypeFailed,
-      message: 'RepositoryManager._mkdirP isSimilarFile'
-    }];
+    return [[], Message.fail('RepositoryManager._mkdirP isSimilarFile')];
   }
 
   const ret:Array<MetaData> = [];
@@ -308,10 +279,7 @@ async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaD
     }
 
     if (!currentItem.isSimilarDirectory()) {
-      return [[], {
-        type: MessageTypeFailed,
-        message: '_mkdir check parent directory type error',
-      }];
+      return [[], Message.fail('_mkdir check parent directory type error')];
     }
 
     const name = pathItems[i];
@@ -323,11 +291,8 @@ async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaD
     }
 
     const [createItem, message] = await currentItem.addDirectory(name);
-    if (createItem == null) {
-      return [[], message];
-    }
-    if (message.type !== MessageTypeSucceeded) {
-      return [[], message];
+    if (createItem == null || Message.isSimilarError(message)) {
+      return [[], Message.wrap(message)];
     }
 
     ret.push(createItem);
@@ -335,10 +300,7 @@ async function _mkdir(dirPath: string, rootItem: MetaData): Promise<[Array<MetaD
     currentItem = createItem;
   }
 
-  return [ret, {
-    type: MessageTypeSucceeded,
-    message: ''
-  }];
+  return [ret, Message.success('')];
 }
 
 function createRootBuffer(repositoryName: string, absolutePath: string): Buffer {
