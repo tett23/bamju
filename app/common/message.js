@@ -58,7 +58,7 @@ export function success(mes: string): Message {
 
 export function error(mes: string): Message {
   return {
-    type: MessageTypeFailed,
+    type: MessageTypeError,
     message: mes,
     stack: [stack()]
   };
