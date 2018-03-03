@@ -249,7 +249,7 @@ export function buildContextMenu(
     }
   ];
 
-  return [].concat(editMenu, separator, openMenu, separator, repositoryMenu);
+  return [].concat(openMenu, separator, editMenu, separator, repositoryMenu);
 }
 
 function itemType(t: ItemType) {
