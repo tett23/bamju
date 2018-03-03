@@ -63,8 +63,7 @@ export class RepositoryManager {
     let ret = null;
     this._repositories.some((repo) => {
       ret = repo.getItemByID(metaDataID);
-
-      return false;
+      return ret != null;
     });
 
     return ret;
