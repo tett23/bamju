@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from './path';
-import Message from './message';
+import * as Message from './message';
 import type {
   Message as MessageType,
 } from './message';
@@ -40,6 +40,11 @@ export type ParseResult = {
   // children: Array<ParseResult>
 };
 export type ParseResults = Array<ParseResult>;
+
+export type PathInfo = {
+  repositoryName: ?string,
+  path: string
+};
 
 export class MetaData {
   id: MetaDataID;
@@ -168,6 +173,65 @@ export class MetaData {
     }
 
     return [ret, message];
+  }
+
+  async move(pathInfo: PathInfo): Promise<Message.Message> {
+    if (this.itemType === ItemTypeRepository) {
+      return Message.error(`MetaData.move itemType=${this.itemType}`);
+    }
+    if (!path.isAbsolute(pathInfo.path)) {
+      return Message.fail(`MetaData.move path check path=${pathInfo.path}`);
+    }
+    const itemType = detectItemType(pathInfo.path);
+    // $FlowFixMe
+    if (isSimilarFile(itemType) ^ this.isSimilarFile()) { // eslint-disable-line no-bitwise
+      return Message.fail(`MetaData.move itemType check. pathInfo=${itemType}`);
+    }
+    // $FlowFixMe
+    if (isSimilarDirectory(itemType) ^ this.isSimilarDirectory()) { // eslint-disable-line no-bitwise
+      return Message.fail(`MetaData.move itemType check. pathInfo=${itemType}`);
+    }
+    if (itemType === ItemTypeUndefined) {
+      return Message.fail(`MetaData.move itemType check path=${pathInfo.path}`);
+    }
+
+    const repositoryName = pathInfo.repositoryName || this.repositoryName;
+    const repo = getInstance().find(repositoryName);
+    if (repo == null) {
+      return Message.error(`MetaData.move repository error. repostiroyName=${repositoryName}`);
+    }
+
+    const item = repo.getItemByPath(pathInfo.path);
+    if (item != null) {
+      return Message.error(`MetaData.move MetaData check path=${pathInfo.path}`);
+    }
+    try {
+      fs.statSync(path.join(repo.absolutePath, pathInfo.path));
+      return Message.error('MetaData.move stat error');
+    } catch (_) {} // eslint-disable-line no-empty
+
+    await this.repository().unwatch(this);
+
+    const src = this.absolutePath;
+
+    this.repositoryName = repositoryName;
+    this.path = pathInfo.path;
+    this.absolutePath = path.join(repo.absolutePath, this.path);
+    this.repositoryPath = repo.absolutePath;
+    this.name = path.basename(this.path);
+    this.itemType = itemType;
+
+    const dst = this.absolutePath;
+
+    await repo.watch(this);
+
+    try {
+      fs.rename(src, dst);
+    } catch (e) {
+      return Message.error(`MetaData.move rename error. ${e.message}`);
+    }
+
+    return Message.success('File renamed');
   }
 
   childItem(name: string): ?MetaData {
@@ -547,7 +611,7 @@ export function internalPath(repositoryName: string, itemPath: string): string {
   return `${pathInfo.repositoryName || repositoryName}:${pathInfo.path}`;
 }
 
-export function resolveInternalPath(itemPath: string): {repositoryName: ?string, path: string} {
+export function resolveInternalPath(itemPath: string): PathInfo {
   const split = itemPath.split(':', 2);
   let repositoryName: ?string;
   let retPath: string;

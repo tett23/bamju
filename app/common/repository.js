@@ -112,6 +112,54 @@ export class Repository {
     return matchItem;
   }
 
+  async watch(metaData: MetaData) {
+    const isExist = this.items.some((item) => {
+      return item.id === metaData.id;
+    });
+    if (isExist) {
+      return;
+    }
+
+    const [_parent, addDirectoryMessage] = await this.addDirectory(path.dirname(metaData.path));
+    if (_parent == null || Message.isSimilarError(addDirectoryMessage)) {
+      return Message.wrap(addDirectoryMessage);
+    }
+
+    metaData.parentID = _parent.id; // eslint-disable-line no-param-reassign
+    _parent.childrenIDs.push(metaData.id);
+
+    this.items.push(metaData);
+  }
+
+  async unwatch(metaData: MetaData) {
+    const idx = this.items.findIndex((item) => {
+      return item.id === metaData.id;
+    });
+    if (idx === -1) {
+      return;
+    }
+
+    this.items.splice(idx, 1);
+    metaData.parentID = null; // eslint-disable-line no-param-reassign
+
+    if (metaData.parentID == null) {
+      return;
+    }
+
+    const parent = this.getItemByID(metaData.parentID);
+    if (parent == null) {
+      return;
+    }
+    const childIdx = parent.childrenIDs.findIndex((item) => {
+      return item === metaData.id;
+    });
+    if (childIdx === -1) {
+      return;
+    }
+
+    parent.childrenIDs.splice(childIdx, 1);
+  }
+
   _getItem(searchPath: string, metaData: MetaData): ?MetaData {
     let ret = null;
     // eslint-disable-next-line no-restricted-syntax

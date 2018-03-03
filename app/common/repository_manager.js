@@ -121,6 +121,22 @@ export class RepositoryManager {
     return ret;
   }
 
+  async move(metaDataID: MetaDataID, destination: string): Promise<[?MetaData, Message.Message]> {
+    const metaData = this.getItemByID(metaDataID);
+    if (metaData == null) {
+      return [null, Message.fail(`RepositoryManager.move MetaData not found. metaDataID=${metaDataID}`)];
+    }
+
+    const pathInfo = resolveInternalPath(destination);
+    pathInfo.repositoryName = pathInfo.repositoryName || metaData.repositoryName;
+    const message = await metaData.move(pathInfo);
+    if (Message.isSimilarError(message)) {
+      return [null, Message.wrap(message)];
+    }
+
+    return [metaData, Message.success('File renamed')];
+  }
+
   toBuffers(): Buffer[] {
     const ret = this._repositories.reduce((r, item) => {
       return r.concat(item.toBuffers());
