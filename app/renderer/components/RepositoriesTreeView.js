@@ -168,7 +168,7 @@ function addRepositoryHandler(e, dispatcher: $ReturnType<typeof mapDispatchToPro
     properties: ['openDirectory']
   }, (directories: Array<string>) => {
     directories.forEach((directory: string) => {
-      dispatcher.addRepositoryDispatcher(directory);
+      dispatcher.addRepository(directory);
     });
   });
 }
@@ -237,7 +237,7 @@ export function buildContextMenu(
           message: '削除しますか'
         });
         if (choice === 0) {
-          dispatcher.removeRepositoryDispatcher(item.absolutePath, item.repositoryName);
+          dispatcher.removeRepository(item.absolutePath, item.repositoryName);
         }
       },
       enabled: item.itemType === ItemTypeRepository

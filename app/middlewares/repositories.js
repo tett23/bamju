@@ -94,9 +94,9 @@ function initializeRepositories(store: Store<State, Actions>, _: $ReturnType<typ
 function addRepository(store: Store<State, Actions>, action: $ReturnType<typeof addRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
-  const repositoryName = path.dirname(action.payload.absolutePath);
+  const repositoryName = path.basename(action.payload.absolutePath);
   const conf = {
-    absolutePath: action.absolutePath,
+    absolutePath: action.payload.absolutePath,
     repositoryName
   };
 
