@@ -199,47 +199,52 @@ export function buildContextMenu(
   item: Buffer,
   dispatcher: $ReturnType<typeof mapDispatchToProps>
 ) {
-  const ret = [];
-  ret.push({
-    label: 'edit on system editor',
-    click: () => {
-      ipcRenderer.send('open-by-system-editor', item.absolutePath);
-    }
-  });
-  ret.push({
-    label: 'edit on bamju editor',
-    click: () => {
-      dispatcher.newEditorWindow(item.id);
-    },
-    enabled: isSimilarFile(item.itemType),
-  });
-  ret.push({
-    label: 'open new window',
-    click: () => {
-      const rectangle = remote.getCurrentWindow().getBounds();
-      rectangle.x += 50;
-      rectangle.y += 50;
-      dispatcher.newWindow(rectangle, [addTab(item.id, '').payload]);
-    }
-  });
-  ret.push({
-    label: 'remove',
-    click: () => {
-      const { dialog } = remote.require('electron');
-      const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        title: '削除しますか',
-        message: '削除しますか'
-      });
-      if (choice === 0) {
-        dispatcher.removeRepositoryDispatcher(item.absolutePath, item.repositoryName);
+  const editMenu = [
+    {
+      label: 'edit on system editor',
+      click: () => {
+        ipcRenderer.send('open-by-system-editor', item.absolutePath);
       }
     },
-    enabled: item.itemType === ItemTypeRepository
-  });
+    {
+      label: 'edit on bamju editor',
+      click: () => {
+        dispatcher.newEditorWindow(item.id);
+      },
+      enabled: isSimilarFile(item.itemType),
+    }
+  ];
+  const openMenu = [
+    {
+      label: 'open new window',
+      click: () => {
+        const rectangle = remote.getCurrentWindow().getBounds();
+        rectangle.x += 50;
+        rectangle.y += 50;
+        dispatcher.newWindow(rectangle, [addTab(item.id, '').payload]);
+      }
+    }
+  ];
+  const repositoryMenu = [
+    {
+      label: 'remove',
+      click: () => {
+        const { dialog } = remote.require('electron');
+        const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
+          type: 'question',
+          buttons: ['Yes', 'No'],
+          title: '削除しますか',
+          message: '削除しますか'
+        });
+        if (choice === 0) {
+          dispatcher.removeRepositoryDispatcher(item.absolutePath, item.repositoryName);
+        }
+      },
+      enabled: item.itemType === ItemTypeRepository
+    }
+  ];
 
-  return ret;
+  return [].concat(editMenu, openMenu, repositoryMenu);
 }
 
 function itemType(t: ItemType) {
