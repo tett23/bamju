@@ -21,6 +21,7 @@ import {
   addRepository,
   removeRepository,
   createFile,
+  createDirectory,
 } from '../../actions/repositories';
 import {
   parseMetaData,
@@ -231,17 +232,16 @@ export function buildContextMenu(
       }
     }
   ];
+  let parentPath;
+  if (item.itemType === ItemTypeDirectory) {
+    parentPath = item.path;
+  } else {
+    parentPath = path.dirname(item.path);
+  }
   const fileMenu = [
     {
       label: 'New File',
       click: () => {
-        let parentPath;
-        if (item.itemType === ItemTypeDirectory) {
-          parentPath = item.path;
-        } else {
-          parentPath = path.dirname(item.path);
-        }
-
         dispatcher.openInputDialog({
           label: 'New File',
           formValue: internalPath(item.repositoryName, parentPath),
@@ -254,7 +254,13 @@ export function buildContextMenu(
     {
       label: 'New Directory',
       click: () => {
-
+        dispatcher.openInputDialog({
+          label: 'New Directory',
+          formValue: internalPath(item.repositoryName, parentPath),
+          onEnter: (itemPath) => {
+            dispatcher.createDirectory(item.repositoryName, itemPath);
+          }
+        });
       }
     },
     {
@@ -337,6 +343,9 @@ function mapDispatchToProps(dispatch) {
     },
     createFile: (repo: string, _path: string) => {
       return dispatch(createFile(repo, _path));
+    },
+    createDirectory: (repo: string, _path: string) => {
+      return dispatch(createDirectory(repo, _path));
     }
   };
 }

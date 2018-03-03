@@ -29,10 +29,12 @@ import {
   ADD_REPOSITORY,
   REMOVE_REPOSITORY,
   CREATE_FILE,
+  CREATE_DIRECTORY,
   initializeRepositories as initializeRepositoriesAction,
   addRepository as addRepositoryAction,
   removeRepository as removeRepositoryAction,
   createFile as createFileAction,
+  createDirectory as createDirectoryAction,
 } from '../actions/repositories';
 import {
   reloadBuffers as reloadBuffersAction,
@@ -70,6 +72,11 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: D
   case CREATE_FILE: {
     next(action);
     createFile(store, action);
+    return;
+  }
+  case CREATE_DIRECTORY: {
+    next(action);
+    createDirectory(store, action);
     return;
   }
   default: {
@@ -152,6 +159,32 @@ async function createFile(store: Store<State, Actions>, action: $ReturnType<type
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
   store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
   store.dispatch(updateCurrentTab(metaData.id, parseResult.content, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
+}
+
+async function createDirectory(store: Store<State, Actions>, action: $ReturnType<typeof createDirectoryAction>) {
+  const manager = getRepositoryManagerInstance();
+
+  const info = resolveInternalPath(action.payload.path);
+  if (info.repositoryName == null) {
+    info.repositoryName = action.payload.repositoryName;
+  }
+
+  const repo = manager.find(info.repositoryName || '');
+  if (repo == null) {
+    const mes = Message.fail(`repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`);
+    store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
+    return;
+  }
+
+  const [metaData, message] = await repo.addDirectory(info.path);
+  if (metaData == null || Message.isSimilarError(message)) {
+    store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
+    return;
+  }
+
+  store.dispatch(reloadBuffersAction(manager.toBuffers()));
+  store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
   store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
 }
 
