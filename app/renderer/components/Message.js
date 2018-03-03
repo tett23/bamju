@@ -70,7 +70,7 @@ function messageDebug(mes: _Message) {
   });
 
   return (
-    <div>
+    <div className={styles.detail}>
       <hr />
       <ul>{stackItems}</ul>
     </div>

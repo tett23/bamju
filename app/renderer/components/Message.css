@@ -16,6 +16,7 @@
   border: 1px solid transparent;
   border-radius: 0.25rem;
   width: 30rem;
+  word-wrap: break-word;
 }
 
 .succeeded {
@@ -88,9 +89,20 @@
 
 .messageTitle {
   font-variant: small-caps;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 .closeButton {
   float: right;
+  font-size: 0.8rem;
+}
+
+.detail {
+  font-size: 0.8rem;
+}
+
+.detail ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
