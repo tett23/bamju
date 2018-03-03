@@ -502,7 +502,7 @@ describe('MetaData', () => {
       const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
 
       await metaData.updateContent('hogehoge');
-      const [content, result] = await metaData.getContent();
+      const [content, _, result] = await metaData.getContent();
       expect(result.type).toBe(MessageTypeSucceeded);
 
       expect(content).toBe('hogehoge');
@@ -512,7 +512,7 @@ describe('MetaData', () => {
       const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
       fs.unlinkSync(metaData.absolutePath);
 
-      const [content, result] = await metaData.getContent('hogehoge');
+      const [content, _, result] = await metaData.getContent('hogehoge');
       expect(result.type).toBe(MessageTypeSucceeded);
       expect(content).toMatch(/# not found/);
     });

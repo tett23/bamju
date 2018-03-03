@@ -2,6 +2,7 @@
 /* eslint no-undef: 0, no-empty: 0 */
 
 import fs from 'fs';
+import mock from 'mock-fs';
 import 'raf/polyfill';
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -82,6 +83,9 @@ type dummyType = {
 }
 
 export function dummy(items: dummyType): Buffer[] {
+  mock({
+    '/tmp/bamju': {}
+  });
   const ret = {};
   const repositoryKeys = Object.keys(items);
 
