@@ -20,10 +20,14 @@ import {
 import {
   addRepository,
   removeRepository,
+  createFile,
 } from '../../actions/repositories';
 import {
   parseMetaData,
 } from '../../actions/parser';
+import {
+  openInputDialog,
+} from '../../actions/modals';
 import type { State } from '../../reducers/app_window';
 import {
   type BufferState,
@@ -45,7 +49,9 @@ import {
   ItemTypeUndefined,
   isSimilarFile,
   isSimilarDirectory,
+  internalPath,
 } from '../../common/metadata';
+import path from '../../common/path';
 import {
   type $ReturnType,
 } from '../../common/util';
@@ -225,6 +231,39 @@ export function buildContextMenu(
       }
     }
   ];
+  const fileMenu = [
+    {
+      label: 'New File',
+      click: () => {
+        let parentPath;
+        if (item.itemType === ItemTypeDirectory) {
+          parentPath = item.path;
+        } else {
+          parentPath = path.dirname(item.path);
+        }
+
+        dispatcher.openInputDialog({
+          label: 'New File',
+          formValue: internalPath(item.repositoryName, parentPath),
+          onEnter: (itemPath) => {
+            dispatcher.createFile(item.repositoryName, itemPath);
+          }
+        });
+      }
+    },
+    {
+      label: 'New Directory',
+      click: () => {
+
+      }
+    },
+    {
+      label: 'Rename',
+      click: () => {
+
+      }
+    },
+  ];
   const repositoryMenu = [
     {
       label: 'remove',
@@ -249,7 +288,7 @@ export function buildContextMenu(
     }
   ];
 
-  return [].concat(openMenu, separator, editMenu, separator, repositoryMenu);
+  return [].concat(openMenu, separator, editMenu, separator, fileMenu, separator, repositoryMenu);
 }
 
 function itemType(t: ItemType) {
@@ -292,6 +331,12 @@ function mapDispatchToProps(dispatch) {
     },
     newEditorWindow: (metaDataID: MetaDataID) => {
       return dispatch(newEditorWindow(metaDataID));
+    },
+    openInputDialog: (args) => {
+      return dispatch(openInputDialog(args));
+    },
+    createFile: (repo: string, _path: string) => {
+      return dispatch(createFile(repo, _path));
     }
   };
 }
