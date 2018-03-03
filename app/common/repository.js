@@ -126,22 +126,24 @@ export class Repository {
     }
 
     metaData.parentID = _parent.id; // eslint-disable-line no-param-reassign
-    metaData.repositoryName = this.name;
-    metaData.repositoryPath = this.absolutePath;
+    metaData.repositoryName = this.name; // eslint-disable-line no-param-reassign
+    metaData.repositoryPath = this.absolutePath; // eslint-disable-line no-param-reassign
     _parent.childrenIDs.push(metaData.id);
 
     this.items.push(metaData);
   }
 
   async unwatch(metaData: MetaData) {
-    const idx = this.items.findIndex((item) => {
-      return item.id === metaData.id;
-    });
-    if (idx === -1) {
-      return;
-    }
+    for (const id of metaData.getIDs()) { // eslint-disable-line no-restricted-syntax
+      const idx = this.items.findIndex((item) => {
+        return item.id === id;
+      });
+      if (idx === -1) {
+        return;
+      }
 
-    this.items.splice(idx, 1);
+      this.items.splice(idx, 1);
+    }
 
     if (metaData.parentID == null) {
       return;

@@ -422,6 +422,16 @@ describe('MetaData', () => {
       });
       expect(parent.childrenIDs).toMatchObject([metaData.id]);
     });
+
+    it('子のpathが再設定される', async () => {
+      await repository.addFile('/a/b/c/move_test.md');
+      metaData = repository.getItemByPath('/a');
+      await metaData.move(resolveInternalPath('/aa'));
+      expect(repository.getItemByPath('/aa/b')).toMatchObject({
+        path: '/aa/b',
+        absolutePath: '/tmp/bamju/test/aa/b'
+      });
+    });
   });
 
   describe('parent', () => {

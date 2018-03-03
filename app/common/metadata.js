@@ -231,6 +231,14 @@ export class MetaData {
       return Message.error(`MetaData.move rename error. ${e.message}`);
     }
 
+    const parent = this.parent();
+    if (parent) {
+      const [_, loadMessage] = await this.load();
+      if (Message.isSimilarError(loadMessage)) {
+        return Message.wrap(loadMessage);
+      }
+    }
+
     return Message.success('File renamed');
   }
 

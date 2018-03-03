@@ -30,11 +30,13 @@ import {
   REMOVE_REPOSITORY,
   CREATE_FILE,
   CREATE_DIRECTORY,
+  RENAME,
   initializeRepositories as initializeRepositoriesAction,
   addRepository as addRepositoryAction,
   removeRepository as removeRepositoryAction,
   createFile as createFileAction,
   createDirectory as createDirectoryAction,
+  rename as renameAction,
 } from '../actions/repositories';
 import {
   reloadBuffers as reloadBuffersAction,
@@ -77,6 +79,11 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: D
   case CREATE_DIRECTORY: {
     next(action);
     createDirectory(store, action);
+    return;
+  }
+  case RENAME: {
+    next(action);
+    rename(store, action);
     return;
   }
   default: {
@@ -185,6 +192,19 @@ async function createDirectory(store: Store<State, Actions>, action: $ReturnType
 
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
   store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
+}
+
+async function rename(store: Store<State, Actions>, action: $ReturnType<typeof renameAction>) {
+  const manager = getRepositoryManagerInstance();
+
+  const [metaData, message] = await manager.move(action.payload.metaDataID, action.payload.path);
+  store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
+  if (metaData == null || Message.isSimilarError(message)) {
+    return;
+  }
+
+  store.dispatch(reloadBuffersAction(manager.toBuffers()));
   store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
 }
 

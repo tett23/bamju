@@ -22,6 +22,7 @@ import {
   removeRepository,
   createFile,
   createDirectory,
+  rename,
 } from '../../actions/repositories';
 import {
   parseMetaData,
@@ -266,8 +267,15 @@ export function buildContextMenu(
     {
       label: 'Rename',
       click: () => {
-
-      }
+        dispatcher.openInputDialog({
+          label: 'Rename',
+          formValue: internalPath(item.repositoryName, item.path),
+          onEnter: (itemPath) => {
+            dispatcher.rename(item.id, itemPath);
+          }
+        });
+      },
+      enabled: item.itemType === ItemTypeDirectory || isSimilarFile(item.itemType)
     },
   ];
   const repositoryMenu = [
@@ -346,6 +354,9 @@ function mapDispatchToProps(dispatch) {
     },
     createDirectory: (repo: string, _path: string) => {
       return dispatch(createDirectory(repo, _path));
+    },
+    rename: (metaDataID: MetaDataID, _path: string) => {
+      return dispatch(rename(metaDataID, _path));
     }
   };
 }
