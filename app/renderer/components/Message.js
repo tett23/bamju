@@ -36,7 +36,6 @@ function message(props: Props) {
     }, 10000);
   }
 
-  console.log(props);
   return (
     <div role="alert" className={messageClass}>
       <Button

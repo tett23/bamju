@@ -1,4 +1,5 @@
 // @flow
+/* eslint no-continue: 0 */
 
 import fs from 'fs';
 import path from './path';
@@ -175,15 +176,20 @@ export class MetaData {
     });
   }
 
-  getIDs(): Array<MetaDataID> {
-    const ret:Array<MetaDataID> = [this.id];
-    this.children().forEach((child) => {
-      child.getIDs().forEach((id) => {
-        ret.push(id);
-      });
-    });
-
-    return ret;
+  *getIDs(): Iterable<MetaDataID> {
+    const ret = [this.id];
+    yield this.id;
+    for (let i = 0; i < this.childrenIDs.length; i += 1) {
+      const child = this.repository().getItemByID(this.childrenIDs[i]);
+      if (child == null) {
+        continue;
+      }
+      // eslint-disable-next-line no-restricted-syntax
+      for (const n of child.getIDs()) {
+        ret.push(n);
+        yield n;
+      }
+    }
   }
 
   parent(): ?MetaData {
@@ -267,12 +273,24 @@ export class MetaData {
   }
 
   async parse(): Promise<[?ParseResult, MessageType]> {
-    const [content, message] = await this.getContent();
+    const [content, metaDataID, message] = await this.getContent();
     if (Message.isSimilarError(message)) {
       return [null, Message.wrap(message)];
     }
 
-    const ret = await parse(this, content);
+    let metaData;
+    if (this.id === metaDataID) {
+      metaData = this;
+    } else {
+      metaData = this.children().find((item) => {
+        return item.id === metaDataID;
+      });
+      if (metaData == null) {
+        return [null, Message.fail(`MetaData.parse child item not found metaDataID=${metaDataID}`)];
+      }
+    }
+
+    const ret = await parse(metaData, content);
 
     return ret;
   }
@@ -291,19 +309,21 @@ export class MetaData {
     return Message.success('');
   }
 
-  async getContent(): Promise<[string, MessageType]> {
+  async getContent(): Promise<[string, MetaDataID, MessageType]> {
     if (!this.isSimilarFile() && !this.isSimilarDirectory()) {
-      return ['', Message.fail(`MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`)];
+      return ['', '', Message.fail(`MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`)];
     }
 
     let ret = '';
+    let metaDataID = '';
     if (this.isSimilarFile()) {
       ret = await this._getFileContent();
+      metaDataID = this.id;
     } else if (this.isSimilarDirectory()) {
-      ret = await this._getDirectoryContent();
+      [ret, metaDataID] = await this._getDirectoryContent();
     }
 
-    return [ret, Message.success('')];
+    return [ret, metaDataID, Message.success('')];
   }
 
   internalPath(): string {
@@ -361,26 +381,26 @@ export class MetaData {
     return ret;
   }
 
-  async _getDirectoryContent(): Promise<string> {
+  async _getDirectoryContent(): Promise<[string, MetaDataID]> {
     let directoryIndexItem = this.childItem('index.md');
     if (directoryIndexItem != null) {
       const r = await readFile(directoryIndexItem);
-      return r;
+      return [r, directoryIndexItem.id];
     }
     directoryIndexItem = this.childItem('index.txt');
     if (directoryIndexItem != null) {
       const r = await readFile(directoryIndexItem);
-      return r;
+      return [r, directoryIndexItem.id];
     }
     directoryIndexItem = this.childItem('index.html');
     if (directoryIndexItem != null) {
       const r = await readFile(directoryIndexItem);
-      return r;
+      return [r, directoryIndexItem.id];
     }
 
     const ret = await getDirectoryContent(this);
 
-    return ret;
+    return [ret, this.id];
   }
 
   async _readdir(): Promise<[Array<string>, MessageType]> {
@@ -413,7 +433,7 @@ export class MetaData {
       }
 
       const [newItem, addResult] = await this._addItem(detectItemType(childName), childName);
-      if (!Message.isSimilarError(addResult)) {
+      if (Message.isSimilarError(addResult)) {
         return [null, Message.wrap(addResult)];
       }
       if (newItem != null) {

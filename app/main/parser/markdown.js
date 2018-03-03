@@ -218,16 +218,16 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
 
   async function transformer(tree, file, next) {
     const benchID1 = `1 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
-    console.time(benchID1);
+    if (process.env.NODE_EVN === 'development')console.time(benchID1);
     const pp = [];
     tree.children.forEach((__, i) => {
       pp.push(replace(tree.children[i], i, tree));
     });
-    console.timeEnd(benchID1);
+    if (process.env.NODE_EVN === 'development')console.timeEnd(benchID1);
     const benchID2 = `2 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
-    console.time(benchID2);
+    if (process.env.NODE_EVN === 'development')console.time(benchID2);
     await Promise.all(pp);
-    console.timeEnd(benchID2);
+    if (process.env.NODE_EVN === 'development')console.timeEnd(benchID2);
 
     next(null, tree, file);
     return tree;
@@ -348,12 +348,12 @@ function applyChildren<
   init: Promise<R>[] = []
 ) {
   // eslint-disable-next-line
-  const benchID = `applyChildren ${node.type} children=${node.children ? node.children.length : 0} ${node.data ? node.data.internalPath : ''} ${Math.random()}`;
-  console.time(benchID);
+  // const benchID = `applyChildren ${node.type} children=${node.children ? node.children.length : 0} ${node.data ? node.data.internalPath : ''} ${Math.random()}`;
+  // console.time(benchID);
   init.push(fn(node, index, parent));
 
   if (node.children == null) {
-    console.timeEnd(benchID);
+    // console.timeEnd(benchID);
     return;
   }
 
@@ -363,7 +363,7 @@ function applyChildren<
     applyChildren(node.children[i], i, node, fn, init);
   }
   // eslint-disable-next-line
-  console.timeEnd(benchID);
+  // console.timeEnd(benchID);
 }
 
 function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager}) {
@@ -386,20 +386,18 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
     return new Bluebird((resolve, reject) => {
       const benchID1 = `1 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
       const benchID2 = `2 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
-      console.time(benchID1);
+      if (process.env.NODE_EVN === 'development') console.time(benchID1);
       const replacePromises = [];
       const len = tree.children.length;
       const pp = [];
       for (let i = 0; i < len; i += 1) {
         pp.push(applyChildren(tree.children[i], i, tree, replace, replacePromises));
       }
-      console.log('pp', pp.length);
       Bluebird.all(pp).then((r) => {
-        console.timeEnd(benchID1);
-        console.time(benchID2);
+        if (process.env.NODE_EVN === 'development')console.timeEnd(benchID1);
+        if (process.env.NODE_EVN === 'development')console.time(benchID2);
         Bluebird.all(replacePromises).then((rr) => {
-          console.timeEnd(benchID2);
-          console.log('replacePromises length', replacePromises.length);
+          if (process.env.NODE_EVN === 'development')console.timeEnd(benchID2);
 
           resolve(rr);
           return rr;
