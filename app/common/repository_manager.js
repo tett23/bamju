@@ -1,11 +1,6 @@
 // @flow
 
-import {
-  type Message,
-  MessageTypeSucceeded,
-  MessageTypeFailed,
-  MessageTypeError,
-} from './message';
+import * as Message from './message';
 import {
   MetaData,
   type MetaDataID,
@@ -30,7 +25,7 @@ export class RepositoryManager {
       });
 
       const [_, result] = this.addRepository(conf, items);
-      if (result.type !== MessageTypeSucceeded) {
+      if (Message.isSimilarError(result)) {
         throw new Error(result.message);
       }
     });
@@ -87,40 +82,28 @@ export class RepositoryManager {
     return repo.detect(info.path, current);
   }
 
-  addRepository(conf: RepositoryConfig, items: Array<Buffer> = []): [?Repository, Message] {
+  addRepository(conf: RepositoryConfig, items: Array<Buffer> = []): [?Repository, Message.Message] {
     if (this.find(conf.repositoryName)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `RepositoryManager.addRepository duplicate entry. ${conf.repositoryName}`
-      }];
+      return [null, Message.fail(`RepositoryManager.addRepository duplicate entry. ${conf.repositoryName}`)];
     }
 
     const isExist = this._repositories.some((item) => {
       return item.absolutePath === conf.absolutePath;
     });
     if (isExist === true) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `RepositoryManager.addRepository absolutePath check. ${conf.absolutePath}`
-      }];
+      return [null, Message.fail(`RepositoryManager.addRepository absolutePath check. ${conf.absolutePath}`)];
     }
 
     let repo: Repository;
     try {
       repo = new Repository(items, conf);
     } catch (e) {
-      return [null, {
-        type: MessageTypeError,
-        message: `RepositoryManager.addRepository error: absolutePath=${conf.absolutePath}. ${e.message}`
-      }];
+      return [null, Message.error(`RepositoryManager.addRepository error: absolutePath=${conf.absolutePath}. ${e.message}`)];
     }
 
     this._repositories.push(repo);
 
-    return [repo, {
-      type: MessageTypeSucceeded,
-      message: ''
-    }];
+    return [repo, Message.success('')];
   }
 
   removeRepository(repositoryName: string): ?Repository {
@@ -136,6 +119,22 @@ export class RepositoryManager {
     this._repositories.splice(removeIndex, 1);
 
     return ret;
+  }
+
+  async move(metaDataID: MetaDataID, destination: string): Promise<[?MetaData, Message.Message]> {
+    const metaData = this.getItemByID(metaDataID);
+    if (metaData == null) {
+      return [null, Message.fail(`RepositoryManager.move MetaData not found. metaDataID=${metaDataID}`)];
+    }
+
+    const pathInfo = resolveInternalPath(destination);
+    pathInfo.repositoryName = pathInfo.repositoryName || metaData.repositoryName;
+    const message = await metaData.move(pathInfo);
+    if (Message.isSimilarError(message)) {
+      return [null, Message.wrap(message)];
+    }
+
+    return [metaData, Message.success('File renamed')];
   }
 
   toBuffers(): Buffer[] {

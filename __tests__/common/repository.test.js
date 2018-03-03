@@ -233,6 +233,79 @@ describe('Repository', () => {
     });
   });
 
+  describe('watch', () => {
+    let metaData;
+    let watchRepository;
+    beforeEach(async () => {
+      let _;
+      [metaData, _] = await repository.addFile('/watch.md'); // eslint-disable-line prefer-const
+      fs.mkdirSync('/tmp/bamju/watch_test');
+      [watchRepository, _] = manager.addRepository({
+        repositoryName: 'watch_test',
+        absolutePath: '/tmp/bamju/watch_test'
+      }, []);
+    });
+
+    it('repositoryに追加される', async () => {
+      await watchRepository.watch(metaData);
+      expect(watchRepository.getItemByID(metaData.id)).not.toBe(null);
+    });
+
+    it('parentが存在しない場合、作成される', async () => {
+      metaData.path = '/foo/bar/baz/deepItem.md';
+      await watchRepository.watch(metaData);
+
+      expect(fs.existsSync(path.join(watchRepository.absolutePath, '/foo/bar/baz'))).toBe(true);
+      expect(watchRepository.getItemByPath('/foo')).not.toBe(null);
+      expect(watchRepository.getItemByPath('/foo/bar')).not.toBe(null);
+      expect(watchRepository.getItemByPath('/foo/bar/baz')).not.toBe(null);
+      expect(watchRepository.getItemByPath('/foo/bar/baz/deepItem.md')).not.toBe(null);
+    });
+
+    it('parentIDが設定される', async () => {
+      await watchRepository.watch(metaData);
+      expect(metaData.parentID).toBe(watchRepository.rootItem().id);
+    });
+
+    it('repositoryName, repositoryPathが設定される', async () => {
+      await watchRepository.watch(metaData);
+      expect(metaData.repositoryPath).toBe(watchRepository.absolutePath);
+      expect(metaData.repositoryName).toBe(watchRepository.name);
+    });
+
+    it('parentのchildrenIDsに追加される', async () => {
+      expect(watchRepository.rootItem().childrenIDs).not.toContain(metaData.id);
+      await watchRepository.watch(metaData);
+      expect(watchRepository.rootItem().childrenIDs).toContain(metaData.id);
+    });
+  });
+
+  describe('unwatch', () => {
+    let metaData;
+    beforeEach(async () => {
+      let _;
+      [metaData, _] = await repository.addFile('/unwatch.md'); // eslint-disable-line prefer-const
+    });
+
+    it('repositoryから削除される', async () => {
+      expect(repository.getItemByID(metaData.id)).not.toBe(null);
+      await repository.unwatch(metaData);
+      expect(repository.getItemByID(metaData.id)).toBe(null);
+    });
+
+    it('parentIDがnullになる', async () => {
+      expect(repository.getItemByID(metaData.id).parentID).toBe(repository.rootItem().id);
+      await repository.unwatch(metaData);
+      expect(metaData.parentID).toBe(null);
+    });
+
+    it('parentのアイテムから削除される', async () => {
+      expect(repository.rootItem().childrenIDs).toContain(metaData.id);
+      await repository.unwatch(metaData);
+      expect(repository.rootItem().childrenIDs).not.toContain(metaData.id);
+    });
+  });
+
   describe('find', () => {
     it('ファイルの検索ができる', () => {
       expect(repository.find('/foo/bar/baz/testItem.md')).toMatchObject({

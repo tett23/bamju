@@ -15,11 +15,7 @@ import {
 import {
   type $ReturnType,
 } from '../common/util';
-import {
-  isSimilarError,
-  MessageTypeFailed,
-  MessageTypeError,
-} from '../common/message';
+import Message from '../common/message';
 import path from '../common/path';
 
 import {
@@ -33,10 +29,14 @@ import {
   ADD_REPOSITORY,
   REMOVE_REPOSITORY,
   CREATE_FILE,
+  CREATE_DIRECTORY,
+  RENAME,
   initializeRepositories as initializeRepositoriesAction,
   addRepository as addRepositoryAction,
   removeRepository as removeRepositoryAction,
   createFile as createFileAction,
+  createDirectory as createDirectoryAction,
+  rename as renameAction,
 } from '../actions/repositories';
 import {
   reloadBuffers as reloadBuffersAction,
@@ -76,6 +76,16 @@ export const repositoriesMiddleware = (store: Store<State, Actions>) => (next: D
     createFile(store, action);
     return;
   }
+  case CREATE_DIRECTORY: {
+    next(action);
+    createDirectory(store, action);
+    return;
+  }
+  case RENAME: {
+    next(action);
+    rename(store, action);
+    return;
+  }
   default: {
     return next(action);
   }
@@ -94,15 +104,15 @@ function initializeRepositories(store: Store<State, Actions>, _: $ReturnType<typ
 function addRepository(store: Store<State, Actions>, action: $ReturnType<typeof addRepositoryAction>) {
   const manager = getRepositoryManagerInstance();
 
-  const repositoryName = path.dirname(action.payload.absolutePath);
+  const repositoryName = path.basename(action.payload.absolutePath);
   const conf = {
-    absolutePath: action.absolutePath,
+    absolutePath: action.payload.absolutePath,
     repositoryName
   };
 
   const [repo, addRepositoryMessage] = manager.addRepository(conf, []);
-  if (repo == null || isSimilarError(addRepositoryMessage)) {
-    store.dispatch(addMessage(addRepositoryMessage));
+  if (repo == null || Message.isSimilarError(addRepositoryMessage)) {
+    store.dispatch(addMessage(Message.wrap(addRepositoryMessage)));
   }
 
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
@@ -129,40 +139,72 @@ async function createFile(store: Store<State, Actions>, action: $ReturnType<type
 
   const repo = manager.find(info.repositoryName || '');
   if (repo == null) {
-    const mes = {
-      type: MessageTypeFailed,
-      message: `repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`,
-    };
+    const mes = Message.fail(`repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`);
     store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
   const [metaData, message] = await repo.addFile(info.path, '');
-  if (metaData == null || isSimilarError(message)) {
-    const mes = {
-      type: MessageTypeFailed,
-      message: `repositoriesMiddleware error: ${message.message}`,
-    };
-    store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
+  if (metaData == null || Message.isSimilarError(message)) {
+    store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
     return;
   }
 
   const [parseResult, parseMessage] = await metaData.parse();
-  if (isSimilarError(parseMessage)) {
-    store.dispatch(addMessage(parseMessage, { targetWindowID: action.meta.fromWindowID }));
+  if (Message.isSimilarError(parseMessage)) {
+    store.dispatch(addMessage(Message.wrap(parseMessage), { targetWindowID: action.meta.fromWindowID }));
     return;
   }
   if (parseResult == null) {
-    store.dispatch(addMessage({
-      type: MessageTypeError,
-      message: `repositoriesMiddleware parseResult error. repositoryName=${action.payload.repositoryName} path=${action.payload.path}`
-    }, { targetWindowID: action.meta.fromWindowID }));
+    store.dispatch(addMessage(
+      Message.error(`repositoriesMiddleware parseResult error. repositoryName=${action.payload.repositoryName} path=${action.payload.path}`)
+      , { targetWindowID: action.meta.fromWindowID }
+    ));
     return;
   }
 
   store.dispatch(reloadBuffersAction(manager.toBuffers()));
   store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
   store.dispatch(updateCurrentTab(metaData.id, parseResult.content, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
+}
+
+async function createDirectory(store: Store<State, Actions>, action: $ReturnType<typeof createDirectoryAction>) {
+  const manager = getRepositoryManagerInstance();
+
+  const info = resolveInternalPath(action.payload.path);
+  if (info.repositoryName == null) {
+    info.repositoryName = action.payload.repositoryName;
+  }
+
+  const repo = manager.find(info.repositoryName || '');
+  if (repo == null) {
+    const mes = Message.fail(`repositoriesMiddleware repository not found error: repositoryName=${info.repositoryName || ''}`);
+    store.dispatch(addMessage(mes, { targetWindowID: action.meta.fromWindowID }));
+    return;
+  }
+
+  const [metaData, message] = await repo.addDirectory(info.path);
+  if (metaData == null || Message.isSimilarError(message)) {
+    store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
+    return;
+  }
+
+  store.dispatch(reloadBuffersAction(manager.toBuffers()));
+  store.dispatch(openBufferItem(metaData.id, { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
+}
+
+async function rename(store: Store<State, Actions>, action: $ReturnType<typeof renameAction>) {
+  const manager = getRepositoryManagerInstance();
+
+  const [metaData, message] = await manager.move(action.payload.metaDataID, action.payload.path);
+  store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
+  if (metaData == null || Message.isSimilarError(message)) {
+    return;
+  }
+
+  store.dispatch(reloadBuffersAction(manager.toBuffers()));
   store.dispatch(closeAllDialog({ targetWindowID: action.meta.fromWindowID }));
 }
 

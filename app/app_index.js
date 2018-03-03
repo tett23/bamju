@@ -26,7 +26,6 @@ import {
 } from './actions/windows';
 import {
   initializeBrowser,
-  updateTab,
 } from './actions/browser';
 import {
   openInputDialog,
@@ -41,7 +40,6 @@ import {
   initializeRepositoriesTreeView,
 } from './actions/repositories_tree_view';
 import {
-  type MetaDataID,
   internalPath,
 } from './common/metadata';
 import {
