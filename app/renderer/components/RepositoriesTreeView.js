@@ -243,8 +243,13 @@ export function buildContextMenu(
       enabled: item.itemType === ItemTypeRepository
     }
   ];
+  const separator = [
+    {
+      type: 'separator'
+    }
+  ];
 
-  return [].concat(editMenu, openMenu, repositoryMenu);
+  return [].concat(editMenu, separator, openMenu, separator, repositoryMenu);
 }
 
 function itemType(t: ItemType) {
