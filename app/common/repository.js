@@ -126,6 +126,8 @@ export class Repository {
     }
 
     metaData.parentID = _parent.id; // eslint-disable-line no-param-reassign
+    metaData.repositoryName = this.name;
+    metaData.repositoryPath = this.absolutePath;
     _parent.childrenIDs.push(metaData.id);
 
     this.items.push(metaData);
@@ -140,7 +142,6 @@ export class Repository {
     }
 
     this.items.splice(idx, 1);
-    metaData.parentID = null; // eslint-disable-line no-param-reassign
 
     if (metaData.parentID == null) {
       return;
@@ -158,6 +159,8 @@ export class Repository {
     }
 
     parent.childrenIDs.splice(childIdx, 1);
+
+    metaData.parentID = null; // eslint-disable-line no-param-reassign
   }
 
   _getItem(searchPath: string, metaData: MetaData): ?MetaData {
