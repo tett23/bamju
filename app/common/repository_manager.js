@@ -5,10 +5,11 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
-} from './util';
+} from './message';
 import {
   MetaData,
   type MetaDataID,
+  resolveInternalPath,
 } from './metadata';
 import {
   Repository,
@@ -74,13 +75,16 @@ export class RepositoryManager {
     return ret;
   }
 
-  detect(repositoryName: string, itemName: string, current: ?MetaData = null): ?MetaData {
-    const repo = this.find(repositoryName);
+  detect(repositoryName: string, internalPath: string, current: ?MetaData = null): ?MetaData {
+    const info = resolveInternalPath(internalPath);
+    const repoName = info.repositoryName || repositoryName;
+
+    const repo = this.find(repoName);
     if (repo == null) {
       return null;
     }
 
-    return repo.detect(itemName, current);
+    return repo.detect(info.path, current);
   }
 
   addRepository(conf: RepositoryConfig, items: Array<Buffer> = []): [?Repository, Message] {

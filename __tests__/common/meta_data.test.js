@@ -24,7 +24,7 @@ import {
   MessageTypeFailed,
   MessageTypeError,
   MessageTypeSucceeded
-} from '../../app/common/util';
+} from '../../app/common/message';
 
 import '../global_config.test';
 
@@ -508,20 +508,13 @@ describe('MetaData', () => {
       expect(content).toBe('hogehoge');
     });
 
-    it('isSimilarFile === trueでない場合、MessageTypeFailedが返る', async () => {
-      const metaData = repository.getItemByPath('/foo');
-      const [__, result] = await metaData.getContent('hogehoge');
-
-      expect(result.type).toBe(MessageTypeFailed);
-    });
-
     it('実ファイルがなくてもエラーにはならない', async () => {
       const metaData = repository.getItemByPath('/foo/bar/baz/testItem.md');
       fs.unlinkSync(metaData.absolutePath);
 
       const [content, result] = await metaData.getContent('hogehoge');
       expect(result.type).toBe(MessageTypeSucceeded);
-      expect(content).toBe('');
+      expect(content).toMatch(/# not found/);
     });
   });
 
@@ -550,12 +543,14 @@ describe('MetaData', () => {
       await index.updateContent('<h1>baz</h1>');
     });
 
-    it('ファイルが存在しない場合MessageTypeErrorが返る', async () => {
+    it('ファイルが存在しない場合# not foundが返る', async () => {
       const metaData = repository.getItemByPath('/foo.md');
       fs.unlinkSync(metaData.absolutePath);
-      const [_, result] = await metaData.parse();
+      const [parseResult, result] = await metaData.parse();
 
-      expect(result.type).toBe(MessageTypeError);
+      expect(result.type).toBe(MessageTypeSucceeded);
+      expect(parseResult.content).toMatch(/<h1>not found<\/h1>/);
+      expect(parseResult.content).toMatch(/<p>test:\/foo.md<\/p>/);
     });
 
     it('ファイルのパースができる', async () => {
@@ -572,7 +567,7 @@ describe('MetaData', () => {
 
       expect(result.type).toBe(MessageTypeSucceeded);
       expect(!!parseResult.content.match(/<h1.*?>testDir<\/h1>/)).toBe(true);
-      expect(!!parseResult.content.match(/<li.*?><span.*?>foo<\/span><\/li>/)).toBe(true);
+      expect(parseResult.content).toMatch(/<p><span.*?>foo<\/span><\/p>/m);
     });
 
     it('ディレクトリをparseしたとき、index.mdが存在すればそちらを開く', async () => {

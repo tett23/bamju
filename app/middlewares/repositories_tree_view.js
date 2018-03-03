@@ -11,8 +11,10 @@ import {
 
 import {
   type $ReturnType,
-  isSimilarError,
 } from '../common/util';
+import {
+  isSimilarError,
+} from '../common/message';
 
 import {
   type State,

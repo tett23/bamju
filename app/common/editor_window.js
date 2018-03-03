@@ -24,7 +24,7 @@ import {
 import {
   isSimilarError,
   MessageTypeFailed,
-} from './util';
+} from './message';
 import {
   addMessage,
 } from '../actions/messages';

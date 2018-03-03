@@ -3,7 +3,7 @@
 import { type Meta } from '../reducers/types';
 import {
   type Message
-} from '../common/util';
+} from '../common/message';
 
 export const ADD_MESSAGE = 'ADD_MESSAGE';
 export const CLOSE_MESSAGE = 'CLOSE_MESSAGE';

@@ -10,8 +10,10 @@ import {
 } from '../actions/messages';
 import {
   deepCopy,
-  type Message,
 } from '../common/util';
+import {
+  type Message,
+} from '../common/message';
 
 export type MessagesState = Array<{
   id: string,

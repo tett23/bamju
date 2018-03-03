@@ -18,7 +18,7 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
-} from './util';
+} from './message';
 
 export type RepositoryConfig = {
   repositoryName: string,
@@ -110,20 +110,38 @@ export class Repository {
       targetItem = current;
     }
 
-    let matchItems;
+    let matchItem = null;
     if (searchPath.match(/^\//)) {
-      matchItems = this._getItems(searchPath, this.rootItem().getIDs());
+      matchItem = this._getItem(searchPath, this.rootItem());
     }
     if (searchPath.match(/^\./)) {
-      matchItems = this._getItems(searchPath, targetItem.getIDs());
+      matchItem = this._getItem(searchPath, targetItem);
     } else {
-      matchItems = this._getItems(searchPath, targetItem.getIDs());
-      if (matchItems.length === 0) {
-        matchItems = this._getItems(searchPath, this.rootItem().getIDs());
+      matchItem = this._getItem(searchPath, targetItem);
+      if (matchItem == null) {
+        matchItem = this._getItem(searchPath, this.rootItem());
       }
     }
 
-    return matchItems[0];
+    return matchItem;
+  }
+
+  _getItem(searchPath: string, metaData: MetaData): ?MetaData {
+    let ret = null;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const targetID of metaData.getIDs()) {
+      const item = this.getItemByID(targetID);
+      if (item == null) {
+        continue;
+      }
+
+      if (item.isMatchPath(searchPath)) {
+        ret = item;
+        break;
+      }
+    }
+
+    return ret;
   }
 
   _getItems(searchPath: string, targetIDs: Array<MetaDataID>): Array<MetaData> {

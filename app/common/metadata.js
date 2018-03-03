@@ -1,13 +1,12 @@
 // @flow
+/* eslint no-continue: 0 */
 
 import fs from 'fs';
 import path from './path';
-import {
-  type Message,
-  MessageTypeFailed,
-  MessageTypeError,
-  MessageTypeSucceeded,
-} from './util';
+import Message from './message';
+import type {
+  Message as MessageType,
+} from './message';
 import {
   getInstance
 } from './repository_manager';
@@ -37,8 +36,8 @@ export type ItemType = 'repository' | 'directory' | 'markdown' | 'text' | 'csv' 
 export type MetaDataID = string;
 
 export type ParseResult = {
-  content: string,
-  children: Array<ParseResult>
+  content: string
+  // children: Array<ParseResult>
 };
 export type ParseResults = Array<ParseResult>;
 
@@ -72,17 +71,14 @@ export class MetaData {
     this.body = buffer.body;
   }
 
-  async load(): Promise<[?MetaData, Message]> {
+  async load(): Promise<[?MetaData, MessageType]> {
     if (this.isSimilarFile() || this.isSimilarDirectory()) {
       try {
         fs.statSync(this.absolutePath);
       } catch (e) {
         // TODO: 無名ファイルにする処理
         await this.moveNamelessFile();
-        return [null, {
-          type: MessageTypeSucceeded,
-          message: ''
-        }];
+        return [null, Message.success('')];
       }
     }
 
@@ -90,22 +86,17 @@ export class MetaData {
       this.isLoaded = true;
     } else if (this.isSimilarDirectory()) {
       const loadDirResult = await this._loadDirectory();
-      if (loadDirResult.type !== MessageTypeSucceeded) {
-        return [null, loadDirResult];
+      if (Message.isSimilarError(loadDirResult)) {
+        return [null, Message.wrap(loadDirResult)];
       }
     } else if (this.itemType === ItemTypeUndefined) {
       this.isLoaded = true;
     } else {
-      return [null, {
-        type: MessageTypeError,
-        message: `MetaData.load unexpected item type: absolutePath=${this.absolutePath} itemType=${this.itemType}`
-      }];
+      return [null, Message.error(`MetaData.load unexpected item type: absolutePath=${this.absolutePath} itemType=${this.itemType}`)
+      ];
     }
 
-    return [this, {
-      type: MessageTypeSucceeded,
-      message: ''
-    }];
+    return [this, Message.success('')];
   }
 
   async moveNamelessFile() {
@@ -118,13 +109,13 @@ export class MetaData {
     await this.repository().moveNamelessFile(this.id);
   }
 
-  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, Message]> {
+  async addFile(itemName: string, content: string = ''): Promise<[?MetaData, MessageType]> {
     const itemType = detectItemType(itemName);
     if (!isSimilarFile(itemType)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `MetaData.addFile isSimilarFile check itemName=${itemName}`
-      }];
+      return [
+        null,
+        Message.fail(`MetaData.addFile isSimilarFile check itemName=${itemName}`)
+      ];
     }
 
     if (content === '' && itemType === ItemTypeMarkdown) {
@@ -132,39 +123,36 @@ export class MetaData {
     }
 
     const [ret, message] = await this._addItem(itemType, itemName);
-    if (ret == null || message.type === MessageTypeFailed) {
-      return [ret, message];
+    if (ret == null || Message.isSimilarError(message)) {
+      return [ret, Message.wrap(message)];
     }
 
     try {
       fs.writeFileSync(ret.absolutePath, content);
     } catch (e) {
-      return [null, {
-        type: MessageTypeError,
-        message: `MetaData.addDirectory mkdir error. ${e.message}`
-      }];
+      return [null, Message.error(`MetaData.addDirectory mkdir error. ${e.message}`)];
     }
 
     return [ret, message];
   }
 
-  async addDirectory(itemName: string): Promise<[?MetaData, Message]> {
+  async addDirectory(itemName: string): Promise<[?MetaData, MessageType]> {
     if (!this.isSimilarDirectory()) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'MetaData.addDirectory isSimilarDirectory error'
-      }];
+      return [
+        null,
+        Message.fail('MetaData.addDirectory isSimilarDirectory error')
+      ];
     }
 
     if (!isSimilarDirectory(detectItemType(itemName))) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'MetaData.addDirectory.isSimilarFile'
-      }];
+      return [
+        null,
+        Message.fail('MetaData.addDirectory.isSimilarFile')
+      ];
     }
 
     const [ret, message] = await this._addItem(ItemTypeDirectory, itemName);
-    if (ret == null || message.type === MessageTypeFailed) {
+    if (ret == null || Message.isSimilarError(message)) {
       return [ret, message];
     }
 
@@ -172,10 +160,10 @@ export class MetaData {
       fs.mkdirSync(ret.absolutePath);
     } catch (e) {
       if (e.code !== 'EEXIST') {
-        return [null, {
-          type: MessageTypeFailed,
-          message: `MetaData.addDirectory mkdir error. ${e.message}`
-        }];
+        return [
+          null,
+          Message.fail(`MetaData.addDirectory mkdir error. ${e.message}`)
+        ];
       }
     }
 
@@ -188,15 +176,20 @@ export class MetaData {
     });
   }
 
-  getIDs(): Array<MetaDataID> {
-    const ret:Array<MetaDataID> = [this.id];
-    this.children().forEach((child) => {
-      child.getIDs().forEach((id) => {
-        ret.push(id);
-      });
-    });
-
-    return ret;
+  *getIDs(): Iterable<MetaDataID> {
+    const ret = [this.id];
+    yield this.id;
+    for (let i = 0; i < this.childrenIDs.length; i += 1) {
+      const child = this.repository().getItemByID(this.childrenIDs[i]);
+      if (child == null) {
+        continue;
+      }
+      // eslint-disable-next-line no-restricted-syntax
+      for (const n of child.getIDs()) {
+        ret.push(n);
+        yield n;
+      }
+    }
   }
 
   parent(): ?MetaData {
@@ -279,75 +272,58 @@ export class MetaData {
     return !!this.path.match(path.join(path.sep, searchPath));
   }
 
-  async parse(): Promise<[?ParseResult, Message]> {
-    try {
-      fs.statSync(this.absolutePath);
-    } catch (e) {
-      const r = await parseResultNotFound(this);
-      return [r, {
-        type: MessageTypeError,
-        message: `MetaData.parse error: ${e.message}`
-      }];
+  async parse(): Promise<[?ParseResult, MessageType]> {
+    const [content, metaDataID, message] = await this.getContent();
+    if (Message.isSimilarError(message)) {
+      return [null, Message.wrap(message)];
     }
 
-    if (this.isSimilarFile()) {
-      return this._parseFile();
-    } else if (this.isSimilarDirectory()) {
-      return this._parseDirectory();
+    let metaData;
+    if (this.id === metaDataID) {
+      metaData = this;
+    } else {
+      metaData = this.children().find((item) => {
+        return item.id === metaDataID;
+      });
+      if (metaData == null) {
+        return [null, Message.fail(`MetaData.parse child item not found metaDataID=${metaDataID}`)];
+      }
     }
 
-    const ret = await parseResultNotFound(this);
-    return [ret, {
-      type: MessageTypeError,
-      message: 'MetaData.parse unexpected error'
-    }];
+    const ret = await parse(metaData, content);
+
+    return ret;
   }
 
-  async updateContent(content: string): Promise<Message> {
+  async updateContent(content: string): Promise<MessageType> {
     if (!this.isSimilarFile()) {
-      return {
-        type: MessageTypeFailed,
-        message: `MetaData.updateContent itemType check. path=${this.path} itemType=${this.itemType}`
-      };
+      return Message.fail(`MetaData.updateContent itemType check. path=${this.path} itemType=${this.itemType}`);
     }
 
     try {
       fs.writeFileSync(this.absolutePath, content);
     } catch (e) {
-      return {
-        type: MessageTypeError,
-        message: `MetaData.updateContent error. ${e.message}`
-      };
+      return Message.error(`MetaData.updateContent error. ${e.message}`);
     }
 
-    return {
-      type: MessageTypeSucceeded,
-      message: ''
-    };
+    return Message.success('');
   }
 
-  async getContent(): Promise<[string, Message]> {
-    if (!this.isSimilarFile()) {
-      return ['', {
-        type: MessageTypeFailed,
-        message: `MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`
-      }];
+  async getContent(): Promise<[string, MetaDataID, MessageType]> {
+    if (!this.isSimilarFile() && !this.isSimilarDirectory()) {
+      return ['', '', Message.fail(`MetaData.getContent itemType check. path=${this.path} itemType=${this.itemType}`)];
     }
 
     let ret = '';
-    try {
-      ret = fs.readFileSync(this.absolutePath, 'utf8');
-    } catch (e) {
-      return ['', {
-        type: MessageTypeSucceeded,
-        message: `MetaData.getContent readFile error: ${e.message}`
-      }];
+    let metaDataID = '';
+    if (this.isSimilarFile()) {
+      ret = await this._getFileContent();
+      metaDataID = this.id;
+    } else if (this.isSimilarDirectory()) {
+      [ret, metaDataID] = await this._getDirectoryContent();
     }
 
-    return [ret, {
-      type: MessageTypeSucceeded,
-      message: ''
-    }];
+    return [ret, metaDataID, Message.success('')];
   }
 
   internalPath(): string {
@@ -370,19 +346,13 @@ export class MetaData {
     };
   }
 
-  async _addItem(itemType: ItemType, itemName: string): Promise<[?MetaData, Message]> {
+  async _addItem(itemType: ItemType, itemName: string): Promise<[?MetaData, MessageType]> {
     if (!isValidItemName(itemName)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: `MetaData._addItem.isValidItemName ${itemName}`
-      }];
+      return [null, Message.fail(`MetaData._addItem.isValidItemName ${itemName}`)];
     }
 
     if (this.isExist(itemName)) {
-      return [null, {
-        type: MessageTypeFailed,
-        message: 'MetaData._addItem isExist check'
-      }];
+      return [null, Message.fail('MetaData._addItem isExist check')];
     }
 
     const ret = new MetaData({
@@ -401,51 +371,49 @@ export class MetaData {
     this.childrenIDs.push(ret.id);
     this.repository().addMetaData(ret);
 
-    return [ret, {
-      type: MessageTypeSucceeded,
-      message: '',
-    }];
+    return [ret, Message.success('')];
   }
 
-  async _parseFile(): Promise<[?ParseResult, Message]> {
-    const ret = await parseFile(this);
+
+  async _getFileContent(): Promise<string> {
+    const ret = await readFile(this);
 
     return ret;
   }
 
-  async _parseDirectory(): Promise<[?ParseResult, Message]> {
+  async _getDirectoryContent(): Promise<[string, MetaDataID]> {
     let directoryIndexItem = this.childItem('index.md');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
-      return r;
+      const r = await readFile(directoryIndexItem);
+      return [r, directoryIndexItem.id];
     }
     directoryIndexItem = this.childItem('index.txt');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
-      return r;
+      const r = await readFile(directoryIndexItem);
+      return [r, directoryIndexItem.id];
     }
     directoryIndexItem = this.childItem('index.html');
     if (directoryIndexItem != null) {
-      const r = await parseFile(directoryIndexItem);
-      return r;
+      const r = await readFile(directoryIndexItem);
+      return [r, directoryIndexItem.id];
     }
 
-    const ret = await parseDirectory(this);
+    const ret = await getDirectoryContent(this);
 
-    return ret;
+    return [ret, this.id];
   }
 
-  async _readdir(): Promise<[Array<string>, Message]> {
+  async _readdir(): Promise<[Array<string>, MessageType]> {
     const ret = await _readdir(this.absolutePath);
 
     return ret;
   }
 
-  async _loadDirectory(): Promise<Message> {
+  async _loadDirectory(): Promise<MessageType> {
     const [childNames, readdirResult] = await this._readdir();
-    if (readdirResult.type !== MessageTypeSucceeded) {
+    if (Message.isSimilarError(readdirResult)) {
       await this.moveNamelessFile();
-      return readdirResult;
+      return Message.wrap(readdirResult);
     }
 
     const beforeIDs = this.childrenIDs.slice();
@@ -457,39 +425,33 @@ export class MetaData {
       });
       if (childItem != null) {
         const [_, loadResult] = await childItem.load();
-        if (loadResult.type !== MessageTypeSucceeded) {
-          return [null, loadResult];
+        if (!Message.isSimilarError(loadResult.type)) {
+          return [null, Message.wrap(loadResult)];
         }
 
-        return [childItem, {
-          type: MessageTypeSucceeded,
-          message: ''
-        }];
+        return [childItem, Message.success('')];
       }
 
       const [newItem, addResult] = await this._addItem(detectItemType(childName), childName);
-      if (addResult.type !== MessageTypeSucceeded) {
-        return [null, addResult];
+      if (Message.isSimilarError(addResult)) {
+        return [null, Message.wrap(addResult)];
       }
       if (newItem != null) {
         const [_, newItemLoadResult] = await newItem.load();
-        if (newItemLoadResult.type !== MessageTypeSucceeded) {
-          return [null, newItemLoadResult];
+        if (Message.isSimilarError(newItemLoadResult)) {
+          return [null, Message.wrap(newItemLoadResult)];
         }
       }
 
-      return [newItem, {
-        type: MessageTypeSucceeded,
-        message: ''
-      }];
+      return [newItem, Message.success('')];
     });
 
     const results = await Promise.all(promiseAll);
     const errorResult = results.find(([_, result]) => {
-      return result.type !== MessageTypeSucceeded;
+      return !Message.isSimilarError(result);
     });
     if (errorResult != null) {
-      return errorResult[1];
+      return Message.wrap(errorResult[1]);
     }
 
     this.childrenIDs = results.map(([item, _]) => {
@@ -514,30 +476,21 @@ export class MetaData {
 
     this.isLoaded = true;
 
-    return {
-      type: MessageTypeSucceeded,
-      message: ''
-    };
+    return Message.success('');
   }
 }
 
-async function _readdir(absolutePath: string): Promise<[Array<string>, Message]> {
+async function _readdir(absolutePath: string): Promise<[Array<string>, MessageType]> {
   let ret: Array<string>;
   try {
     ret = fs.readdirSync(absolutePath).map((item) => {
       return item.normalize();
     });
   } catch (e) {
-    return [[], {
-      type: MessageTypeError,
-      message: `metadata._readdir error: ${e.message}`
-    }];
+    return [[], Message.error(`metadata._readdir error: ${e.message}`)];
   }
 
-  return [ret, {
-    type: MessageTypeSucceeded,
-    message: ''
-  }];
+  return [ret, Message.success('')];
 }
 
 export function detectItemType(name: string): ItemType {
@@ -589,7 +542,9 @@ export function isValidItemName(name: string): boolean {
 }
 
 export function internalPath(repositoryName: string, itemPath: string): string {
-  return `${repositoryName}:${itemPath}`;
+  const pathInfo = resolveInternalPath(itemPath);
+
+  return `${pathInfo.repositoryName || repositoryName}:${pathInfo.path}`;
 }
 
 export function resolveInternalPath(itemPath: string): {repositoryName: ?string, path: string} {
@@ -687,29 +642,26 @@ function matchItemName(name: string, itemName: string): boolean {
   return false;
 }
 
-async function parseResultNotFound(metaData: MetaData): Promise<ParseResult> {
-  const md: string =
-`
+async function readFile(metaData: MetaData): Promise<string> {
+  let ret = '';
+  try {
+    ret = fs.readFileSync(metaData.absolutePath, 'utf8');
+  } catch (e) {
+    ret = `
 # not found
 
 ${metaData.internalPath()}
 `;
-
-  const ret = await Markdown.parse(metaData, md);
+  }
 
   return ret;
 }
 
-async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
-  const [content, message] = await metaData.getContent();
-  if (message.type !== MessageTypeSucceeded) {
-    return [null, message];
-  }
-
+async function parse(metaData: MetaData, content: string): Promise<[?ParseResult, MessageType]> {
   let parseResult:ParseResult = { content: '', children: [] };
   switch (metaData.itemType) {
   case ItemTypeMarkdown: {
-    parseResult = await Markdown.parse(metaData, content);
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
     break;
   }
   case ItemTypeText: {
@@ -721,34 +673,40 @@ async function parseFile(metaData: MetaData): Promise<[?ParseResult, Message]> {
     break;
   }
   case ItemTypeCSV: {
-    parseResult = await TableParser.parse(metaData, content, [], { delimiter: ',' });
+    parseResult = await TableParser.parse(metaData.toBuffer(), content, { delimiter: ',' }, getInstance());
     break;
   }
   case ItemTypeTSV: {
-    parseResult = await TableParser.parse(metaData, content, [], { delimiter: '\t' });
+    parseResult = await TableParser.parse(metaData.toBuffer(), content, { delimiter: '\t' }, getInstance());
+    break;
+  }
+  case ItemTypeDirectory: {
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
+    break;
+  }
+  case ItemTypeRepository: {
+    parseResult = await Markdown.parse(metaData.toBuffer(), content, getInstance());
     break;
   }
   default:
-    return [null, {
-      type: MessageTypeFailed,
-      message: 'parseFile itemType trap default'
-    }];
+    return [null, Message.fail('parseFile itemType trap default')];
   }
 
-  return [parseResult, {
-    type: MessageTypeSucceeded,
-    message: ''
-  }];
+  return [parseResult, Message.success('')];
 }
 
-async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Message]> {
+async function getDirectoryContent(metaData: MetaData): Promise<string> {
   const [directoryItems, readdirResult] = await _readdir(metaData.absolutePath);
-  if (readdirResult.type !== MessageTypeSucceeded) {
-    return [null, readdirResult];
+  if (Message.isSimilarError(readdirResult.type)) {
+    return `
+# not found
+
+${metaData.internalPath()}
+`;
   }
 
   const items:Array<string> = directoryItems.map((filename) => {
-    if (isValidItemName(filename) === ItemTypeUndefined) {
+    if (filename.type === Message.MessageTypeInfo) {
       return null;
     }
 
@@ -761,10 +719,5 @@ async function parseDirectory(metaData: MetaData): Promise<[?ParseResult, Messag
 ${items.join('\n')}
   `;
 
-  const ret = await Markdown.parse(metaData, md);
-
-  return [ret, {
-    type: MessageTypeSucceeded,
-    message: ''
-  }];
+  return md;
 }

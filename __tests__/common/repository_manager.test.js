@@ -11,7 +11,7 @@ import {
 import {
   MessageTypeFailed,
   MessageTypeError,
-} from '../../app/common/util';
+} from '../../app/common/message';
 
 import '../global_config.test';
 import {
@@ -148,6 +148,12 @@ describe('RepositoryManager', () => {
 
     it('repositoryが存在しない場合、nullが返る', () => {
       const metaData = manager.detect('not found', '/bar');
+
+      expect(metaData).not.toBe(expect.anything());
+    });
+
+    it('internalPathでrepositoryNameが指定された場合、引数を上書きする', () => {
+      const metaData = manager.detect('test', 'not found:/bar');
 
       expect(metaData).not.toBe(expect.anything());
     });
