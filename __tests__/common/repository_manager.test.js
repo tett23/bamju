@@ -11,6 +11,7 @@ import {
 import {
   MessageTypeFailed,
   MessageTypeError,
+  isSimilarError,
 } from '../../app/common/message';
 
 import '../global_config.test';
@@ -210,7 +211,7 @@ describe('RepositoryManager', () => {
     });
   });
 
-  describe('addRepository', () => {
+  describe('removeRepository', () => {
     it('Repositoryの削除ができる', () => {
       expect(manager.removeRepository('test')).toMatchObject({
         name: 'test'
@@ -219,6 +220,29 @@ describe('RepositoryManager', () => {
 
     it('repositoryNameが存在しない場合、nullが返る', () => {
       expect(manager.removeRepository('test')).not.toBe(expect.anything());
+    });
+  });
+
+  describe('move', () => {
+    let metaData;
+    beforeEach(async () => {
+      let _;
+      const repository = manager.find('test');
+      [metaData, _] = await repository.addFile('/test.md'); // eslint-disable-line prefer-const
+    });
+
+    it('移動ができる', async () => {
+      let message;
+      [metaData, message] = await manager.move(metaData.id, '/move.md'); // eslint-disable-line prefer-const
+      expect(isSimilarError(message)).toBe(false);
+      expect(metaData).toMatchObject({
+        name: 'move.md'
+      });
+    });
+
+    it('metaDataIDが存在しない場合、エラー', async () => {
+      const [_, message] = await manager.move('hogehoge', '/move.md');
+      expect(isSimilarError(message)).toBe(true);
     });
   });
 
