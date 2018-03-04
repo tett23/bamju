@@ -211,8 +211,8 @@ function replaceBamjuLink(options: {buffer: Buffer}) {
   return transformer;
 }
 
-function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
-  const { buffer, manager } = options;
+function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager, inlineStack: string[] }) {
+  const { buffer, manager, inlineStack } = options;
 
   return transformer;
 
@@ -235,6 +235,33 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
 
   async function replace(node, index, parent) {
     if (!match(node, index, parent)) {
+      return;
+    }
+
+    if (inlineStack.includes(node.data.internalPath)) {
+      // eslint-disable-next-line no-param-reassign
+      parent.children[index] = {
+        type: 'paragraph',
+        children: [{
+          type: 'bamjuLink',
+          action: 'link',
+          data: {
+            ...node.data,
+            hName: 'span',
+            hProperties: {
+              className: 'bamjuLink',
+              dataInternalPath: node.data.internalPath,
+              dataFragment: node.data.fragment,
+              dataRepositoryName: node.data.repositoryName,
+              dataIsExist: false,
+            },
+            hChildren: [{
+              type: 'text',
+              value: `!loop [[inline|${node.data.internalPath}]]`
+            }]
+          }
+        }]
+      };
       return;
     }
 
@@ -278,7 +305,7 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager}) {
       .use(remarkMarkdown, markdownOptions)
       .use(remarkBreaks)
       .use(replaceBamjuLink, { buffer: metaData.toBuffer(), manager })
-      .use(loadInlineLink, { buffer: metaData.toBuffer(), manager })
+      .use(loadInlineLink, { buffer: metaData.toBuffer(), manager, inlineStack: inlineStack.concat([node.data.internalPath]) })
       .use(() => {
         return (t) => {
           ast = t;
@@ -432,12 +459,12 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
 
 
 export class Markdown {
-  static async parse(buffer: Buffer, md: string, manager: RepositoryManager): Promise<ParseResult> {
+  static async parse(buffer: Buffer, md: string, manager: RepositoryManager, inlineStack: string[] = []): Promise<ParseResult> {
     const processor = remark()
       .use(remarkMarkdown, markdownOptions)
       .use(remarkBreaks)
       .use(replaceBamjuLink, { buffer, manager })
-      .use(loadInlineLink, { buffer, manager })
+      .use(loadInlineLink, { buffer, manager, inlineStack })
       .use(updateLinkStatus, { buffer, manager })
       .use(remarkHTML);
     const ret = await processor.process(md);

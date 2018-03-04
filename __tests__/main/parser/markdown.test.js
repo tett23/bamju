@@ -229,6 +229,14 @@ describe('Markdown', () => {
       expect(html.content).toMatch(/<h2.*?>.*?testItem.*?<\/h2>/);
     });
 
+    it('inlineが再帰したときは!loopと表示する', async () => {
+      // $FlowFixMe
+      await manager.find('test').addFile('/loopTest.md', '[[inline|loopTest]]');
+      const html = await Markdown.parse(metaData.toBuffer(), '[[inline|loopTest]]', manager);
+
+      expect(html.content).toMatch('!loop [[inline|loopTest]]');
+    });
+
     it('読みこんだファイルのh1が自身のリンクになる', async () => {
       const html = await Markdown.parse(metaData.toBuffer(), '[[inline|testItem]]', manager);
 
