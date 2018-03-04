@@ -65,8 +65,8 @@ function messageDebug(mes: _Message) {
     return null;
   }
 
-  const stackItems = (mes.stack || []).map((item) => {
-    return <li>{item}</li>;
+  const stackItems = (mes.stack || []).map((item, i) => {
+    return <li key={i + item}>{item}</li>;
   });
 
   return (
