@@ -112,7 +112,7 @@ export default class EditorWindow implements Window {
       }, { targetWindowID: this.windowID() }));
       return;
     }
-    const [content, message] = await metaData.getContent();
+    const [content, _, message] = await metaData.getContent();
 
     if (Message.isSimilarError(message)) {
       dispatch(addMessage(Message.wrap(message), { targetWindowID: this.windowID() }));
