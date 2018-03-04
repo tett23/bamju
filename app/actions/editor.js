@@ -7,6 +7,7 @@ import {
 
 export const OPEN_BUFFER = 'OPEN_BUFFER';
 export const BURFFER_UPDATED = 'BUFFER_UPDATED';
+export const BUFFER_SAVED = 'BUFFER_SAVED';
 
 export function openBuffer(buffer: Buffer, content: string, meta: Meta = {}) {
   return {
@@ -26,6 +27,14 @@ export function bufferUpdated(buffer: Buffer, content: string, meta: Meta = {}) 
       buffer,
       content
     },
+    meta
+  };
+}
+
+export function bufferSaved(meta: Meta = {}) {
+  return {
+    type: BUFFER_SAVED,
+    payload: {},
     meta
   };
 }

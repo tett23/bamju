@@ -8,7 +8,6 @@ import 'brace/mode/text';
 import 'brace/theme/monokai';
 import {
   type EditorState,
-  initialEditorState,
 } from '../../reducers/editor';
 import {
   ItemTypeMarkdown,
@@ -20,6 +19,7 @@ import {
 import {
   bufferUpdated,
 } from '../../actions/editor';
+import FileHeader from './FileHeader';
 
 type Props = {
   bufferUpdated: (Buffer, string) => void
@@ -27,8 +27,6 @@ type Props = {
 
 class editor extends React.Component<Props> {
   editor: ?AceEditor;
-
-  static defaultProps = initialEditorState()
 
   handleOnChange() {
     if (this.editor) {
@@ -59,6 +57,11 @@ class editor extends React.Component<Props> {
 
     return (
       <div>
+        <FileHeader
+          buffer={this.props.buffer}
+          tabID=""
+          isEdited={this.props.isEdited}
+        />
         <AceEditor
           value={this.props.content}
           mode={mode}

@@ -1,9 +1,10 @@
 .treeView {
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  font-size: 0.9rem;
   color: #9da5b4;
   background-color: rgb(33, 37, 43);
+  border-right: 1px solid #000;
 }
 
 .treeViewItems {

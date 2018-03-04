@@ -1,0 +1,59 @@
+.fileHeader {
+  margin: 0;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: row;
+  background-color: rgba(33, 37, 43, 0.95);
+  color: #9da5b4;
+  font-size: 0.9rem;
+}
+
+.fileIcon {
+  margin: auto 0;
+}
+
+.fileName {
+  padding: 0;
+  margin: 0 1rem 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.pathItem {
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.pathItem::before {
+  padding-right: 0.5rem;
+}
+
+.pathItem span:hover {
+  color: #abc;
+}
+
+.repositoryItem::after {
+  content: ':';
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.dirItem::after {
+  content: '/';
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.baseItem {
+  cursor: default;
+}
+
+.baseItem span:hover {
+  color: inherit;
+}
+
+.baseItem::before {
+  padding-left: 0.5rem;
+}
