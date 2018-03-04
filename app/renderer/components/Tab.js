@@ -27,6 +27,7 @@ import {
 import {
   type Buffer
 } from '../../common/buffer';
+import FileHeader from './FileHeader';
 import styles from './Browser.css';
 
 type Props = {
@@ -58,8 +59,11 @@ class tab extends React.Component<Props> {
           return contextmenu(e, this.props);
         }}
       >
+        <FileHeader buffer={this.props.buffer} tabID={this.props.id} isEdited={false} />
         {buildBreadcrumbs(this.props.buffer, this.props)}
-        <div className="markdown-body" dangerouslySetInnerHTML={html} />
+        <div className={styles.tabInner}>
+          <div className="markdown-body" dangerouslySetInnerHTML={html} />
+        </div>
       </div>
     );
   }
