@@ -95,6 +95,7 @@ function _fileHeader(props: Props) {
     <div className={styles.fileHeader}>
       {icon(itemType)}
       <ul className={styles.fileName}>{pathItems}</ul>
+      {edited(props.isEdited)}
     </div>
   );
 }
@@ -118,6 +119,14 @@ function icon(itemType: ItemType) {
   default:
     return <FontAwesome className={styles.fileIcon} name="question-circle" />;
   }
+}
+
+function edited(isEdited: boolean) {
+  if (isEdited === false) {
+    return;
+  }
+
+  return <span className={styles.isEdited}>(edited)</span>;
 }
 
 function pathItemOnClick(tabID: string, repositoryName: string, itemPath: string, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
