@@ -6,14 +6,12 @@ import {
   remote,
 } from 'electron';
 import * as React from 'react';
-import { Breadcrumb } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
 import path from '../../common/path';
 
 import {
   parseMetaData,
-  parseInternalPath,
 } from '../../actions/parser';
 import {
   newEditorWindow,
@@ -36,7 +34,6 @@ type Props = {
   content: string
 } & {
   parseMetaData: (string, MetaDataID) => any, // eslint-disable-line flowtype/no-weak-types
-  parseInternalPath: (string, string) => any, // eslint-disable-line flowtype/no-weak-types
   newEditorWindow: (MetaDataID) => any // eslint-disable-line flowtype/no-weak-types
 };
 
@@ -60,7 +57,6 @@ class tab extends React.Component<Props> {
         }}
       >
         <FileHeader buffer={this.props.buffer} tabID={this.props.id} isEdited={false} />
-        {buildBreadcrumbs(this.props.buffer, this.props)}
         <div className={styles.tabInner}>
           <div className="markdown-body" dangerouslySetInnerHTML={html} />
         </div>
@@ -99,53 +95,6 @@ function onLoad(buf: Buffer) {
       });
     }
   });
-}
-
-function buildBreadcrumbs(buffer: ?Buffer, props: Props) {
-  if (buffer == null) {
-    return <Breadcrumb />;
-  }
-
-  const { repositoryName } = buffer;
-  const items = [(
-    <Breadcrumb.Item
-      key="/"
-      onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, '/', props); }}
-    >
-      {repositoryName}
-    </Breadcrumb.Item>
-  )];
-
-  let breadcrumbPath:string = '';
-  path.split(buffer.path).forEach((item) => {
-    if (item === '') {
-      return;
-    }
-    breadcrumbPath += `/${item}`;
-
-    const p = breadcrumbPath;
-    items.push((
-      <Breadcrumb.Item
-        key={breadcrumbPath}
-        onClick={e => { return breadcrumbItemsOnClick(e, repositoryName, p, props); }}
-      >
-        {item}
-      </Breadcrumb.Item>
-    ));
-  });
-
-  return (
-    <Breadcrumb>
-      {items}
-    </Breadcrumb>
-  );
-}
-
-function breadcrumbItemsOnClick(e, repo: string, itemPath: string, props: Props) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  props.parseInternalPath(props.id, internalPath(repo, itemPath));
 }
 
 export function buildTabContextMenu(props: Props) {
@@ -196,9 +145,6 @@ function mapDispatchToProps(dispatch) {
   return {
     parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
       return dispatch(parseMetaData(tabID, metaDataID));
-    },
-    parseInternalPath: (tabID: string, _internalPath: string) => {
-      return dispatch(parseInternalPath(tabID, _internalPath));
     },
     newEditorWindow: (metaDataID: MetaDataID) => {
       return dispatch(newEditorWindow(metaDataID));
