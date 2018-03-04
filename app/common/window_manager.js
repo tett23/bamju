@@ -57,7 +57,25 @@ export class WindowManager {
   }
 
   createEditorWindow(windowID: WindowID, metaDataID: MetaDataID) {
-    const w = new EditorWindow(windowID, metaDataID);
+    let bounds;
+    if (this._editorWindows.length === 0) {
+      if (this._appWindows.length === 0) {
+        bounds = {
+          x: 100,
+          y: 100,
+          width: 1024,
+          height: 728
+        };
+      } else {
+        bounds = this._appWindows[this._appWindows.length - 1].getBrowserWindow().getBounds();
+      }
+    } else {
+      bounds = this._editorWindows[this._editorWindows.length - 1].getBrowserWindow().getBounds();
+    }
+    bounds.x += 50;
+    bounds.y += 50;
+
+    const w = EditorWindow.create(windowID, metaDataID, bounds);
 
     this._editorWindows.push(w);
   }

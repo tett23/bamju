@@ -2,6 +2,7 @@
 
 import {
   BrowserWindow,
+  Bounds,
 } from 'electron';
 import {
   type MenuType,
@@ -35,11 +36,11 @@ export default class EditorWindow implements Window {
   _windowID: string;
   _menuType: MenuType;
 
-  static create(windowID: WindowID, metaData: MetaDataID) {
-    new EditorWindow(windowID, metaData); // eslint-disable-line no-new
+  static create(windowID: WindowID, metaData: MetaDataID, bounds: Bounds) {
+    return new EditorWindow(windowID, metaData, bounds);
   }
 
-  constructor(windowID: WindowID, metaDataID: MetaDataID) {
+  constructor(windowID: WindowID, metaDataID: MetaDataID, bounds: Bounds) {
     this.metaDataID = metaDataID;
     this._windowID = windowID;
     this._menuType = MenuTypeEditor;
@@ -50,6 +51,10 @@ export default class EditorWindow implements Window {
     const browserWindow = new BrowserWindow({
       show: false,
       title: `${metaData.internalPath()}`,
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height
     });
     this.browserWindow = browserWindow;
 
