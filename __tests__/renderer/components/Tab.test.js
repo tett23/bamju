@@ -63,19 +63,6 @@ describe('<Tab />', () => {
     expect(component.find('.markdown-body').text()).toBe('hogehoge');
   });
 
-  it('Breadcrumbの内容が表示できる', () => {
-    buffer.path = '/foo/bar/baz';
-
-    const component = mountWithStore(<Tab id="foo" buffer={buffer} content="" />, store);
-    const breadcrumbs = component.find('BreadcrumbItem');
-
-    expect(breadcrumbs.length).toBe(4);
-    expect(breadcrumbs.at(0).text()).toBe(buffer.repositoryName);
-    expect(breadcrumbs.at(1).text()).toBe('foo');
-    expect(breadcrumbs.at(2).text()).toBe('bar');
-    expect(breadcrumbs.at(3).text()).toBe('baz');
-  });
-
   describe('buildTabContextMenu', () => {
     it('メニューのテンプレートが作れる', () => {
       const contextMenu = buildTabContextMenu({
