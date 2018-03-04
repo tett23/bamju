@@ -20,6 +20,7 @@ import {
 import {
   bufferUpdated,
 } from '../../actions/editor';
+import FileHeader from './FileHeader';
 
 type Props = {
   bufferUpdated: (Buffer, string) => void
@@ -59,6 +60,7 @@ class editor extends React.Component<Props> {
 
     return (
       <div>
+        <FileHeader buffer={this.props.buffer} tabID="" isEdited />
         <AceEditor
           value={this.props.content}
           mode={mode}
