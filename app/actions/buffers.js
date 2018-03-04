@@ -10,6 +10,7 @@ import {
 
 export const RELOAD_BUFFERS = 'RELOAD_BUFFERS';
 export const UPDATE_BUFFERS = 'UPDATE_BUFFERS';
+export const BUFFER_CONTEND_UPDATED = 'BUFFER_CONTEND_UPDATED';
 
 export type BufferUpdate = {
   removes?: MetaDataID[],
@@ -32,6 +33,17 @@ export function updateBuffers(updates: BufferUpdate, meta: Meta = {}) {
     type: UPDATE_BUFFERS,
     payload: {
       updates,
+    },
+    meta
+  };
+}
+
+export function bufferContentUpdated(metaDataID: MetaDataID, content: string, meta: Meta = {}) {
+  return {
+    type: BUFFER_CONTEND_UPDATED,
+    payload: {
+      metaDataID,
+      content
     },
     meta
   };

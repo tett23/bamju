@@ -21,10 +21,7 @@ import {
 import {
   type MetaDataID,
 } from './metadata';
-import {
-  isSimilarError,
-  MessageTypeFailed,
-} from './message';
+import * as Message from './message';
 import {
   addMessage,
 } from '../actions/messages';
@@ -110,15 +107,15 @@ export default class EditorWindow implements Window {
     const metaData = getRepositoryManagerInstance().getItemByID(this.metaDataID);
     if (metaData == null) {
       dispatch(addMessage({
-        type: MessageTypeFailed,
+        type: Message.MessageTypeFailed,
         message: `EditorWindow.initializeRenderer error metaDataID=${this.metaDataID}`
       }, { targetWindowID: this.windowID() }));
       return;
     }
-    const [content, message] = await metaData.getContent();
+    const [content, _, message] = await metaData.getContent();
 
-    if (isSimilarError(message)) {
-      dispatch(addMessage(message, { targetWindowID: this.windowID() }));
+    if (Message.isSimilarError(message)) {
+      dispatch(addMessage(Message.wrap(message), { targetWindowID: this.windowID() }));
       return;
     }
 

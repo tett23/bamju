@@ -31,6 +31,7 @@ import {
 import {
   openBuffer as openBufferEditor,
   bufferUpdated,
+  bufferSaved,
 } from '../actions/editor';
 import {
   initializeRepositories,
@@ -40,6 +41,7 @@ import {
 import {
   reloadBuffers,
   updateBuffers,
+  bufferContentUpdated,
 } from '../actions/buffers';
 import {
   initializeWindows,
@@ -68,11 +70,13 @@ export type Actions = (
 | $ReturnType<typeof closeAllMessages>
 | $ReturnType<typeof openBufferEditor>
 | $ReturnType<typeof bufferUpdated>
+| $ReturnType<typeof bufferSaved>
 | $ReturnType<typeof initializeRepositories>
 | $ReturnType<typeof addRepository>
 | $ReturnType<typeof removeRepository>
 | $ReturnType<typeof reloadBuffers>
 | $ReturnType<typeof updateBuffers>
+| $ReturnType<typeof bufferContentUpdated>
 | $ReturnType<typeof initializeWindows>
 | $ReturnType<typeof newWindow>
 | $ReturnType<typeof closeWindow>

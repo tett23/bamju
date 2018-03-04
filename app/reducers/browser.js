@@ -11,6 +11,9 @@ import {
   UPDATE_CURRENT_TAB,
   addTab,
 } from '../actions/browser';
+import {
+  BUFFER_CONTEND_UPDATED,
+} from '../actions/buffers';
 
 import {
   type MetaDataID
@@ -103,6 +106,23 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
     const newState = deepCopy(state);
     newState.tabs[tabIdx].metaDataID = action.payload.metaDataID;
     newState.tabs[tabIdx].content = action.payload.content;
+
+    return newState;
+  }
+  case BUFFER_CONTEND_UPDATED: {
+    const isUpdate = state.tabs.some((item) => {
+      return item.metaDataID === action.payload.metaDataID;
+    });
+    if (!isUpdate) {
+      return state;
+    }
+
+    const newState = deepCopy(state);
+    newState.tabs.forEach((_, i) => {
+      if (newState.tabs[i].metaDataID === action.payload.metaDataID) {
+        newState.tabs[i].content = action.payload.content;
+      }
+    });
 
     return newState;
   }

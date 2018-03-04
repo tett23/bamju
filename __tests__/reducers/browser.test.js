@@ -12,6 +12,9 @@ import {
   updateTab,
   updateCurrentTab,
 } from '../../app/actions/browser';
+import {
+  bufferContentUpdated,
+} from '../../app/actions/buffers';
 
 let store;
 beforeEach(() => {
@@ -122,6 +125,32 @@ describe('browser reducer', () => {
 
       expect(newState.tabs.length).toBe(2);
       expect(newState.tabs[1].metaDataID).toBe('hoge');
+    });
+  });
+
+  describe('BUFFER_CONTEND_UPDATED', () => {
+    it('contentの変更ができる', () => {
+      store.dispatch(addTab('foo', 'bar'));
+
+      expect(store.getState().tabs[1].content).toBe('bar');
+
+      store.dispatch(bufferContentUpdated('foo', 'hoge'));
+
+      const newState = store.getState();
+
+      expect(newState.tabs[1].content).toBe('hoge');
+    });
+
+    it('metaDataIDが一致しないタブは更新されない', () => {
+      store.dispatch(addTab('foo', 'bar'));
+
+      expect(store.getState().tabs[1].content).toBe('bar');
+
+      store.dispatch(bufferContentUpdated('hogehoge', ''));
+
+      const newState = store.getState();
+
+      expect(newState.tabs[1].content).toBe('bar');
     });
   });
 });

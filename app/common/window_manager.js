@@ -115,12 +115,6 @@ export class WindowManager {
     }
   }
 
-  sendSavedEventAll(metaDataID: MetaDataID, content: string) {
-    this._appWindows.forEach((w) => {
-      w.sendSavedEvent(metaDataID, content);
-    });
-  }
-
   focus(windowID: string): boolean {
     const window: ?Window = this._findWindow(windowID);
     if (window != null && process.platform === 'darwin') {
