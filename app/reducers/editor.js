@@ -12,11 +12,13 @@ import {
 import {
   OPEN_BUFFER,
   BURFFER_UPDATED,
+  BUFFER_SAVED,
 } from '../actions/editor';
 
 export type EditorState = {
   buffer: Buffer,
-  content: string
+  content: string,
+  isEdited: boolean
 };
 
 export function initialEditorState(): EditorState {
@@ -35,7 +37,8 @@ export function initialEditorState(): EditorState {
       isLoaded: false,
       body: ''
     },
-    content: ''
+    content: '',
+    isEdited: false,
   };
 }
 
@@ -44,14 +47,19 @@ export function editor(state: EditorState = initialEditorState(), action: Action
   case OPEN_BUFFER: {
     return {
       buffer: action.payload.buffer,
-      content: action.payload.content
+      content: action.payload.content,
+      isEdited: false,
     };
   }
   case BURFFER_UPDATED: {
     return {
       buffer: action.payload.buffer,
-      content: action.payload.content
+      content: action.payload.content,
+      isEdited: true,
     };
+  }
+  case BUFFER_SAVED: {
+    return Object.assign({}, state, { isEdited: false });
   }
   default:
     return state;

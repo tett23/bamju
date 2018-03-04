@@ -55,19 +55,12 @@ class editor extends React.Component<Props> {
 
     const theme = 'monokai';
 
-    let isEdited;
-    if (this.editor) {
-      isEdited = this.props.content === this.editor.getValue();
-    } else {
-      isEdited = false;
-    }
-
     return (
       <div>
         <FileHeader
           buffer={this.props.buffer}
           tabID=""
-          isEdited={isEdited}
+          isEdited={this.props.isEdited}
         />
         <AceEditor
           value={this.props.content}

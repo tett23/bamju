@@ -10,7 +10,10 @@ import {
   appReducer,
   initialState,
 } from './reducers/editor_window';
-import { openBuffer } from './actions/editor';
+import {
+  openBuffer,
+  bufferSaved,
+} from './actions/editor';
 import {
   type Buffer
 } from './common/buffer';
@@ -40,5 +43,7 @@ ipcRenderer.on('send-buffer-information', (_) => {
   console.log('send-buffer-information');
   const state = store.getState();
 
-  ipcRenderer.send('save-buffer', [state.editor.buffer.id, state.editor.content]);
+  ipcRenderer.sendSync('save-buffer', [state.editor.buffer.id, state.editor.content]);
+
+  store.dispatch(bufferSaved());
 });
