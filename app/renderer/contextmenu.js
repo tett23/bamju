@@ -152,21 +152,13 @@ export class ContextMenu {
       return null;
     }
 
-    let parentPath;
-    if (buffer.itemType === ItemTypeDirectory) {
-      parentPath = buffer.path;
-    } else {
-      parentPath = path.dirname(buffer.path);
-    }
-    parentPath = path.join(parentPath, '/');
-
     return [
       {
         label: 'New File',
         click: () => {
           _store.dispatch(openInputDialog({
             label: 'New File',
-            formValue: internalPath(buffer.repositoryName, parentPath),
+            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
             onEnter: (itemPath) => {
               _store.dispatch(createFile(buffer.repositoryName, itemPath));
             }
@@ -174,11 +166,15 @@ export class ContextMenu {
         }
       },
       {
+        label: 'New File From Template',
+        submenu: ContextMenu.templatesMenu(buffer) || []
+      },
+      {
         label: 'New Directory',
         click: () => {
           _store.dispatch(openInputDialog({
             label: 'New Directory',
-            formValue: internalPath(buffer.repositoryName, parentPath),
+            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
             onEnter: (itemPath) => {
               _store.dispatch(createDirectory(buffer.repositoryName, itemPath));
             }
@@ -226,9 +222,54 @@ export class ContextMenu {
     ];
   }
 
+  static templatesMenu(buffer: ?Buffer): ?MenuItem[] {
+    if (buffer == null) {
+      return null;
+    }
+
+    const buffers = _store.getState().global.buffers;
+    const templateBuffer = buffers.find((item) => {
+      return item.repositoryName === buffer.repositoryName && item.path === '/templates';
+    });
+    if (templateBuffer == null) {
+      return null;
+    }
+
+    const templateBuffers = buffers.filter((item) => {
+      return templateBuffer.childrenIDs.includes(item.id);
+    });
+
+    return templateBuffers.map((item) => {
+      return {
+        label: item.name,
+        click: () => {
+          _store.dispatch(openInputDialog({
+            label: 'New File',
+            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
+            onEnter: (itemPath) => {
+              _store.dispatch(createFile(buffer.repositoryName, itemPath, item.id));
+            }
+          }));
+        }
+      };
+    });
+  }
+
   static separator(): MenuItem[] {
     return [{
       type: 'separator'
     }];
   }
+}
+
+function parentPath(buffer: Buffer): string {
+  let ret;
+  if (buffer.itemType === ItemTypeDirectory) {
+    ret = buffer.path;
+  } else {
+    ret = path.dirname(buffer.path);
+  }
+  ret = path.join(ret, '/');
+
+  return ret;
 }

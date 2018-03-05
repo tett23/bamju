@@ -144,7 +144,7 @@ async function createFile(store: Store<State, Actions>, action: $ReturnType<type
     return;
   }
 
-  const [metaData, message] = await repo.addFile(info.path, '');
+  const [metaData, message] = await repo.addFile(info.path, '', action.payload.templateID);
   if (metaData == null || Message.isSimilarError(message)) {
     store.dispatch(addMessage(Message.wrap(message), { targetWindowID: action.meta.fromWindowID }));
     return;

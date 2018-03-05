@@ -39,7 +39,11 @@ beforeEach(() => {
   setStore(store);
 
   const dummyBuffers = dummy({
-    test: ['/foo.md', '/a/b/c.md']
+    test: [
+      '/foo.md',
+      '/a/b/c.md',
+      '/templates/test_template.md'
+    ]
   });
 
   store.dispatch(reloadBuffers(dummyBuffers));
@@ -201,6 +205,14 @@ describe('ContextMenu', () => {
         // $FlowFixMe
         expect(menu.enabled).toBe(enabled);
       });
+    });
+  });
+
+  describe('templatesMenu', () => {
+    it('テンプレートの取得ができる', () => {
+      const template = ContextMenu.templatesMenu(buffer) || [];
+      expect(template.length).toBe(1);
+      expect(template[0].label).toBe('test_template.md');
     });
   });
 });

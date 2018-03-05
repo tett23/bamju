@@ -46,12 +46,13 @@ export function removeRepository(absolutePath: string, repositoryName: string, m
   };
 }
 
-export function createFile(repositoryName: string, path: string, meta: Meta = {}) {
+export function createFile(repositoryName: string, path: string, templateID: ?MetaDataID = null, meta: Meta = {}) {
   return {
     type: CREATE_FILE,
     payload: {
       repositoryName,
-      path
+      path,
+      templateID
     },
     meta
   };
