@@ -9,6 +9,7 @@ import {
   CLOSE_TAB,
   UPDATE_TAB,
   UPDATE_CURRENT_TAB,
+  ACTIVE_TAB,
   addTab,
 } from '../actions/browser';
 import {
@@ -123,6 +124,19 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
         newState.tabs[i].content = action.payload.content;
       }
     });
+
+    return newState;
+  }
+  case ACTIVE_TAB: {
+    const idx = state.tabs.findIndex((item) => {
+      return item.id === action.payload.id;
+    });
+    if (idx === -1) {
+      return state;
+    }
+
+    const newState = deepCopy(state);
+    newState.currentTabID = action.payload.id;
 
     return newState;
   }

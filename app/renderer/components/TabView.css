@@ -1,0 +1,55 @@
+@import "../../variables.css";
+
+.tabView {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  overflow-y: hidden;
+  height: 2rem;
+  user-select: none;
+}
+
+.tabItem {
+  margin: auto 0;
+  padding: 0.5rem 1rem;
+  list-style: none;
+  color: var(--color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--color-light);
+  cursor: pointer;
+  font-size: var(--font-size-small);
+}
+
+.tabItem.active {
+  background-color: var(--background-color-light);
+  border-left: 2px solid var(--color-active);
+  border-bottom: none;
+}
+
+.tabItem span {
+  display: inline-flex;
+}
+
+.tabTitle {
+  margin: auto 0.5rem;
+
+  max-width: 10rem;
+  min-width: 5rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--font-size-small);
+}
+
+.closeIcon {
+  margin: auto 0;
+  font-size: var(--font-size-small);
+}
+
+.closeIcon:hover {
+  color: var(--color-active);
+}

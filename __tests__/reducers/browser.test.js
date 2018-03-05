@@ -11,6 +11,7 @@ import {
   closeTab,
   updateTab,
   updateCurrentTab,
+  activeTab,
 } from '../../app/actions/browser';
 import {
   bufferContentUpdated,
@@ -151,6 +152,31 @@ describe('browser reducer', () => {
       const newState = store.getState();
 
       expect(newState.tabs[1].content).toBe('bar');
+    });
+  });
+
+  describe('ACTIVE_TAB', () => {
+    it('currentTabIDを変更する', () => {
+      const tab = addTab('foo', 'bar');
+      store.dispatch(tab);
+
+      expect(store.getState().tabs.length).toBe(2);
+      const tabID = store.getState().tabs[0].id;
+      expect(store.getState().currentTabID).not.toBe(tabID);
+
+      store.dispatch(activeTab(tabID));
+
+      expect(store.getState().currentTabID).toBe(tabID);
+    });
+
+    it('idが存在しない場合は何もしない', () => {
+      store.dispatch(addTab('foo', 'bar'));
+
+      const state = store.getState();
+
+      store.dispatch(activeTab('bar'));
+
+      expect(store.getState()).toBe(state);
     });
   });
 });

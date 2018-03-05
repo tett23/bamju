@@ -13,6 +13,7 @@ export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
+export const ACTIVE_TAB = 'ACTIVE_TAB';
 
 export function initializeBrowser(state: BrowserState, meta: Meta = {}) {
   return {
@@ -64,6 +65,16 @@ export function updateCurrentTab(metaDataID: MetaDataID, content: string, meta: 
     payload: {
       metaDataID,
       content,
+    },
+    meta,
+  };
+}
+
+export function activeTab(id: string, meta: Meta = {}) {
+  return {
+    type: ACTIVE_TAB,
+    payload: {
+      id
     },
     meta,
   };

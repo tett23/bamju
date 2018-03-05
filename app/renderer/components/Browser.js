@@ -3,6 +3,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import type { State } from '../../reducers/app_window';
+import { TabView } from './TabView';
 import { Tab } from './Tab';
 import {
   type $ReturnType,
@@ -12,25 +13,28 @@ import styles from './Browser.css';
 type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
 const browser = (props: Props) => {
-  const tabs = props.browser.tabs.map((item) => {
-    const buf = props.buffers.find((b) => {
-      return b.id === item.metaDataID;
-    });
-
-    return (
-      <Tab
-        className={styles.tab}
-        key={item.id}
-        id={item.id}
-        buffer={buf}
-        content={item.content}
-      />
-    );
+  let tab = props.browser.tabs.find((item) => {
+    return item.id === props.browser.currentTabID;
+  });
+  if (tab == null) {
+    tab = {
+      id: '',
+      metaDataID: null,
+      content: '',
+    };
+  }
+  const buffer = props.buffers.find((item) => {
+    return item.id === tab.metaDataID;
   });
 
   return (
     <div className={styles.browser}>
-      {tabs}
+      <TabView browser={props.browser} buffers={props.buffers} />
+      <Tab
+        id={tab.id}
+        buffer={buffer}
+        content={tab.content}
+      />
     </div>
   );
 };

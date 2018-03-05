@@ -1,15 +1,16 @@
 // @flow
 
 import { type Store } from 'redux';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer, remote, type MenuItem } from 'electron';
 
 import path from '../common/path';
 import {
   ItemTypeDirectory,
   ItemTypeRepository,
+  ItemTypeUndefined,
   isSimilarFile,
   internalPath,
-  type PathInfo,
+  type MetaDataID,
 } from '../common/metadata';
 import {
   type Buffer
@@ -35,19 +36,22 @@ import {
 import {
   addMessage,
 } from '../actions/messages';
+import {
+  type State,
+} from '../reducers/app_window';
 
-let _store: Store<*, *>;
-export function setStore(store: Store<*, *>) {
+let _store: Store<State, *>;
+export function setStore(store: Store<State, *>) {
   _store = store;
 }
 
 export class ContextMenu {
   buffer: ?Buffer;
-  pathInfo: ?PathInfo;
+  linkMetaDataID: ?MetaDataID;
 
-  constructor(options: {buffer?: ?Buffer, pathInfo?: PathInfo}) {
+  constructor(options: {buffer?: ?Buffer, linkMetaDataID?: MetaDataID}) {
     this.buffer = options.buffer;
-    this.pathInfo = options.pathInfo;
+    this.linkMetaDataID = options.linkMetaDataID;
   }
 
   show() {
@@ -56,11 +60,11 @@ export class ContextMenu {
     menu.popup(remote.getCurrentWindow());
   }
 
-  template() {
+  template(): MenuItem[] {
     const separator = ContextMenu.separator();
 
     return [
-      ContextMenu.pathMenu(this.pathInfo),
+      ContextMenu.linkMenu(this.linkMetaDataID),
       ContextMenu.openMenu(this.buffer),
       ContextMenu.editMenu(this.buffer),
       ContextMenu.fileMenu(this.buffer),
@@ -70,16 +74,18 @@ export class ContextMenu {
     }, []);
   }
 
-  static pathMenu(pathInfo: ?PathInfo) {
-    if (pathInfo == null) {
+  static linkMenu(metaDataID: ?MetaDataID): ?MenuItem[] {
+    if (metaDataID == null) {
       return null;
     }
 
-    const buffer:?Buffer = ipcRenderer.sendSync('detect', pathInfo.repositoryName, pathInfo.path);
+    const buffer = _store.getState().global.buffers.find((item) => {
+      return item.id === metaDataID;
+    });
     if (buffer == null) {
-      const message = Message.fail(`ContextMenu.pathMenu MetaData not found. repositoryName=${pathInfo.repositoryName || ''} path=${pathInfo.path}`);
+      const message = Message.fail(`ContextMenu.pathMenu MetaData not found. metaDataID=${metaDataID}`);
       _store.dispatch(addMessage(message));
-      return;
+      return null;
     }
 
     return [].concat(
@@ -88,7 +94,7 @@ export class ContextMenu {
     );
   }
 
-  static editMenu(buffer: ?Buffer) {
+  static editMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -110,12 +116,19 @@ export class ContextMenu {
     ];
   }
 
-  static openMenu(buffer: ?Buffer) {
+  static openMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
 
     return [
+      {
+        label: 'Open new tab',
+        click: () => {
+          _store.dispatch(addTab(buffer.id, ''));
+        },
+        enabled: buffer.itemType !== ItemTypeUndefined
+      },
       {
         label: 'Open new window',
         click: () => {
@@ -123,12 +136,13 @@ export class ContextMenu {
           rectangle.x += 50;
           rectangle.y += 50;
           _store.dispatch(newWindow(rectangle, [addTab(buffer.id, '').payload]));
-        }
+        },
+        enabled: buffer.itemType !== ItemTypeUndefined
       }
     ];
   }
 
-  static fileMenu(buffer: ?Buffer) {
+  static fileMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -181,7 +195,7 @@ export class ContextMenu {
     ];
   }
 
-  static repositoryMenu(buffer: ?Buffer) {
+  static repositoryMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -206,7 +220,7 @@ export class ContextMenu {
     ];
   }
 
-  static separator() {
+  static separator(): MenuItem[] {
     return [{
       type: 'separator'
     }];
