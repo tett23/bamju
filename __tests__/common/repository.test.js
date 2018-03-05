@@ -17,6 +17,7 @@ import {
   MessageTypeSucceeded,
   MessageTypeFailed,
   MessageTypeError,
+  isSimilarError,
 } from '../../app/common/message';
 
 import {
@@ -173,6 +174,11 @@ describe('Repository', () => {
 
       const content = fs.readFileSync(metaData.absolutePath, 'utf8');
       expect(content).toBe('template file');
+    });
+
+    it('templateが見つからない場合はエラー', async () => {
+      const [_, message] = await repository.addFile('/hoge.md', '', 'foo');
+      expect(isSimilarError(message)).toBe(true);
     });
 
     it('templateのh1が置換される', async () => {
