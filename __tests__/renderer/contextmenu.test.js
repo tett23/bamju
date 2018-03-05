@@ -78,6 +78,66 @@ describe('ContextMenu', () => {
     });
   });
 
+  describe('openMenu', () => {
+    it('Open new tabはItemTypeUndefinedでないときのみ有効', () => {
+      [
+        [ItemTypeMarkdown, true],
+        [ItemTypeText, true],
+        [ItemTypeCSV, true],
+        [ItemTypeTSV, true],
+        [ItemTypeHTML, true],
+        [ItemTypeDirectory, true],
+        [ItemTypeRepository, true],
+        [ItemTypeUndefined, false],
+      ].forEach((pair) => {
+        const [itemType, enabled] = pair;
+
+        buffer.itemType = itemType;
+
+        const template = ContextMenu.openMenu(buffer) || [];
+        const menu = template.find((item) => {
+          return item.label === 'Open new tab';
+        });
+        if (menu == null) {
+          expect(true).toBe(false);
+          return;
+        }
+
+        // $FlowFixMe
+        expect(menu.enabled).toBe(enabled);
+      });
+    });
+
+    it('Open new WindowはItemTypeUndefinedでないときのみ有効', () => {
+      [
+        [ItemTypeMarkdown, true],
+        [ItemTypeText, true],
+        [ItemTypeCSV, true],
+        [ItemTypeTSV, true],
+        [ItemTypeHTML, true],
+        [ItemTypeDirectory, true],
+        [ItemTypeRepository, true],
+        [ItemTypeUndefined, false],
+      ].forEach((pair) => {
+        const [itemType, enabled] = pair;
+
+        buffer.itemType = itemType;
+
+        const template = ContextMenu.openMenu(buffer) || [];
+        const menu = template.find((item) => {
+          return item.label === 'Open new tab';
+        });
+        if (menu == null) {
+          expect(true).toBe(false);
+          return;
+        }
+
+        // $FlowFixMe
+        expect(menu.enabled).toBe(enabled);
+      });
+    });
+  });
+
   describe('repositoyMenu', () => {
     it('リポジトリを削除のメニューはitemType == ItemTypeRepositoryのときだけ有効', () => {
       [

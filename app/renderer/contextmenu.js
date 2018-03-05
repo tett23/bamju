@@ -7,6 +7,7 @@ import path from '../common/path';
 import {
   ItemTypeDirectory,
   ItemTypeRepository,
+  ItemTypeUndefined,
   isSimilarFile,
   internalPath,
   type PathInfo,
@@ -120,7 +121,8 @@ export class ContextMenu {
         label: 'Open new tab',
         click: () => {
           _store.dispatch(addTab(buffer.id, ''));
-        }
+        },
+        enabled: buffer.itemType !== ItemTypeUndefined
       },
       {
         label: 'Open new window',
@@ -129,7 +131,8 @@ export class ContextMenu {
           rectangle.x += 50;
           rectangle.y += 50;
           _store.dispatch(newWindow(rectangle, [addTab(buffer.id, '').payload]));
-        }
+        },
+        enabled: buffer.itemType !== ItemTypeUndefined
       }
     ];
   }
