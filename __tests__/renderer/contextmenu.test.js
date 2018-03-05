@@ -43,7 +43,7 @@ beforeEach(() => {
   });
 
   store.dispatch(reloadBuffers(dummyBuffers));
-  buffer = dummyBuffers[0];
+  [buffer] = dummyBuffers;
 });
 
 describe('ContextMenu', () => {
