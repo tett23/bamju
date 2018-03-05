@@ -1,0 +1,8 @@
+:root {
+  --background-color: rgb(33, 37, 43);
+  --background-light: rgba(33, 37, 43, 0.95);
+  --color: #9da5b4;
+  --color-dark: rgba(157, 165, 180, 0.6);
+  --color-light: #abc;
+  --border-color: #000;
+}

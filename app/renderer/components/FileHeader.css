@@ -1,10 +1,12 @@
+@import "../../variables.css";
+
 .fileHeader {
   margin: 0;
   padding: 0.75rem;
   display: flex;
   flex-direction: row;
-  background-color: rgba(33, 37, 43, 0.95);
-  color: #9da5b4;
+  background-color: var(--background-color);
+  color: var(--color);
   font-size: 0.9rem;
 }
 
@@ -32,7 +34,7 @@
 }
 
 .pathItem span:hover {
-  color: #abc;
+  color: var(--color-light);
 }
 
 .repositoryItem::after {
