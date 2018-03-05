@@ -42,27 +42,22 @@ type Props = {
   newEditorWindow: (MetaDataID) => any // eslint-disable-line flowtype/no-weak-types
 };
 
-class tab extends React.Component<Props> {
-  componentDidUpdate() {
-  }
+function tab(props: Props) {
+  const md = convert(props.buffer, convertHTML(`<div>${props.content}</div>`));
 
-  render() {
-    const md = convert(this.props.buffer, convertHTML(`<div>${this.props.content}</div>`));
-
-    return (
-      <div
-        className={styles.tab}
-        onContextMenu={e => {
-          return contextmenu(e, this.props.buffer);
-        }}
-      >
-        <FileHeader buffer={this.props.buffer} tabID={this.props.id} isEdited={false} />
-        <div className={styles.tabInner}>
-          <div className="markdown-body">{md}</div>
-        </div>
+  return (
+    <div
+      className={styles.tab}
+      onContextMenu={e => {
+        return contextmenu(e, props.buffer);
+      }}
+    >
+      <FileHeader buffer={props.buffer} tabID={props.id} isEdited={false} />
+      <div className={styles.tabInner}>
+        <div className="markdown-body">{md}</div>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 function convert(buffer: ?Buffer, tree: VNode | VText) {
