@@ -114,7 +114,7 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
       dispatcher.parseMetaData(tabID, metaDataID);
     };
     ret.onContextMenu = (e) => {
-      return contextmenu(e, buf, pathInfo);
+      return contextmenu(e, buf, metaDataID);
     };
   } else {
     ret.className = 'wikiLink unavailable';
@@ -137,7 +137,7 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
   return ret;
 }
 
-function contextmenu(e, buffer: ?Buffer, pathInfo?: PathInfo) {
+function contextmenu(e, buffer: ?Buffer, metaDataID?: MetaDataID) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -145,7 +145,7 @@ function contextmenu(e, buffer: ?Buffer, pathInfo?: PathInfo) {
     return;
   }
 
-  new ContextMenu({ buffer, pathInfo }).show();
+  new ContextMenu({ buffer, linkMetaDataID: metaDataID }).show();
 }
 
 function mapDispatchToProps(dispatch) {

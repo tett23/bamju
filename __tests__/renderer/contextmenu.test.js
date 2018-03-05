@@ -47,6 +47,24 @@ beforeEach(() => {
 });
 
 describe('ContextMenu', () => {
+  describe('linkMenu', () => {
+    it('metaDataIDがnull場合、null', () => {
+      const template = ContextMenu.linkMenu(null);
+      expect(template).toBe(null);
+    });
+
+    it('metaDataIDが存在しない場合、null', () => {
+      const template = ContextMenu.linkMenu('hogehoge');
+      expect(template).toBe(null);
+    });
+
+    it('metaDataIDが存在しない場合、messageが追加される', () => {
+      expect(store.getState().messages.length).toBe(0);
+      ContextMenu.linkMenu('hogehoge');
+      expect(store.getState().messages.length).toBe(1);
+    });
+  });
+
   describe('editMenu', () => {
     it('組みこみエディタで開くのメニューはisSimilarFileのときだけ有効', () => {
       [
