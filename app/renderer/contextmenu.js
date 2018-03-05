@@ -95,13 +95,13 @@ export class ContextMenu {
 
     return [
       {
-        label: 'edit on system editor',
+        label: 'Edit on system editor',
         click: () => {
           ipcRenderer.send('open-by-system-editor', buffer.absolutePath);
         }
       },
       {
-        label: 'edit on bamju editor',
+        label: 'Edit on bamju editor',
         click: () => {
           _store.dispatch(newEditorWindow(buffer.id));
         },
@@ -117,7 +117,7 @@ export class ContextMenu {
 
     return [
       {
-        label: 'open new window',
+        label: 'Open new window',
         click: () => {
           const rectangle = remote.getCurrentWindow().getBounds();
           rectangle.x += 50;
@@ -188,7 +188,7 @@ export class ContextMenu {
 
     return [
       {
-        label: 'remove',
+        label: 'Remove Repository',
         click: () => {
           const { dialog } = remote.require('electron');
           const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
