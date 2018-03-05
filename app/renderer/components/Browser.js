@@ -11,6 +11,7 @@ import {
 import {
   ItemTypeUndefined,
 } from '../../common/metadata';
+import FileHeader from './FileHeader';
 import styles from './Browser.css';
 
 type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
@@ -34,6 +35,7 @@ const browser = (props: Props) => {
   return (
     <div className={styles.browser}>
       <TabView browser={props.browser} buffers={props.buffers} />
+      <FileHeader buffer={buffer} tabID={tab.id} isEdited={false} />
       <Tab
         id={tab.id}
         buffer={buffer}

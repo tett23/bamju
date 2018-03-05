@@ -35,7 +35,6 @@ import {
   type $ReturnType,
 } from '../../common/util';
 import { ContextMenu } from '../contextmenu';
-import FileHeader from './FileHeader';
 import styles from './Browser.css';
 
 const convertHTML = require('html-to-vdom')({
@@ -59,7 +58,6 @@ function tab(props: Props) {
         return contextmenu(e, props.buffer);
       }}
     >
-      <FileHeader buffer={props.buffer} tabID={props.id} isEdited={false} />
       <div className={styles.tabInner}>
         <div className="markdown-body">{md}</div>
       </div>
