@@ -1,35 +1,19 @@
 // @flow
 
-import { ipcRenderer, remote } from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import FontAwesome from 'react-fontawesome';
-import {
-  type Rectangle,
-  type Tab,
-  newWindow,
-  newEditorWindow,
-} from '../../actions/windows';
-import {
-  addTab,
-} from '../../actions/browser';
+import { remote } from 'electron';
 import {
   openBuffer,
   closeBuffer,
 } from '../../actions/repositories_tree_view';
 import {
   addRepository,
-  removeRepository,
-  createFile,
-  createDirectory,
-  rename,
 } from '../../actions/repositories';
 import {
   parseMetaData,
 } from '../../actions/parser';
-import {
-  openInputDialog,
-} from '../../actions/modals';
 import type { State } from '../../reducers/app_window';
 import {
   type BufferState,
@@ -38,6 +22,7 @@ import {
 import {
   type Buffer
 } from '../../common/buffer';
+import { ContextMenu } from '../contextmenu';
 import {
   type MetaDataID,
   type ItemType,
@@ -51,9 +36,7 @@ import {
   ItemTypeUndefined,
   isSimilarFile,
   isSimilarDirectory,
-  internalPath,
 } from '../../common/metadata';
-import path from '../../common/path';
 import {
   type $ReturnType,
 } from '../../common/util';
@@ -105,7 +88,7 @@ function buildItems(
         role="menuitem"
         onClick={e => { return onClickItem(e, item, props.currentTabID, props); }}
         onKeyUp={e => { return onClickItem(e, item, props.currentTabID, props); }}
-        onContextMenu={e => { return contextmenu(e, item, props); }}
+        onContextMenu={e => { return contextmenu(e, item); }}
       >
         <div>
           {icon(item, itemState, props)}
@@ -192,118 +175,13 @@ function openFile(item: Buffer, tabID: string, dispatcher: $ReturnType<typeof ma
 function contextmenu(
   e,
   item: Buffer,
-  dispatcher: $ReturnType<typeof mapDispatchToProps>
 ) {
   e.preventDefault();
   e.stopPropagation();
 
-  const template = buildContextMenu(item, dispatcher);
-  const menu = remote.require('electron').Menu.buildFromTemplate(template);
-
-  menu.popup(remote.getCurrentWindow());
+  new ContextMenu({ buffer: item }).show();
 }
 
-export function buildContextMenu(
-  item: Buffer,
-  dispatcher: $ReturnType<typeof mapDispatchToProps>
-) {
-  const editMenu = [
-    {
-      label: 'edit on system editor',
-      click: () => {
-        ipcRenderer.send('open-by-system-editor', item.absolutePath);
-      }
-    },
-    {
-      label: 'edit on bamju editor',
-      click: () => {
-        dispatcher.newEditorWindow(item.id);
-      },
-      enabled: isSimilarFile(item.itemType),
-    }
-  ];
-  const openMenu = [
-    {
-      label: 'open new window',
-      click: () => {
-        const rectangle = remote.getCurrentWindow().getBounds();
-        rectangle.x += 50;
-        rectangle.y += 50;
-        dispatcher.newWindow(rectangle, [addTab(item.id, '').payload]);
-      }
-    }
-  ];
-  let parentPath;
-  if (item.itemType === ItemTypeDirectory) {
-    parentPath = item.path;
-  } else {
-    parentPath = path.dirname(item.path);
-  }
-  const fileMenu = [
-    {
-      label: 'New File',
-      click: () => {
-        dispatcher.openInputDialog({
-          label: 'New File',
-          formValue: internalPath(item.repositoryName, parentPath),
-          onEnter: (itemPath) => {
-            dispatcher.createFile(item.repositoryName, itemPath);
-          }
-        });
-      }
-    },
-    {
-      label: 'New Directory',
-      click: () => {
-        dispatcher.openInputDialog({
-          label: 'New Directory',
-          formValue: internalPath(item.repositoryName, parentPath),
-          onEnter: (itemPath) => {
-            dispatcher.createDirectory(item.repositoryName, itemPath);
-          }
-        });
-      }
-    },
-    {
-      label: 'Rename',
-      click: () => {
-        dispatcher.openInputDialog({
-          label: 'Rename',
-          formValue: internalPath(item.repositoryName, item.path),
-          onEnter: (itemPath) => {
-            dispatcher.rename(item.id, itemPath);
-          }
-        });
-      },
-      enabled: item.itemType === ItemTypeDirectory || isSimilarFile(item.itemType)
-    },
-  ];
-  const repositoryMenu = [
-    {
-      label: 'remove',
-      click: () => {
-        const { dialog } = remote.require('electron');
-        const choice = dialog.showMessageBox(remote.getCurrentWindow(), {
-          type: 'question',
-          buttons: ['Yes', 'No'],
-          title: '削除しますか',
-          message: '削除しますか'
-        });
-        if (choice === 0) {
-          dispatcher.removeRepository(item.absolutePath, item.repositoryName);
-        }
-      },
-      enabled: item.itemType === ItemTypeRepository
-    }
-  ];
-  const separator = [
-    {
-      type: 'separator'
-    }
-  ];
-
-  return [].concat(openMenu, separator, editMenu, separator, fileMenu, separator, repositoryMenu);
-}
 
 function itemType(t: ItemType) {
   if (isSimilarFile(t) || isSimilarDirectory(t)) {
@@ -325,14 +203,8 @@ function mapStateToProps(state: State) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    newWindow: (rectangle: Rectangle, tabs: Tab[] = []) => {
-      return dispatch(newWindow(rectangle, tabs));
-    },
     addRepository: (absolutePath: string) => {
       return dispatch(addRepository(absolutePath));
-    },
-    removeRepository: (absolutePath: string, repositoryName: string) => {
-      return dispatch(removeRepository(absolutePath, repositoryName));
     },
     parseMetaData: (tabID: string, metaDataID: MetaDataID) => {
       return dispatch(parseMetaData(tabID, metaDataID));
@@ -343,23 +215,10 @@ function mapDispatchToProps(dispatch) {
     closeBuffer: (metaDataID: MetaDataID) => {
       return dispatch(closeBuffer(metaDataID));
     },
-    newEditorWindow: (metaDataID: MetaDataID) => {
-      return dispatch(newEditorWindow(metaDataID));
-    },
-    openInputDialog: (args) => {
-      return dispatch(openInputDialog(args));
-    },
-    createFile: (repo: string, _path: string) => {
-      return dispatch(createFile(repo, _path));
-    },
-    createDirectory: (repo: string, _path: string) => {
-      return dispatch(createDirectory(repo, _path));
-    },
-    rename: (metaDataID: MetaDataID, _path: string) => {
-      return dispatch(rename(metaDataID, _path));
-    }
   };
 }
 
 
 export const RepositoriesTreeView = connect(mapStateToProps, mapDispatchToProps)(repositoriesTreeView);
+
+export default RepositoriesTreeView;

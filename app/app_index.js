@@ -46,6 +46,9 @@ import {
   filterWindowIDMiddleware,
   broadcastActionMiddleware,
 } from './middlewares/window_meta';
+import {
+  setStore
+} from './renderer/contextmenu';
 import './app.global.css';
 
 const init = Object.assign({}, initialState(), {
@@ -63,6 +66,7 @@ const store = createStore(
 );
 
 replayActionRenderer(store);
+setStore(store);
 
 const root = document.getElementById('root');
 if (root != null) {
