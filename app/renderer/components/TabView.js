@@ -9,14 +9,16 @@ import {
   type BuffersState
 } from '../../reducers/buffers';
 import {
-  type $ReturnType,
-} from '../../common/util';
+  activeTab,
+} from '../../actions/browser';
 import styles from './TabView.css';
 
 type Props = {
   browser: BrowserState,
   buffers: BuffersState
-} & $ReturnType<typeof mapDispatchToProps>;
+} & {
+  dispatch: (any) => any // eslint-disable-line
+};
 
 function tabView(props: Props) {
   const tabItems = props.browser.tabs.map((item) => {
@@ -29,8 +31,12 @@ function tabView(props: Props) {
     const itemClass = [styles.tabItem, activeClass].join(' ');
 
     return (
-      <li className={itemClass}>
-        <span className={styles.tabTitle}>{title}aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>
+      <li
+        className={itemClass}
+        role="none"
+        onClick={() => { props.dispatch(activeTab(item.id)); }}
+      >
+        <span className={styles.tabTitle}>{title}</span>
       </li>
     );
   });
@@ -42,10 +48,6 @@ function tabView(props: Props) {
   );
 }
 
-function mapDispatchToProps(_) {
-  return {};
-}
-
-export const TabView = connect(null, mapDispatchToProps)(tabView);
+export const TabView = connect()(tabView);
 
 export default TabView;
