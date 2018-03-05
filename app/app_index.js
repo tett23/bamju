@@ -32,7 +32,7 @@ import {
 } from './actions/repositories_tree_view';
 import {
   filterWindowIDMiddleware,
-  broadcastActionMiddleware,
+  broadcastMainMiddleware,
 } from './middlewares/window_meta';
 import {
   setStore
@@ -48,10 +48,12 @@ const store = createStore(
   init,
   // $FlowFixMe
   compose(applyMiddleware(
-    broadcastActionMiddleware,
     filterWindowIDMiddleware,
+    broadcastMainMiddleware,
   ))
 );
+
+window.store = store;
 
 replayActionRenderer(store);
 setStore(store);

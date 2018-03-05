@@ -6,7 +6,7 @@ import path from 'path';
 import { ipcMain } from 'electron';
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
-import { forwardToRenderer, replayActionMain } from 'electron-redux';
+import { replayActionMain } from 'electron-redux';
 import opn from 'opn';
 import {
   appReducer,
@@ -19,12 +19,6 @@ import {
 import {
   getInstance as getConfigInstance
 } from './common/bamju_config';
-import {
-  type PathInfo,
-} from './common/metadata';
-import {
-  getInstance as getRepositoryManagerInstance
-} from './common/repository_manager';
 import {
   MessageTypeError,
 } from './common/message';
@@ -39,7 +33,7 @@ const store = createStore(
     require('./middlewares/windows').windowsMiddleware,
     require('./middlewares/parser').parserMiddleware,
     require('./middlewares/repositories_tree_view').repositoriesTreeViewMiddleware,
-    forwardToRenderer
+    require('./middlewares/window_meta').broadcastRendererMiddleware,
   ))
 );
 

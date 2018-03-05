@@ -61,7 +61,7 @@ async function load(store: Store<State, Actions>, action: $ReturnType<typeof ope
     return;
   }
 
-  store.dispatch(reloadBuffers(manager.toBuffers(), { targetWindowID: action.meta.fromWindowID }));
+  store.dispatch(reloadBuffers(manager.toBuffers()));
 }
 
 export default repositoriesTreeViewMiddleware;

@@ -37,17 +37,15 @@ export function initialWindowsState() {
 
 export function windows(state: WindowsState = initialWindowsState(), action: Actions): WindowsState {
   state.forEach((item) => {
+    if (action.meta.fromWindowID == null) {
+      return;
+    }
     if (item.id !== action.meta.fromWindowID) {
       return;
     }
 
-    const newAction = Object.assign({}, action, {
-      meta: {
-        scope: 'local',
-      }
-    });
-    item.browser = browser(item.browser, newAction); // eslint-disable-line no-param-reassign
-    item.repositoriesTreeView = repositoriesTreeView(item.repositoriesTreeView, newAction); // eslint-disable-line no-param-reassign
+    item.browser = browser(item.browser, action); // eslint-disable-line no-param-reassign
+    item.repositoriesTreeView = repositoriesTreeView(item.repositoriesTreeView, action); // eslint-disable-line no-param-reassign
   });
 
   switch (action.type) {
