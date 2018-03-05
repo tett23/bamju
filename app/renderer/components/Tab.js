@@ -120,17 +120,17 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
     };
   } else {
     ret.className = 'wikiLink unavailable';
+
+    const parentPath = buf ? buf.path : '/';
+    if (!path.isAbsolute(pathInfo.path)) {
+      pathInfo.path = path.join(path.dirname(parentPath), pathInfo.path);
+    }
+    if (path.extname(pathInfo.path) === '') {
+      pathInfo.path += '.md';
+    }
     ret.onClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
-
-      const parentPath = buf ? buf.path : '/';
-      if (!path.isAbsolute(pathInfo.path)) {
-        pathInfo.path = path.join(path.dirname(parentPath), pathInfo.path);
-      }
-      if (path.extname(pathInfo.path) === '') {
-        pathInfo.path += '.md';
-      }
 
       dispatcher.wikiLinkUnavailable(pathInfo);
     };
