@@ -1,10 +1,6 @@
 /* eslint react/no-danger: 0, react/no-unused-prop-types: 0 */
 // @flow
 
-import {
-  ipcRenderer,
-  remote,
-} from 'electron';
 import * as React from 'react';
 import { connect } from 'react-redux';
 
@@ -17,7 +13,6 @@ import {
   newEditorWindow,
 } from '../../actions/windows';
 import {
-  isSimilarFile,
   type MetaDataID,
   internalPath,
   resolveInternalPath,
@@ -25,6 +20,7 @@ import {
 import {
   type Buffer
 } from '../../common/buffer';
+import { ContextMenu } from '../contextmenu';
 import FileHeader from './FileHeader';
 import styles from './Browser.css';
 
@@ -53,7 +49,7 @@ class tab extends React.Component<Props> {
       <div
         className={styles.tab}
         onContextMenu={e => {
-          return contextmenu(e, this.props);
+          return contextmenu(e, this.props.buffer);
         }}
       >
         <FileHeader buffer={this.props.buffer} tabID={this.props.id} isEdited={false} />
@@ -97,48 +93,15 @@ function onLoad(buf: Buffer) {
   });
 }
 
-export function buildTabContextMenu(props: Props) {
-  if (props.buffer == null) {
-    return [];
-  }
-
-  const buffer = props.buffer;
-
-  return [
-    {
-      label: 'edit on system editor',
-      click: () => {
-        ipcRenderer.send('open-by-system-editor', buffer.absolutePath);
-      }
-    },
-    {
-      label: 'edit on bamju editor',
-      click: () => {
-        props.newEditorWindow(buffer.id);
-      },
-      enabled: isSimilarFile(buffer.itemType)
-    },
-    {
-      label: 'reload',
-      click: () => {
-        props.parseMetaData(props.id, buffer.id);
-      }
-    }
-  ];
-}
-
-function contextmenu(e, props: Props) {
+function contextmenu(e, buffer: ?Buffer) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (props.buffer == null) {
+  if (buffer == null) {
     return;
   }
 
-  const template = buildTabContextMenu(props);
-  const menu = remote.require('electron').Menu.buildFromTemplate(template);
-
-  menu.popup(remote.getCurrentWindow());
+  new ContextMenu({ buffer }).show();
 }
 
 function mapDispatchToProps(dispatch) {
@@ -154,3 +117,5 @@ function mapDispatchToProps(dispatch) {
 
 
 export const Tab = connect(null, mapDispatchToProps)(tab);
+
+export default Tab;
