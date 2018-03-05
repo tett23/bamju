@@ -159,6 +159,29 @@ describe('Repository', () => {
 
       expect(content).toBe('hogehoge');
     });
+
+    it('contentが空でItemTypeMarkdwonのときはファイルの中身がファイル名になる', async () => {
+      const [metaData, _] = await repository.addFile('/hoge.md', '');
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+      expect(content).toBe('# hoge');
+    });
+
+    it('templateIDが指定されると、templateの内容でファイルが作成される', async () => {
+      const [template, _] = await repository.addFile('/template.md', 'template file');
+      const [metaData, __] = await repository.addFile('/hoge.md', '', template.id);
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+      expect(content).toBe('template file');
+    });
+
+    it('templateのh1が置換される', async () => {
+      const [template, _] = await repository.addFile('/template.md', '# template file');
+      const [metaData, __] = await repository.addFile('/hoge.md', '', template.id);
+
+      const content = fs.readFileSync(metaData.absolutePath, 'utf8');
+      expect(content).toBe('# hoge');
+    });
   });
 
   describe('addDirectory', () => {
