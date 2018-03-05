@@ -20,6 +20,12 @@ import {
   getInstance as getConfigInstance
 } from './common/bamju_config';
 import {
+  type PathInfo,
+} from './common/metadata';
+import {
+  getInstance as getRepositoryManagerInstance
+} from './common/repository_manager';
+import {
   MessageTypeError,
 } from './common/message';
 
@@ -87,6 +93,20 @@ ipcMain.on('open-by-system-editor', async (e, absolutePath: string) => {
   }
 
   e.returnValue = true;
+});
+
+ipcMain.on('detect', (e, repositoryName: string, internalPath: string) => {
+  const manager = getRepositoryManagerInstance();
+  const metaData = manager.detect(repositoryName, internalPath);
+  if (metaData == null) {
+    e.sender.send('detect', null);
+    e.returnValue = null;
+    return;
+  }
+
+  const buffer = metaData.toBuffer();
+  e.sender.send('detect', buffer);
+  e.returnValue = buffer;
 });
 
 require('./main/app');

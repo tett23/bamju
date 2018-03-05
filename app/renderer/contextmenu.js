@@ -9,10 +9,12 @@ import {
   ItemTypeRepository,
   isSimilarFile,
   internalPath,
+  type PathInfo,
 } from '../common/metadata';
 import {
   type Buffer
 } from '../common/buffer';
+import * as Message from '../common/message';
 
 import {
   addTab,
@@ -30,6 +32,9 @@ import {
 import {
   openInputDialog,
 } from '../actions/modals';
+import {
+  addMessage,
+} from '../actions/messages';
 
 let _store: Store<*, *>;
 export function setStore(store: Store<*, *>) {
@@ -38,9 +43,11 @@ export function setStore(store: Store<*, *>) {
 
 export class ContextMenu {
   buffer: ?Buffer;
+  pathInfo: ?PathInfo;
 
-  constructor(options: {buffer?: ?Buffer}) {
+  constructor(options: {buffer?: ?Buffer, pathInfo?: PathInfo}) {
     this.buffer = options.buffer;
+    this.pathInfo = options.pathInfo;
   }
 
   show() {
@@ -50,14 +57,34 @@ export class ContextMenu {
   }
 
   template() {
-    return [].concat(
+    const separator = ContextMenu.separator();
+
+    return [
+      ContextMenu.pathMenu(this.pathInfo),
       ContextMenu.openMenu(this.buffer),
-      ContextMenu.separator(),
       ContextMenu.editMenu(this.buffer),
-      ContextMenu.separator(),
       ContextMenu.fileMenu(this.buffer),
-      ContextMenu.separator(),
       ContextMenu.repositoryMenu(this.buffer)
+    ].filter(Boolean).reduce((r, items) => {
+      return r.concat(items, separator);
+    }, []);
+  }
+
+  static pathMenu(pathInfo: ?PathInfo) {
+    if (pathInfo == null) {
+      return null;
+    }
+
+    const buffer:?Buffer = ipcRenderer.sendSync('detect', pathInfo.repositoryName, pathInfo.path);
+    if (buffer == null) {
+      const message = Message.fail(`ContextMenu.pathMenu MetaData not found. repositoryName=${pathInfo.repositoryName || ''} path=${pathInfo.path}`);
+      _store.dispatch(addMessage(message));
+      return;
+    }
+
+    return [].concat(
+      ContextMenu.openMenu(buffer),
+      ContextMenu.editMenu(buffer),
     );
   }
 

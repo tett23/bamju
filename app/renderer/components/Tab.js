@@ -1,8 +1,12 @@
-/* eslint react/no-danger: 0, react/no-unused-prop-types: 0 */
+/* eslint react/no-unused-prop-types: 0 */
 // @flow
 
 import * as React from 'react';
 import { connect } from 'react-redux';
+// $FlowFixMe
+import VNode from 'virtual-dom/vnode/vnode';
+// $FlowFixMe
+import VText from 'virtual-dom/vnode/vtext';
 
 import path from '../../common/path';
 
@@ -14,7 +18,7 @@ import {
 } from '../../actions/windows';
 import {
   type MetaDataID,
-  internalPath,
+  type PathInfo,
   resolveInternalPath,
 } from '../../common/metadata';
 import {
@@ -23,6 +27,11 @@ import {
 import { ContextMenu } from '../contextmenu';
 import FileHeader from './FileHeader';
 import styles from './Browser.css';
+
+const convertHTML = require('html-to-vdom')({
+  VNode,
+  VText
+});
 
 type Props = {
   id: string,
@@ -35,15 +44,10 @@ type Props = {
 
 class tab extends React.Component<Props> {
   componentDidUpdate() {
-    if (this.props.buffer) {
-      onLoad(this.props.buffer);
-    }
   }
 
   render() {
-    const html = {
-      __html: this.props.content
-    };
+    const md = convert(this.props.buffer, convertHTML(`<div>${this.props.content}</div>`));
 
     return (
       <div
@@ -54,46 +58,82 @@ class tab extends React.Component<Props> {
       >
         <FileHeader buffer={this.props.buffer} tabID={this.props.id} isEdited={false} />
         <div className={styles.tabInner}>
-          <div className="markdown-body" dangerouslySetInnerHTML={html} />
+          <div className="markdown-body">{md}</div>
         </div>
       </div>
     );
   }
 }
 
-function onLoad(buf: Buffer) {
-  const links = document.querySelectorAll('.bamjuLink');
-  links.forEach((item) => {
-    item.classList.add('wikiLink');
-    const repositoryName = item.dataset.repositoryName || buf.repositoryName;
-    if (item.dataset.isExist === 'true') {
-      item.classList.add('available');
-      item.addEventListener('click', () => {
-        window.wikiLinkOnClickAvailable(repositoryName, item.dataset.internalPath);
-      });
+function convert(buffer: ?Buffer, tree: VNode | VText) {
+  if (tree instanceof VNode) {
+    let attributes;
+    if (tree.properties.attributes.class === 'bamjuLink') {
+      attributes = convertBamjuLink(buffer, tree.properties.attributes);
     } else {
-      item.classList.add('unavailable');
-      item.addEventListener('click', () => {
-        const pathInfo = resolveInternalPath(item.dataset.internalPath);
-        if (pathInfo.repositoryName == null) {
-          pathInfo.repositoryName = buf.repositoryName;
-        }
-        if (!path.isAbsolute(pathInfo.path)) {
-          pathInfo.path = path.join(path.dirname(buf.path), pathInfo.path);
-        }
-        if (path.extname(pathInfo.path) === '') {
-          pathInfo.path += '.md';
-        }
-
-        const internal = internalPath(pathInfo.repositoryName || '', pathInfo.path);
-
-        window.wikiLinkOnClickUnAvailable(repositoryName, internal);
-      });
+      attributes = tree.properties.attributes;
     }
-  });
+
+    let children = [];
+    if (tree.children && tree.children.length !== 0) {
+      children = tree.children.map((item) => {
+        return convert(buffer, item);
+      }).filter(Boolean);
+    }
+    if (children.length === 0) {
+      children = null;
+    }
+
+    return React.createElement(tree.tagName, attributes, children);
+  }
+
+  if (tree.text === '' || tree.text === '\n') {
+    return null;
+  }
+
+  return tree.text;
 }
 
-function contextmenu(e, buffer: ?Buffer) {
+function convertBamjuLink(buf: ?Buffer, attributes) {
+  const ret = attributes;
+  ret.className = 'wikiLink';
+  delete ret.class;
+
+  const pathInfo = resolveInternalPath(ret['data-internal-path']);
+  if (pathInfo.repositoryName == null && buf) {
+    pathInfo.repositoryName = buf.repositoryName;
+  }
+
+  if (ret['data-is-exist'] === 'true') {
+    ret.className = 'wikiLink available';
+    ret.onClick = () => {
+      window.wikiLinkOnClickAvailable(pathInfo.repositoryName, pathInfo.path);
+    };
+    ret.onContextMenu = (e) => {
+      return contextmenu(e, buf, pathInfo);
+    };
+  } else {
+    ret.className = 'wikiLink unavailable';
+    ret.onClick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const parentPath = buf ? buf.path : '/';
+      if (!path.isAbsolute(pathInfo.path)) {
+        pathInfo.path = path.join(path.dirname(parentPath), pathInfo.path);
+      }
+      if (path.extname(pathInfo.path) === '') {
+        pathInfo.path += '.md';
+      }
+
+      window.wikiLinkOnClickUnAvailable(pathInfo.repositoryName, pathInfo.path);
+    };
+  }
+
+  return ret;
+}
+
+function contextmenu(e, buffer: ?Buffer, pathInfo?: PathInfo) {
   e.preventDefault();
   e.stopPropagation();
 
@@ -101,7 +141,7 @@ function contextmenu(e, buffer: ?Buffer) {
     return;
   }
 
-  new ContextMenu({ buffer }).show();
+  new ContextMenu({ buffer, pathInfo }).show();
 }
 
 function mapDispatchToProps(dispatch) {
