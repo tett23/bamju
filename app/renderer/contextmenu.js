@@ -1,7 +1,7 @@
 // @flow
 
 import { type Store } from 'redux';
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer, remote, type MenuItem } from 'electron';
 
 import path from '../common/path';
 import {
@@ -60,7 +60,7 @@ export class ContextMenu {
     menu.popup(remote.getCurrentWindow());
   }
 
-  template() {
+  template(): MenuItem[] {
     const separator = ContextMenu.separator();
 
     return [
@@ -74,7 +74,7 @@ export class ContextMenu {
     }, []);
   }
 
-  static linkMenu(metaDataID: ?MetaDataID) {
+  static linkMenu(metaDataID: ?MetaDataID): ?MenuItem[] {
     if (metaDataID == null) {
       return null;
     }
@@ -94,7 +94,7 @@ export class ContextMenu {
     );
   }
 
-  static editMenu(buffer: ?Buffer) {
+  static editMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -116,7 +116,7 @@ export class ContextMenu {
     ];
   }
 
-  static openMenu(buffer: ?Buffer) {
+  static openMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -142,7 +142,7 @@ export class ContextMenu {
     ];
   }
 
-  static fileMenu(buffer: ?Buffer) {
+  static fileMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -195,7 +195,7 @@ export class ContextMenu {
     ];
   }
 
-  static repositoryMenu(buffer: ?Buffer) {
+  static repositoryMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -220,7 +220,7 @@ export class ContextMenu {
     ];
   }
 
-  static separator() {
+  static separator(): MenuItem[] {
     return [{
       type: 'separator'
     }];

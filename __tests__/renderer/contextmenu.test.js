@@ -97,21 +97,8 @@ describe('ContextMenu', () => {
   });
 
   describe('openMenu', () => {
-    it('Open new tabはItemTypeUndefinedでないときのみ有効', () => {
-      [
-        [ItemTypeMarkdown, true],
-        [ItemTypeText, true],
-        [ItemTypeCSV, true],
-        [ItemTypeTSV, true],
-        [ItemTypeHTML, true],
-        [ItemTypeDirectory, true],
-        [ItemTypeRepository, true],
-        [ItemTypeUndefined, false],
-      ].forEach((pair) => {
-        const [itemType, enabled] = pair;
-
-        buffer.itemType = itemType;
-
+    describe('Open new tab', () => {
+      it('Tabが追加される', () => {
         const template = ContextMenu.openMenu(buffer) || [];
         const menu = template.find((item) => {
           return item.label === 'Open new tab';
@@ -121,8 +108,38 @@ describe('ContextMenu', () => {
           return;
         }
 
-        // $FlowFixMe
-        expect(menu.enabled).toBe(enabled);
+        expect(store.getState().browser.tabs.length).toBe(1);
+        menu.click();
+        expect(store.getState().browser.tabs.length).toBe(2);
+      });
+
+      it('Open new tabはItemTypeUndefinedでないときのみ有効', () => {
+        [
+          [ItemTypeMarkdown, true],
+          [ItemTypeText, true],
+          [ItemTypeCSV, true],
+          [ItemTypeTSV, true],
+          [ItemTypeHTML, true],
+          [ItemTypeDirectory, true],
+          [ItemTypeRepository, true],
+          [ItemTypeUndefined, false],
+        ].forEach((pair) => {
+          const [itemType, enabled] = pair;
+
+          buffer.itemType = itemType;
+
+          const template = ContextMenu.openMenu(buffer) || [];
+          const menu = template.find((item) => {
+            return item.label === 'Open new tab';
+          });
+          if (menu == null) {
+            expect(true).toBe(false);
+            return;
+          }
+
+          // $FlowFixMe
+          expect(menu.enabled).toBe(enabled);
+        });
       });
     });
 
