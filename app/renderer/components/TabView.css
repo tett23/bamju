@@ -27,6 +27,7 @@
 
 .tabItem.active {
   background-color: var(--background-color-light);
+  border-left: 2px solid var(--color-active);
   color: var(--color-light);
 }
 
