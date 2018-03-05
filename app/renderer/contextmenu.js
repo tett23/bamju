@@ -25,6 +25,9 @@ import {
   newEditorWindow,
 } from '../actions/windows';
 import {
+  parseMetaData,
+} from '../actions/parser';
+import {
   removeRepository,
   createFile,
   createDirectory,
@@ -125,7 +128,9 @@ export class ContextMenu {
       {
         label: 'Open new tab',
         click: () => {
-          _store.dispatch(addTab(buffer.id, ''));
+          const tab = addTab(buffer.id, '');
+          _store.dispatch(tab);
+          _store.dispatch(parseMetaData(tab.payload.id, buffer.id));
         },
         enabled: buffer.itemType !== ItemTypeUndefined
       },

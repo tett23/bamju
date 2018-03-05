@@ -80,8 +80,8 @@ export const windowsMiddleware = (store: Store<State, Actions>) => (next: Dispat
 function initializeWindows(store: Store<State, Actions>, action: $ReturnType<typeof initializeWindowsAction>) {
   const manager = getWindowManagerInstance();
 
-  action.payload.state.forEach((item) => {
-    manager.createAppWindow(item);
+  action.payload.state.forEach((_, i) => {
+    manager.createAppWindow(action.payload.state[i]);
   });
 }
 
