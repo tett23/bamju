@@ -2,19 +2,10 @@
 
 import * as React from 'react';
 import { connect } from 'react-redux';
-import FontAwesome from 'react-fontawesome';
 import {
   type Buffer
 } from '../../common/buffer';
 import {
-  type ItemType,
-  ItemTypeMarkdown,
-  ItemTypeText,
-  ItemTypeDirectory,
-  ItemTypeRepository,
-  ItemTypeCSV,
-  ItemTypeTSV,
-  ItemTypeHTML,
   ItemTypeUndefined,
   internalPath,
 } from '../../common/metadata';
@@ -23,6 +14,7 @@ import {
   type $ReturnType,
 } from '../../common/util';
 import path from '../../common/path';
+import FileIcon from './FileIcon';
 import styles from './FileHeader.css';
 
 type Props = {
@@ -93,32 +85,11 @@ function _fileHeader(props: Props) {
 
   return (
     <div className={styles.fileHeader}>
-      {icon(itemType)}
+      <FileIcon itemType={itemType} />
       <ul className={styles.fileName}>{pathItems}</ul>
       {edited(props.isEdited)}
     </div>
   );
-}
-
-function icon(itemType: ItemType) {
-  switch (itemType) {
-  case ItemTypeRepository:
-    return <FontAwesome className={styles.fileIcon} name="database" />;
-  case ItemTypeDirectory:
-    return <FontAwesome className={styles.fileIcon} name="folder" />;
-  case ItemTypeMarkdown:
-    return <FontAwesome className={styles.fileIcon} name="file-text" />;
-  case ItemTypeText:
-    return <FontAwesome className={styles.fileIcon} name="file-text" />;
-  case ItemTypeCSV:
-    return <FontAwesome className={styles.fileIcon} name="file-text" />;
-  case ItemTypeTSV:
-    return <FontAwesome className={styles.fileIcon} name="file-text" />;
-  case ItemTypeHTML:
-    return <FontAwesome className={styles.fileIcon} name="file-text" />;
-  default:
-    return <FontAwesome className={styles.fileIcon} name="question-circle" />;
-  }
 }
 
 function edited(isEdited: boolean) {

@@ -26,13 +26,8 @@ import { ContextMenu } from '../contextmenu';
 import {
   type MetaDataID,
   type ItemType,
-  ItemTypeMarkdown,
-  ItemTypeText,
   ItemTypeDirectory,
   ItemTypeRepository,
-  ItemTypeCSV,
-  ItemTypeTSV,
-  ItemTypeHTML,
   ItemTypeUndefined,
   isSimilarFile,
   isSimilarDirectory,
@@ -40,6 +35,7 @@ import {
 import {
   type $ReturnType,
 } from '../../common/util';
+import FileIcon from './FileIcon';
 import styles from './RepositoriesTreeView.css';
 
 type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
@@ -125,28 +121,26 @@ function toggleTreeView(e, buffer: Buffer, bufferState: BufferState, dispatcher:
 }
 
 function icon(item: Buffer, bufferState: BufferState, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
+  let onClick = null;
   switch (item.itemType) {
   case ItemTypeRepository:
-    return <FontAwesome name="database" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
+    onClick = (e) => { return toggleTreeView(e, item, bufferState, dispatcher); };
+    break;
   case ItemTypeDirectory:
     if (bufferState.isOpened) {
-      return <FontAwesome name="folder-open" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
+      onClick = (e) => { return toggleTreeView(e, item, bufferState, dispatcher); };
     }
-    return <FontAwesome name="folder" onClick={e => { return toggleTreeView(e, item, bufferState, dispatcher); }} />;
-
-  case ItemTypeMarkdown:
-    return <FontAwesome name="file-text" />;
-  case ItemTypeText:
-    return <FontAwesome name="file-text" />;
-  case ItemTypeCSV:
-    return <FontAwesome name="file-text" />;
-  case ItemTypeTSV:
-    return <FontAwesome name="file-text" />;
-  case ItemTypeHTML:
-    return <FontAwesome name="file-text" />;
+    onClick = (e) => { return toggleTreeView(e, item, bufferState, dispatcher); };
+    break;
   default:
-    return <FontAwesome name="question-circle" />;
   }
+
+  return (<FileIcon
+    itemType={item.itemType}
+    isOpened={bufferState.isOpened}
+    onClick={onClick}
+  />
+  );
 }
 
 function addRepositoryHandler(e, dispatcher: $ReturnType<typeof mapDispatchToProps>) {
