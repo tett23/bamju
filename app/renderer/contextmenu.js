@@ -11,6 +11,7 @@ import {
   isSimilarFile,
   internalPath,
   type MetaDataID,
+  type PathInfo,
 } from '../common/metadata';
 import {
   type Buffer
@@ -51,10 +52,19 @@ export function setStore(store: Store<State, *>) {
 export class ContextMenu {
   buffer: ?Buffer;
   linkMetaDataID: ?MetaDataID;
+  enableCreateMenu: boolean;
+  newFilePathInfo: ?PathInfo;
 
-  constructor(options: {buffer?: ?Buffer, linkMetaDataID?: MetaDataID}) {
+  constructor(options: {
+    buffer?: ?Buffer,
+    linkMetaDataID?: MetaDataID,
+    enableCreateMenu?: boolean,
+    newFilePathInfo?: PathInfo
+  }) {
     this.buffer = options.buffer;
     this.linkMetaDataID = options.linkMetaDataID;
+    this.enableCreateMenu = options.enableCreateMenu || false;
+    this.newFilePathInfo = options.newFilePathInfo;
   }
 
   show() {
@@ -67,6 +77,7 @@ export class ContextMenu {
     const separator = ContextMenu.separator();
 
     return [
+      ContextMenu.wikiLinkUnavailableMenu(this.enableCreateMenu, this.buffer, this.newFilePathInfo),
       ContextMenu.linkMenu(this.linkMetaDataID),
       ContextMenu.openMenu(this.buffer),
       ContextMenu.editMenu(this.buffer),
@@ -75,6 +86,16 @@ export class ContextMenu {
     ].filter(Boolean).reduce((r, items) => {
       return r.concat(items, separator);
     }, []);
+  }
+
+  static wikiLinkUnavailableMenu(enabled: boolean, buffer: ?Buffer, newFilePathInfo: ?PathInfo): ?MenuItem[] {
+    if (!enabled || buffer == null || newFilePathInfo == null) {
+      return null;
+    }
+
+    const formValue = internalPath(newFilePathInfo.repositoryName || '', newFilePathInfo.path);
+
+    return ContextMenu.createFileMenu(buffer, formValue);
   }
 
   static linkMenu(metaDataID: ?MetaDataID): ?MenuItem[] {
@@ -147,34 +168,41 @@ export class ContextMenu {
     ];
   }
 
+  static createFileMenu(buffer: Buffer, formValue: string): ? MenuItem[] {
+    return [{
+      label: 'New File',
+      click: () => {
+        _store.dispatch(openInputDialog({
+          label: 'New File',
+          formValue,
+          onEnter: (itemPath) => {
+            _store.dispatch(createFile(buffer.repositoryName, itemPath));
+          }
+        }));
+      }
+    },
+    {
+      label: 'New File From Template',
+      submenu: ContextMenu.templatesMenu(buffer, formValue) || []
+    }
+    ];
+  }
+
   static fileMenu(buffer: ?Buffer): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
 
-    return [
-      {
-        label: 'New File',
-        click: () => {
-          _store.dispatch(openInputDialog({
-            label: 'New File',
-            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
-            onEnter: (itemPath) => {
-              _store.dispatch(createFile(buffer.repositoryName, itemPath));
-            }
-          }));
-        }
-      },
-      {
-        label: 'New File From Template',
-        submenu: ContextMenu.templatesMenu(buffer) || []
-      },
+    const formValue = internalPath(buffer.repositoryName, parentPath(buffer));
+    const newFile = ContextMenu.createFileMenu(buffer, formValue) || [];
+
+    return newFile.concat([
       {
         label: 'New Directory',
         click: () => {
           _store.dispatch(openInputDialog({
             label: 'New Directory',
-            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
+            formValue,
             onEnter: (itemPath) => {
               _store.dispatch(createDirectory(buffer.repositoryName, itemPath));
             }
@@ -194,7 +222,7 @@ export class ContextMenu {
         },
         enabled: buffer.itemType === ItemTypeDirectory || isSimilarFile(buffer.itemType)
       },
-    ];
+    ]);
   }
 
   static repositoryMenu(buffer: ?Buffer): ?MenuItem[] {
@@ -222,7 +250,7 @@ export class ContextMenu {
     ];
   }
 
-  static templatesMenu(buffer: ?Buffer): ?MenuItem[] {
+  static templatesMenu(buffer: ?Buffer, formValue: string): ?MenuItem[] {
     if (buffer == null) {
       return null;
     }
@@ -245,7 +273,7 @@ export class ContextMenu {
         click: () => {
           _store.dispatch(openInputDialog({
             label: 'New File',
-            formValue: internalPath(buffer.repositoryName, parentPath(buffer)),
+            formValue,
             onEnter: (itemPath) => {
               _store.dispatch(createFile(buffer.repositoryName, itemPath, item.id));
             }

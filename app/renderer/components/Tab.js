@@ -55,7 +55,9 @@ function tab(props: Props) {
     <div
       className={styles.tab}
       onContextMenu={e => {
-        return contextmenu(e, props.buffer);
+        return contextmenu(e, {
+          buffer: props.buffer
+        });
       }}
     >
       <div className={styles.tabInner}>
@@ -111,7 +113,10 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
       dispatcher.parseMetaData(tabID, metaDataID);
     };
     ret.onContextMenu = (e) => {
-      return contextmenu(e, buf, metaDataID);
+      return contextmenu(e, {
+        buffer: buf,
+        linkMetaDataID: metaDataID,
+      });
     };
   } else {
     ret.className = 'wikiLink unavailable';
@@ -129,20 +134,37 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
 
       dispatcher.wikiLinkUnavailable(pathInfo);
     };
+    ret.onContextMenu = (e) => {
+      return contextmenu(e, {
+        buffer: buf,
+        enableCreateMenu: true,
+        newFilePathInfo: pathInfo
+      });
+    };
   }
 
   return ret;
 }
 
-function contextmenu(e, buffer: ?Buffer, metaDataID?: MetaDataID) {
+function contextmenu(e, options: {
+  buffer: ?Buffer,
+  metaDataID?: MetaDataID,
+  enableCreateMenu?: boolean,
+  newFilePathInfo?: PathInfo
+}) {
   e.preventDefault();
   e.stopPropagation();
 
-  if (buffer == null) {
+  if (options.buffer == null) {
     return;
   }
 
-  new ContextMenu({ buffer, linkMetaDataID: metaDataID }).show();
+  new ContextMenu({
+    buffer: options.buffer,
+    linkMetaDataID: options.metaDataID,
+    enableCreateMenu: options.enableCreateMenu,
+    newFilePathInfo: options.newFilePathInfo,
+  }).show();
 }
 
 function mapDispatchToProps(dispatch) {
