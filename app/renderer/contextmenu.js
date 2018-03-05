@@ -158,6 +158,7 @@ export class ContextMenu {
     } else {
       parentPath = path.dirname(buffer.path);
     }
+    parentPath = path.join(parentPath, '/');
 
     return [
       {
