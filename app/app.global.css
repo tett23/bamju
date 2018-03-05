@@ -59,6 +59,10 @@ a:hover {
   overflow-y: scroll;
 }
 
+.markdown-body li>p {
+  margin: 0;
+}
+
 @media (max-width: 767px) {
   .markdown-body {
     padding: 15px;
