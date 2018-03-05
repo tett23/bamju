@@ -5,9 +5,9 @@
   padding: 0.75rem;
   display: flex;
   flex-direction: row;
-  background-color: var(--background-color);
+  background-color: var(--background-color-light);
   color: var(--color);
-  font-size: 0.9rem;
+  font-size: var(--font-size-small);
 }
 
 .fileIcon {

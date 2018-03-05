@@ -3,6 +3,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import type { State } from '../../reducers/app_window';
+import { TabView } from './TabView';
 import { Tab } from './Tab';
 import {
   type $ReturnType,
@@ -30,7 +31,10 @@ const browser = (props: Props) => {
 
   return (
     <div className={styles.browser}>
-      {tabs}
+      <TabView browser={props.browser} buffers={props.buffers} />
+      <div>
+        {tabs}
+      </div>
     </div>
   );
 };

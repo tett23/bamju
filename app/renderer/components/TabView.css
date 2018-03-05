@@ -1,0 +1,38 @@
+@import "../../variables.css";
+
+.tabView {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  overflow-y: hidden;
+  height: 2rem;
+}
+
+.tabItem {
+  margin: auto 0;
+  padding: 0.5rem 1rem;
+  list-style: none;
+  color: var(--color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  font-size: var(--font-size-small);
+  max-width: 13rem;
+  min-width: 5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tabItem.active {
+  background-color: var(--background-color-light);
+  color: var(--color-light);
+}
+
+.tabItem span {
+  margin: auto 0;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-bottom: none;
+}
