@@ -79,6 +79,54 @@ describe('browser reducer', () => {
         metaDataID: null,
       });
     });
+
+    it('activeのタブが閉じられると隣のtabがactiveになる', () => {
+      expect(store.getState().tabs.length).toBe(1);
+
+      const nextTabID = store.getState().tabs[0].id;
+      const tab = addTab('foo', 'bar');
+      store.dispatch(tab);
+      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().currentTabID).toBe(tab.payload.id);
+
+      store.dispatch(closeTab(tab.payload.id));
+
+      expect(store.getState().currentTabID).toBe(nextTabID);
+    });
+
+    it('activeでないタブが閉じられたときはactiveを変更しない', () => {
+      expect(store.getState().tabs.length).toBe(1);
+
+      const tab = addTab('foo', 'bar');
+      store.dispatch(tab);
+      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().currentTabID).toBe(tab.payload.id);
+
+      store.dispatch(closeTab(store.getState().tabs[0].id));
+
+      expect(store.getState().currentTabID).toBe(tab.payload.id);
+    });
+
+    it('0番目のタブが閉じられたときは1番目のタブがactiveになる', () => {
+      expect(store.getState().tabs.length).toBe(1);
+
+      const tab = addTab('foo', 'bar');
+      store.dispatch(tab);
+      expect(store.getState().tabs.length).toBe(2);
+      store.dispatch(activeTab(store.getState().tabs[0].id));
+      store.dispatch(closeTab(store.getState().tabs[0].id));
+
+      expect(store.getState().currentTabID).toBe(tab.payload.id);
+    });
+
+    it('全てのタブが閉じられたら新しい0番目のタブがactiveになる', () => {
+      expect(store.getState().tabs.length).toBe(1);
+      const tab = store.getState().tabs[0];
+      store.dispatch(closeTab(tab.id));
+
+      expect(store.getState().currentTabID).not.toBe(tab.id);
+      expect(store.getState().currentTabID).toBe(store.getState().tabs[0].id);
+    });
   });
 
   describe('UPDATE_TAB', () => {

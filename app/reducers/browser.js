@@ -76,7 +76,11 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
     if (newState.tabs.length === 0) {
       const tab = addTab(null, 'empty buffer').payload;
       newState.tabs.push(tab);
-      newState.currentTabID = tab.id;
+    }
+
+    if (newState.currentTabID === action.payload.id) {
+      const newIdx = tabIdx === 0 ? 0 : tabIdx - 1;
+      newState.currentTabID = newState.tabs[newIdx].id;
     }
 
     return newState;
