@@ -106,7 +106,6 @@ function convertBamjuLink(buf: ?Buffer, tabID: string, attributes, dispatcher) {
     pathInfo.repositoryName = buf.repositoryName;
   }
 
-  console.log(ret);
   if (ret['data-is-exist'] === 'true') {
     ret.className = 'wikiLink available';
     const metaDataID = ret['data-meta-data-id'];
