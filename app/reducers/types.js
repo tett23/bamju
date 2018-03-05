@@ -12,6 +12,8 @@ import {
   addTab,
   closeTab,
   updateTab,
+  updateCurrentTab,
+  activeTab,
 } from '../actions/browser';
 import {
   initializeRepositoriesTreeView,
@@ -59,6 +61,8 @@ export type Actions = (
   $ReturnType<typeof addTab>
 | $ReturnType<typeof closeTab>
 | $ReturnType<typeof updateTab>
+| $ReturnType<typeof updateCurrentTab>
+| $ReturnType<typeof activeTab>
 | $ReturnType<typeof initializeRepositoriesTreeView>
 | $ReturnType<typeof openBuffer>
 | $ReturnType<typeof closeBuffer>
