@@ -13,6 +13,10 @@ import {
   activeTab,
   closeTab,
 } from '../../actions/browser';
+import {
+  ItemTypeUndefined,
+} from '../../common/metadata';
+import FileIcon from './FileIcon';
 import styles from './TabView.css';
 
 type Props = {
@@ -31,6 +35,7 @@ function tabView(props: Props) {
     const isActive = (item.id === props.browser.currentTabID);
     const activeClass = isActive ? styles.active : styles.inactive;
     const itemClass = [styles.tabItem, activeClass].join(' ');
+    const itemType = buf ? buf.itemType : ItemTypeUndefined;
 
     return (
       <li
@@ -38,6 +43,7 @@ function tabView(props: Props) {
         role="none"
         onClick={() => { props.dispatch(activeTab(item.id)); }}
       >
+        <FileIcon itemType={itemType} />
         <span className={styles.tabTitle}>{title}</span>
         <FontAwesome className={styles.closeIcon} name="times" onClick={() => { props.dispatch(closeTab(item.id)); }} />
       </li>

@@ -8,6 +8,9 @@ import { Tab } from './Tab';
 import {
   type $ReturnType,
 } from '../../common/util';
+import {
+  ItemTypeUndefined,
+} from '../../common/metadata';
 import styles from './Browser.css';
 
 type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
@@ -21,6 +24,7 @@ const browser = (props: Props) => {
       id: '',
       metaDataID: null,
       content: '',
+      itemType: ItemTypeUndefined,
     };
   }
   const buffer = props.buffers.find((item) => {
