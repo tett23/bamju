@@ -56,7 +56,7 @@ class editor extends React.Component<Props> {
     const theme = 'monokai';
 
     return (
-      <div>
+      <div style={{ height: '100vh' }}>
         <FileHeader
           buffer={this.props.buffer}
           tabID=""
@@ -68,7 +68,7 @@ class editor extends React.Component<Props> {
           theme={theme}
           name="aceEditor"
           width="100vw"
-          height="100vh"
+          height="100%"
           focus
           showPrintMargin={false}
           wrapEnabled
