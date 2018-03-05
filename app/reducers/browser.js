@@ -11,14 +11,11 @@ import {
   UPDATE_CURRENT_TAB,
   ACTIVE_TAB,
   addTab,
+  type Tab,
 } from '../actions/browser';
 import {
   BUFFER_CONTEND_UPDATED,
 } from '../actions/buffers';
-
-import {
-  type MetaDataID
-} from '../common/metadata';
 
 import {
   deepCopy,
@@ -26,7 +23,7 @@ import {
 
 export type BrowserState = {
   currentTabID: string,
-  tabs: Array<{id: string, metaDataID: ?MetaDataID, content: string}>
+  tabs: Tab[]
 };
 
 export function initialBrowserState(): BrowserState {

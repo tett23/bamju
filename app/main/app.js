@@ -68,7 +68,9 @@ app.on('before-quit', async () => {
 
 app.on('activate', async () => {
   if (getWindowManagerInstance().getAppWindows().length === 0) {
-    dispatch(newWindow(defaultConfig().windows[0].rectangle));
+    console.log(defaultConfig().windows);
+    const win = defaultConfig().windows[0];
+    dispatch(newWindow(win.rectangle, win.browser.tabs));
   }
 });
 

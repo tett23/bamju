@@ -11,6 +11,9 @@ import {
 import {
   type WindowsState
 } from '../reducers/windows';
+import {
+  type Tab,
+} from './browser';
 
 export const INITIALIZE_WINDOWS = 'INITIALIZE_WINDOWS';
 export const WINDOW_INITIALIZED = 'WINDOW_INITIALIZED';
@@ -24,12 +27,6 @@ export type Rectangle = {
   y: number,
   width: number,
   height: number
-};
-
-export type Tab = {
-  id: string,
-  metaDataID: MetaDataID,
-  content: string
 };
 
 const rectangleDefault = {

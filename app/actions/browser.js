@@ -8,6 +8,12 @@ import {
   type BrowserState,
 } from '../reducers/browser';
 
+export type Tab = {
+  id: string,
+  metaDataID: ?MetaDataID,
+  content: string
+};
+
 export const INITIALIZE_BROWSER = 'INITIALIZE_BROWSER';
 export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
