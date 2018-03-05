@@ -448,6 +448,10 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
     const repositoryName = node.data.repositoryName || buffer.repositoryName;
     const metaData = manager.detect(repositoryName, node.data.internalPath, new MetaData(buffer));
 
+    if (metaData) {
+    // eslint-disable-next-line no-param-reassign
+      node.data.metaDataID = metaData.id;
+    }
     // eslint-disable-next-line no-param-reassign
     node.data.isExist = node.data.hProperties.dataIsExist = metaData != null;
   }
