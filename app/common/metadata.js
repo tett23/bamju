@@ -123,10 +123,6 @@ export class MetaData {
       ];
     }
 
-    if (content === '' && itemType === ItemTypeMarkdown) {
-      content = `# ${itemName.replace(/(.+?)\..+?$/, '$1')}`; // eslint-disable-line
-    }
-
     const [ret, message] = await this._addItem(itemType, itemName);
     if (ret == null || Message.isSimilarError(message)) {
       return [ret, Message.wrap(message)];

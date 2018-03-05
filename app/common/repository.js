@@ -11,7 +11,9 @@ import {
   MetaData,
   type MetaDataID,
   createMetaDataID,
-  ItemTypeRepository
+  ItemTypeMarkdown,
+  ItemTypeRepository,
+  detectItemType,
 } from './metadata';
 import * as Message from './message';
 
@@ -232,7 +234,7 @@ export class Repository {
     return this.items.push(metaData);
   }
 
-  async addFile(filePath: string, content: string): Promise<[?MetaData, Message.Message]> {
+  async addFile(filePath: string, content: string, templateID: ?MetaDataID = null): Promise<[?MetaData, Message.Message]> {
     const normalizedPath = path.normalize(filePath);
     if (!path.isAbsolute(normalizedPath)) {
       return [null, Message.fail(`RepositoryManager.addFile.isAbsolute ${normalizedPath}`)];
@@ -250,6 +252,22 @@ export class Repository {
     }
 
     const itemName = path.basename(normalizedPath);
+    if (templateID) {
+      const template = this.getItemByID(templateID);
+      if (template == null) {
+        return [
+          null,
+          Message.fail(`MetaData.addFile template templateID=${templateID}`)
+        ];
+      }
+      const [templateContent] = await template.getContent();
+      content = templateContent.replace(/^# (.+)/, `# ${itemName.replace(/(.+?)\..+?$/, '$1')}`); // eslint-disable-line no-param-reassign
+    }
+
+    if (content === '' && detectItemType(itemName) === ItemTypeMarkdown) {
+      content = `# ${itemName.replace(/(.+?)\..+?$/, '$1')}`; // eslint-disable-line
+    }
+
     const [metaData, message] = await parentItem.addFile(itemName, content);
 
     return [metaData, message];
