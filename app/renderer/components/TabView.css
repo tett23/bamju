@@ -2,19 +2,22 @@
 
 .tabView {
   margin: 0;
-  padding: 0;
+  padding: 0 0 0.75rem 0;
   background-color: var(--background-color);
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   overflow-y: hidden;
-  height: 2rem;
+  height: 2.5rem;
+  line-height: 1rem;
   user-select: none;
 }
 
 .tabItem {
-  margin: auto 0;
-  padding: 0.5rem 1rem;
+  margin: 0;
+  padding: 0.75rem 0 0 0;
+  height: 2.5rem;
+  line-height: 1rem;
   list-style: none;
   color: var(--color);
   border-right: 1px solid var(--border-color);
@@ -31,11 +34,12 @@
 }
 
 .tabItem span {
+  margin: auto 0.5rem;
   display: inline-flex;
 }
 
 .tabTitle {
-  margin: auto 0.5rem;
+  margin: auto 0;
 
   max-width: 10rem;
   min-width: 5rem;
