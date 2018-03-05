@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import FontAwesome from 'react-fontawesome';
 import {
   type BrowserState
 } from '../../reducers/browser';
@@ -10,6 +11,7 @@ import {
 } from '../../reducers/buffers';
 import {
   activeTab,
+  closeTab,
 } from '../../actions/browser';
 import styles from './TabView.css';
 
@@ -37,6 +39,7 @@ function tabView(props: Props) {
         onClick={() => { props.dispatch(activeTab(item.id)); }}
       >
         <span className={styles.tabTitle}>{title}</span>
+        <FontAwesome className={styles.closeIcon} name="times" onClick={() => { props.dispatch(closeTab(item.id)); }} />
       </li>
     );
   });
