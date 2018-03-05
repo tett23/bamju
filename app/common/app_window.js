@@ -63,10 +63,16 @@ export default class AppWindow implements Window {
     });
 
     browserWindow.on('closed', () => {
-      dispatch(closeWindow(this.conf.id, { targetWindowID: this.windowID() }));
+      dispatch(closeWindow(this.conf.id, {
+        targetWindowID: this.windowID(),
+        scope: 'local'
+      }));
       this.browserWindow = null;
       getWindowManagerInstance().removeWindow(this.windowID());
-      dispatch(closeWindow(this.conf.id, { targetWindowID: this.windowID() }));
+      dispatch(closeWindow(this.conf.id, {
+        targetWindowID: this.windowID(),
+        scope: 'local'
+      }));
     });
 
     browserWindow.on('resize', () => {
@@ -83,7 +89,10 @@ export default class AppWindow implements Window {
 
     const updateRectangle = () => {
       const rectangle = browserWindow.getBounds();
-      dispatch(updateWindowRectangle(this.conf.id, rectangle, { targetWindowID: this.windowID() }));
+      dispatch(updateWindowRectangle(this.conf.id, rectangle, {
+        targetWindowID: this.windowID(),
+        scope: 'local'
+      }));
     };
   }
 

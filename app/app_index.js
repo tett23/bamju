@@ -71,8 +71,12 @@ ipcRenderer.on('initialize', (event, conf: Window) => {
 
   window.windowID = conf.id;
 
-  store.dispatch(initializeBrowser(conf.browser || initialBrowserState()));
-  store.dispatch(initializeRepositoriesTreeView(conf.repositoriesTreeView || initialRepositoriesTreeViewState()));
+  store.dispatch(initializeBrowser(conf.browser || initialBrowserState(), {
+    scope: 'local'
+  }));
+  store.dispatch(initializeRepositoriesTreeView(conf.repositoriesTreeView || initialRepositoriesTreeViewState(), {
+    scope: 'local'
+  }));
 
   store.dispatch(windowInitialized(conf.id));
 });

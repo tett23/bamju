@@ -41,8 +41,13 @@ export function windows(state: WindowsState = initialWindowsState(), action: Act
       return;
     }
 
-    item.browser = browser(item.browser, action); // eslint-disable-line no-param-reassign
-    item.repositoriesTreeView = repositoriesTreeView(item.repositoriesTreeView, action); // eslint-disable-line no-param-reassign
+    const newAction = Object.assign({}, action, {
+      meta: {
+        scope: 'local',
+      }
+    });
+    item.browser = browser(item.browser, newAction); // eslint-disable-line no-param-reassign
+    item.repositoriesTreeView = repositoriesTreeView(item.repositoriesTreeView, newAction); // eslint-disable-line no-param-reassign
   });
 
   switch (action.type) {
