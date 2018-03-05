@@ -34,7 +34,6 @@ import {
 
 import {
   RepositoriesTreeView,
-  buildContextMenu,
 } from '../../../app/renderer/components/RepositoriesTreeView';
 
 let store;
@@ -182,67 +181,5 @@ describe('<RepositoriesTreeView />', () => {
     const children = repositoryItem.children().find('.repositoryItem');
 
     expect(children.length).toBe(0);
-  });
-});
-
-describe('buildContextMenu', () => {
-  it('組みこみエディタで開くのメニューはisSimilarFileのときだけ有効', () => {
-    const buffer = createDummyBufferByPath('test', '/foo.md');
-    [
-      [ItemTypeMarkdown, true],
-      [ItemTypeText, true],
-      [ItemTypeCSV, true],
-      [ItemTypeTSV, true],
-      [ItemTypeHTML, true],
-      [ItemTypeDirectory, false],
-      [ItemTypeRepository, false],
-      [ItemTypeUndefined, false],
-    ].forEach((pair) => {
-      const [itemType, enabled] = pair;
-
-      buffer.itemType = itemType;
-
-      const template = buildContextMenu(buffer, {});
-      const menu = template.find((item) => {
-        return item.label === 'edit on bamju editor';
-      });
-      if (menu == null) {
-        expect(true).toBe(false);
-        return;
-      }
-
-      // $FlowFixMe
-      expect(menu.enabled).toBe(enabled);
-    });
-  });
-
-  it('リポジトリを削除のメニューはitemType == ItemTypeRepositoryのときだけ有効', () => {
-    const buffer = createDummyBufferByPath('test', '/foo.md');
-    [
-      [ItemTypeMarkdown, false],
-      [ItemTypeText, false],
-      [ItemTypeCSV, false],
-      [ItemTypeTSV, false],
-      [ItemTypeHTML, false],
-      [ItemTypeDirectory, false],
-      [ItemTypeRepository, true],
-      [ItemTypeUndefined, false],
-    ].forEach((pair) => {
-      const [itemType, enabled] = pair;
-
-      buffer.itemType = itemType;
-
-      const template = buildContextMenu(buffer, {});
-      const menu = template.find((item) => {
-        return item.label === 'remove';
-      });
-      if (menu == null) {
-        expect(true).toBe(false);
-        return;
-      }
-
-      // $FlowFixMe
-      expect(menu.enabled).toBe(enabled);
-    });
   });
 });

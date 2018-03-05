@@ -117,6 +117,12 @@ export class ContextMenu {
 
     return [
       {
+        label: 'Open new tab',
+        click: () => {
+          _store.dispatch(addTab(buffer.id, ''));
+        }
+      },
+      {
         label: 'Open new window',
         click: () => {
           const rectangle = remote.getCurrentWindow().getBounds();
