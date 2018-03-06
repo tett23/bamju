@@ -215,4 +215,24 @@ describe('ContextMenu', () => {
       expect(template[0].label).toBe('test_template.md');
     });
   });
+
+  describe('searchMenu', () => {
+    it('検索のメニューが開かれる', () => {
+      const template = ContextMenu.searchMenu(buffer) || [];
+      expect(template.length).toBe(1);
+      expect(template[0].label).toBe('Search');
+    });
+
+    it('検索のダイアログが開かれる', () => {
+      expect(store.getState().searches.length).toBe(0);
+      expect(store.getState().modals.length).toBe(0);
+
+      const template = ContextMenu.searchMenu(buffer) || [];
+      expect(template.length).toBe(1);
+      template[0].click();
+
+      expect(store.getState().searches.length).toBe(1);
+      expect(store.getState().modals.length).toBe(1);
+    });
+  });
 });

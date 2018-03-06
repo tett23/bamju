@@ -293,7 +293,7 @@ export class ContextMenu {
       {
         label: 'Search',
         click: () => {
-          const searchAction = search('', buffer, null);
+          const searchAction = search('', buffer);
           _store.dispatch(searchAction);
           _store.dispatch(openSearchDialog(searchAction.payload.queryID));
         }
