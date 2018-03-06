@@ -66,9 +66,9 @@ function buildDarwin(menuType: MenuType, window: Window): Array<MenuItem> {
   ret.push(subMenuFile(window));
   ret.push(subMenuEdit(menuType, window));
   ret.push(subMenuView(window));
-  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-    ret.push(subMenuDebug(window));
-  }
+  // if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+  ret.push(subMenuDebug(window));
+  // }
   ret.push(subMenuWindow(window));
   ret.push(subMenuHelp());
 
