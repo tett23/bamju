@@ -23,6 +23,8 @@ import {
   MessageTypeError,
 } from './common/message';
 
+process.on('unhandledRejection', console.dir);
+
 const store = createStore(
   appReducer,
   initialState(),
