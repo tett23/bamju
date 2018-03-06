@@ -2,7 +2,6 @@
 
 import remark from 'remark';
 import remarkHTML from 'remark-html';
-// $FlowFixMe
 import remarkMarkdown from 'remark-parse';
 import remarkBreaks from 'remark-breaks';
 import Bluebird from 'bluebird';
@@ -229,7 +228,8 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager, in
     await Promise.all(pp);
     if (process.env.NODE_EVN === 'development')console.timeEnd(benchID2);
 
-    next(null, tree, file);
+    // よくわからないけどproductionでnext == nullになることがある
+    next && next(null, tree, file); // eslint-disable-line no-unused-expressions
     return tree;
   }
 
