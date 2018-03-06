@@ -17,13 +17,13 @@
   overflow-y: scroll;
   overflow-x: hidden;
   margin: 0;
-  padding-left: 5px;
+  padding: 0.5rem;
   height: 100%;
   resize: horizontal;
   user-select: none;
   white-space: nowrap;
-  min-width: 200px;
-  width: 200px;
+  min-width: 12rem;
+  width: 12rem;
 }
 
 .treeViewItems li {
@@ -34,14 +34,14 @@
 }
 
 .treeViewItems li span{
-  padding-left: 10px
+  padding-left: 0.5rem;
 }
 
 .repository {
-  padding-left: 5px;
+  padding-left: 0.5rem;
 }
 .repositoryItem {
-  padding-left: 10px;
+  padding-left: 0.5rem;
 }
 
 .itemTypeAvailable {
@@ -56,8 +56,7 @@
 .menu {
   flex: 0 0 auto;
   border-top: solid #000 1px;
-  padding: 5px;
-  height: 2em;
+  padding: 0.5rem;
 }
 
 .menuItem {

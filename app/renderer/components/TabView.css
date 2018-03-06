@@ -2,22 +2,19 @@
 
 .tabView {
   margin: 0;
-  padding: 0 0 0.75rem 0;
+  padding: 0;
   background-color: var(--background-color);
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
   overflow-y: hidden;
-  height: 2.5rem;
-  line-height: 1rem;
   user-select: none;
 }
 
 .tabItem {
-  margin: 0;
-  padding: 0.75rem 0 0 0;
-  height: 2.5rem;
-  line-height: 1rem;
+  margin: auto 0;
+  padding: 0;
+  line-height: 2.5rem;
   list-style: none;
   color: var(--color);
   border-right: 1px solid var(--border-color);

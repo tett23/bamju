@@ -1,6 +1,6 @@
 :root {
   --background-color: rgb(33, 37, 43);
-  --background-color-dark: rgb(33, 37, 43);
+  --background-color-dark: #1b1d23;
   --background-color-light: #282828;
   --color: #9da5b4;
   --color-dark: rgba(157, 165, 180, 0.6);
@@ -8,5 +8,6 @@
   --color-active: #568af2;
   --font-size: 1rem;
   --font-size-small: 0.9rem;
-  --border-color: #000;
+  --font-size-ultra-small: 0.75rem;
+  --border-color: rgba(0, 0, 0, 0.2);
 }

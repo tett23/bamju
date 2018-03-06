@@ -8,6 +8,7 @@
   background-color: var(--background-color-light);
   color: var(--color);
   font-size: var(--font-size-small);
+  user-select: none;
 }
 
 .fileIcon {

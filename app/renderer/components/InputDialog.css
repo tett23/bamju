@@ -1,28 +1,35 @@
+@import "../../variables.css";
+
 .inputDialog {
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  background-color: #282c34;
-  color: #9da5b4;
+  background-color: var(--background-color);
+  color: var(--color);
   margin: auto;
-  padding: 0.5rem;
-  margin-top: 10%;
+  padding: 0.75rem;
+  margin-top: 10vh;
   width: 50%;
   min-width: 200px;
   max-width: 500px;
   border-radius: .3rem;
+  font-size: var(--font-size-ultra-small);
 }
 
 .label {
   font-weight: normal;
+  font-size: .9rem;
+  padding-left: .5rem;
 }
 
 .input {
-  padding: .5rem;
-  color: #9da5b4;
-  border: #000;
+  margin: .75rem 0 0 0;
+  padding: .75rem;
+  font-size: var(--font-size-small);
+  color: var(--color);
+  border: var(--border-color);
   border-radius: .3rem;
-  background-color: #1b1d23;
+  background-color: var(--background-color-dark);
   font-weight: normal;
 }
 
