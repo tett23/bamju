@@ -42,7 +42,13 @@ export default class AppWindow implements Window {
     });
     this.browserWindow = browserWindow;
 
-    browserWindow.loadURL(`file://${__dirname}/../app.html`);
+    let url;
+    if (process.env.NODE_ENV === 'development') {
+      url = `file://${__dirname}/../app.html`;
+    } else {
+      url = `file://${__dirname}/app.html`;
+    }
+    browserWindow.loadURL(url);
 
     // @TODO: Use 'ready-to-show' event
     //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event

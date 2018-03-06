@@ -58,7 +58,13 @@ export default class EditorWindow implements Window {
     });
     this.browserWindow = browserWindow;
 
-    browserWindow.loadURL(`file://${__dirname}/../editor.html`);
+    let url;
+    if (process.env.NODE_ENV === 'development') {
+      url = `file://${__dirname}/../editor.html`;
+    } else {
+      url = `file://${__dirname}/editor.html`;
+    }
+    browserWindow.loadURL(url);
 
     browserWindow.webContents.on('did-finish-load', () => {
       if (!browserWindow) {
