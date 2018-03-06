@@ -21,6 +21,12 @@ import {
   closeBuffer,
 } from '../actions/repositories_tree_view';
 import {
+  search,
+  updateResult,
+  updateProgress,
+  complete,
+} from '../actions/searches';
+import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
@@ -66,6 +72,10 @@ export type Actions = (
 | $ReturnType<typeof initializeRepositoriesTreeView>
 | $ReturnType<typeof openBuffer>
 | $ReturnType<typeof closeBuffer>
+| $ReturnType<typeof search>
+| $ReturnType<typeof updateProgress>
+| $ReturnType<typeof updateResult>
+| $ReturnType<typeof complete>
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof closeAllDialog>

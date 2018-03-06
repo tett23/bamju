@@ -35,6 +35,9 @@ import {
   rename,
 } from '../actions/repositories';
 import {
+  search,
+} from '../actions/searches';
+import {
   openInputDialog,
   openSearchDialog,
 } from '../actions/modals';
@@ -290,7 +293,9 @@ export class ContextMenu {
       {
         label: 'Search',
         click: () => {
-          _store.dispatch(openSearchDialog(buffer));
+          const searchAction = search('', buffer, null);
+          _store.dispatch(searchAction);
+          _store.dispatch(openSearchDialog(searchAction.payload.queryID));
         }
       }
     ];

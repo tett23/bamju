@@ -210,7 +210,7 @@ describe('ContextMenu', () => {
 
   describe('templatesMenu', () => {
     it('テンプレートの取得ができる', () => {
-      const template = ContextMenu.templatesMenu(buffer) || [];
+      const template = ContextMenu.templatesMenu(buffer, '') || [];
       expect(template.length).toBe(1);
       expect(template[0].label).toBe('test_template.md');
     });

@@ -26,7 +26,7 @@ export type QueryType = 'fileName' | 'fullText';
 
 export type SearchOptions = {
   queryType: QueryType,
-  targetID?: MetaDataID,
+  targetID?: ?MetaDataID,
   repositoryName?: string,
   enableRegExp?: boolean,
   ignoreCase?: boolean
@@ -39,6 +39,14 @@ export type SearchProgress = {
 
 export type SearchResult = {
   buffer: Buffer
+};
+
+export const defaultOptions:SearchOptions = {
+  queryType: 'fileName',
+  targetID: null,
+  repositoryName: '',
+  enableRegExp: false,
+  ignoreCase: false
 };
 
 export class Search {
@@ -57,10 +65,7 @@ export class Search {
   ) {
     this.queryID = queryID;
     this.query = query;
-    this.options = Object.assign({}, {
-      enableRegExp: false,
-      ignoreCase: false
-    }, options);
+    this.options = Object.assign({}, defaultOptions, options);
     this.buffers = buffers || targetBuffers(options.repositoryName, options.targetID);
     this.dispatch = dispatch || null;
   }

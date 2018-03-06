@@ -12,6 +12,9 @@ import {
   closeDialog,
   closeAllDialog,
 } from '../../app/actions/modals';
+import {
+  search
+} from '../../app/actions/searches';
 
 let store;
 beforeEach(() => {
@@ -22,6 +25,7 @@ describe('modal reducer', () => {
   describe('OPEN_INPUT_DIALOG', () => {
     it('Dialogを追加できる', () => {
       const arg = {
+        type: 'inputDialog',
         label: 'new file',
         formValue: '',
         placeholder: '',
@@ -38,7 +42,9 @@ describe('modal reducer', () => {
 
   describe('OPEN_SEARCH_DIALOG', () => {
     it('Dialogを追加できる', () => {
-      store.dispatch(openSearchDialog());
+      const searchAction = search('', null);
+      store.dispatch(searchAction);
+      store.dispatch(openSearchDialog('foo'));
 
       const newState = store.getState();
 

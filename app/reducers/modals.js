@@ -43,7 +43,7 @@ export function modals(
     newState.push({
       id: action.payload.modalID,
       type: 'searchDialog',
-      buffer: action.payload.buffer,
+      queryID: action.payload.queryID,
     });
 
     return newState;

@@ -3,8 +3,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import {
-  type ModalsState,
-} from '../../reducers/modals';
+  type State,
+} from '../../reducers/app_window';
 import {
   ModalInputDialog,
   ModalSearchDialog,
@@ -43,6 +43,13 @@ function modals(props: Props) {
       );
     }
     case ModalSearchDialog: {
+      const search = props.searches.find((s) => {
+        return item.queryID === s.queryID;
+      });
+      if (search == null) {
+        return null;
+      }
+
       return (
         <div
           role="none"
@@ -51,17 +58,13 @@ function modals(props: Props) {
             e.stopPropagation();
           }}
         >
-          <Search
-            queryID={item.id}
-            buffer={item.buffer}
-            query=""
-          />
+          <Search {...search} />
         </div>
       );
     }
     default: return null;
     }
-  });
+  }).filter(Boolean);
 
   const visibility = (items.length >= 1) ? 'block' : 'none';
   const dispatchClose = props.closeAllDialog;
@@ -98,9 +101,10 @@ function checkEscape(e, close) {
   }
 }
 
-function mapStateToProps(state: {modals: ModalsState}): {modals: ModalsState} {
+function mapStateToProps(state: State) {
   return {
-    modals: state.modals
+    modals: state.modals,
+    searches: state.searches,
   };
 }
 

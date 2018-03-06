@@ -1,7 +1,6 @@
 // @flow
 
 import { type Meta } from '../reducers/types';
-import { type Buffer } from '../common/buffer';
 
 export const ModalInputDialog = 'inputDialog';
 export const ModalSearchDialog = 'searchDialog';
@@ -18,7 +17,7 @@ export type InputDialogValues = {
 };
 
 export type SearchDialogValues = {
-  buffer: ?Buffer
+  queryID: string
 };
 
 export type InputDialog = {
@@ -55,13 +54,13 @@ export function openInputDialog(argument: InputDialogValues, meta: Meta = {}) {
   };
 }
 
-export function openSearchDialog(buffer: ?Buffer, meta: Meta = {}) {
+export function openSearchDialog(queryID: string, meta: Meta = {}) {
   return {
     type: OPEN_SEARCH_DIALOG,
     payload: {
       modalType: ModalSearchDialog,
       modalID: `${Math.random()}`,
-      buffer
+      queryID
     },
     meta,
   };
