@@ -217,16 +217,16 @@ function loadInlineLink(options: {buffer: Buffer, manager: RepositoryManager, in
 
   async function transformer(tree, file, next) {
     const benchID1 = `1 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
-    if (process.env.NODE_EVN === 'development')console.time(benchID1);
+    if (process.env.NODE_ENV === 'development')console.time(benchID1);
     const pp = [];
     tree.children.forEach((__, i) => {
       pp.push(replace(tree.children[i], i, tree));
     });
-    if (process.env.NODE_EVN === 'development')console.timeEnd(benchID1);
+    if (process.env.NODE_ENV === 'development')console.timeEnd(benchID1);
     const benchID2 = `2 markdown.loadInlineLink ${buffer.repositoryName} ${buffer.path}`;
-    if (process.env.NODE_EVN === 'development')console.time(benchID2);
+    if (process.env.NODE_ENV === 'development')console.time(benchID2);
     await Promise.all(pp);
-    if (process.env.NODE_EVN === 'development')console.timeEnd(benchID2);
+    if (process.env.NODE_ENV === 'development')console.timeEnd(benchID2);
 
     // よくわからないけどproductionでnext == nullになることがある
     next && next(null, tree, file); // eslint-disable-line no-unused-expressions
@@ -413,7 +413,7 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
     return new Bluebird((resolve, reject) => {
       const benchID1 = `1 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
       const benchID2 = `2 markdown.updateLinkStatus ${buffer.repositoryName} ${buffer.path}`;
-      if (process.env.NODE_EVN === 'development') console.time(benchID1);
+      if (process.env.NODE_ENV === 'development') console.time(benchID1);
       const replacePromises = [];
       const len = tree.children.length;
       const pp = [];
@@ -421,10 +421,10 @@ function updateLinkStatus(options: {buffer: Buffer, manager: RepositoryManager})
         pp.push(applyChildren(tree.children[i], i, tree, replace, replacePromises));
       }
       Bluebird.all(pp).then((r) => {
-        if (process.env.NODE_EVN === 'development')console.timeEnd(benchID1);
-        if (process.env.NODE_EVN === 'development')console.time(benchID2);
+        if (process.env.NODE_ENV === 'development')console.timeEnd(benchID1);
+        if (process.env.NODE_ENV === 'development')console.time(benchID2);
         Bluebird.all(replacePromises).then((rr) => {
-          if (process.env.NODE_EVN === 'development')console.timeEnd(benchID2);
+          if (process.env.NODE_ENV === 'development')console.timeEnd(benchID2);
 
           resolve(rr);
           return rr;
