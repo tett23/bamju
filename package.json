@@ -206,8 +206,6 @@
     "remark": "^9.0.0",
     "remark-breaks": "^1.0.0",
     "remark-html": "^7.0.0",
-    "remark-react": "^4.0.1",
-    "remark-vdom": "^5.0.0",
     "source-map-support": "^0.5.3",
     "vfile-reporter": "^4.0.0"
   }
