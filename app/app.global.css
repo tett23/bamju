@@ -70,6 +70,11 @@ a:hover {
   margin: 0;
 }
 
+.markdown-body li {
+  margin: 0;
+  list-style-type: initial;
+}
+
 @media (max-width: 767px) {
   .markdown-body {
     padding: 15px;

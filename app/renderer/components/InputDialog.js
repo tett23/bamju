@@ -55,7 +55,7 @@ class inputDialog extends React.Component<Props> {
           className={styles.label}
           htmlFor="modalNewFileDialogInput"
         >
-          <span style={{ paddingLeft: '1rem' }}>{this.props.label}</span>
+          {this.props.label}
         </label>
         <input
           type="text"
