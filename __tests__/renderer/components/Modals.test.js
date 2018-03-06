@@ -12,6 +12,7 @@ import {
 } from '../../../app/reducers/app_window';
 import {
   openInputDialog,
+  openSearchDialog,
 } from '../../../app/actions/modals';
 
 import {
@@ -29,6 +30,13 @@ describe('<Modals />', () => {
       label: 'hogehoge',
       onEnter: () => {}
     }));
+    const component = mountWithStore(<Modals modals={store.getState().modals} />, store);
+
+    expect(component.find('.dialogs').length).toBe(1);
+  });
+
+  it('openSearchDialogでSearchDialogが作られる', () => {
+    store.dispatch(openSearchDialog());
     const component = mountWithStore(<Modals modals={store.getState().modals} />, store);
 
     expect(component.find('.dialogs').length).toBe(1);

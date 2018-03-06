@@ -8,6 +8,7 @@ import {
 } from '../../app/reducers/modals';
 import {
   openInputDialog,
+  openSearchDialog,
   closeDialog,
   closeAllDialog,
 } from '../../app/actions/modals';
@@ -32,6 +33,17 @@ describe('modal reducer', () => {
 
       expect(newState.length).toBe(1);
       expect(newState[0]).toMatchObject(arg);
+    });
+  });
+
+  describe('OPEN_SEARCH_DIALOG', () => {
+    it('Dialogを追加できる', () => {
+      store.dispatch(openSearchDialog());
+
+      const newState = store.getState();
+
+      expect(newState.length).toBe(1);
+      expect(newState[0].type).toBe('searchDialog');
     });
   });
 

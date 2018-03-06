@@ -36,6 +36,7 @@ import {
 } from '../actions/repositories';
 import {
   openInputDialog,
+  openSearchDialog,
 } from '../actions/modals';
 import {
   addMessage,
@@ -82,6 +83,7 @@ export class ContextMenu {
       ContextMenu.openMenu(this.buffer),
       ContextMenu.editMenu(this.buffer),
       ContextMenu.fileMenu(this.buffer),
+      ContextMenu.searchMenu(this.buffer),
       ContextMenu.repositoryMenu(this.buffer)
     ].filter(Boolean).reduce((r, items) => {
       return r.concat(items, separator);
@@ -281,6 +283,17 @@ export class ContextMenu {
         }
       };
     });
+  }
+
+  static searchMenu(buffer: ?Buffer): ?MenuItem[] {
+    return [
+      {
+        label: 'Search',
+        click: () => {
+          _store.dispatch(openSearchDialog(buffer));
+        }
+      }
+    ];
   }
 
   static separator(): MenuItem[] {

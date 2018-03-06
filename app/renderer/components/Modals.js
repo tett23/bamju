@@ -7,9 +7,11 @@ import {
 } from '../../reducers/modals';
 import {
   ModalInputDialog,
+  ModalSearchDialog,
   closeAllDialog,
 } from '../../actions/modals';
 import { InputDialog } from './InputDialog';
+import { Search } from './Search';
 import {
   type $ReturnType,
 } from '../../common/util';
@@ -36,6 +38,23 @@ function modals(props: Props) {
             placeholder={item.placeholder}
             onEnter={item.onEnter}
             onClose={item.onClose}
+          />
+        </div>
+      );
+    }
+    case ModalSearchDialog: {
+      return (
+        <div
+          role="none"
+          key={item.id}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <Search
+            queryID={item.id}
+            buffer={item.buffer}
+            query=""
           />
         </div>
       );

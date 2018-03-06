@@ -5,13 +5,15 @@ import {
 } from './types';
 import {
   OPEN_INPUT_DIALOG,
+  OPEN_SEARCH_DIALOG,
   CLOSE_DIALOG,
   CLOSE_ALL_DIALOG,
   type InputDialog,
+  type SearchDialog,
   type UndefinedDialog,
 } from '../actions/modals';
 
-export type ModalsState = Array<InputDialog | UndefinedDialog>;
+export type ModalsState = Array<InputDialog | SearchDialog | UndefinedDialog>;
 
 export function initialModalsState() {
   return [];
@@ -32,6 +34,16 @@ export function modals(
       placeholder: action.payload.argument.placeholder,
       onEnter: action.payload.argument.onEnter,
       onClose: action.payload.argument.onClose
+    });
+
+    return newState;
+  }
+  case OPEN_SEARCH_DIALOG: {
+    const newState = state.slice();
+    newState.push({
+      id: action.payload.modalID,
+      type: 'searchDialog',
+      buffer: action.payload.buffer,
     });
 
     return newState;
