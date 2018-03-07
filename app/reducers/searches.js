@@ -66,7 +66,7 @@ export function searches(state: SearchesState = initialSearchesState(), action: 
     }
 
     const newState = state.slice();
-    newState[idx].result = action.payload.result;
+    newState[idx].result.push(action.payload.result);
 
     return newState;
   }
