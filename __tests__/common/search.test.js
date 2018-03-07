@@ -8,6 +8,9 @@ import {
   Search,
   QueryTypeFileName,
 } from '../../app/common/search';
+import {
+  ItemTypeUndefined,
+} from '../../app/common/metadata';
 
 import {
   dummy,
@@ -17,9 +20,14 @@ let manager: RepositoryManager;
 beforeEach(() => {
   const buffers = dummy({
     test: [
-      '/foo/bar/baz/testItem.md'
+      '/foo/bar/baz/testItem.md',
+      '/itemTypeUndefined'
     ]
   });
+  // $FlowFixMe
+  buffers.find((item) => {
+    return item.name === 'itemTypeUndefined';
+  }).itemType = ItemTypeUndefined;
 
   manager = new RepositoryManager(buffers, [{
     repositoryName: 'test',
@@ -50,6 +58,18 @@ describe('Search', () => {
 
     it('該当するBufferが存在しない場合、result.length === 0', async () => {
       search = new Search('id', 'not exist', {
+        queryType: QueryTypeFileName,
+      }, manager.toBuffers());
+
+      const [result, messages] = await search.fileName();
+      messages.forEach((mes) => {
+        expect(Message.isSimilarError(mes)).toBe(false);
+      });
+      expect(result.length).toBe(0);
+    });
+
+    it('ItemTypeUndefinedのものは対象に含まれない', async () => {
+      search = new Search('id', 'itemTypeUndefined', {
         queryType: QueryTypeFileName,
       }, manager.toBuffers());
 

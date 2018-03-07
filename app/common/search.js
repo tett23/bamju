@@ -5,7 +5,9 @@ import { type Dispatch } from 'redux';
 import * as Message from './message';
 import { type Buffer } from './buffer';
 import {
-  type MetaDataID
+  type MetaDataID,
+  isSimilarFile,
+  isSimilarDirectory,
 } from './metadata';
 import {
   getInstance as getRepositoryManagerInstance
@@ -105,12 +107,15 @@ export class Search {
     const matcher = new RegExp(this.query, flags);
     for (let i = 0; i < total; i += 1) {
       let isMatch = false;
-      if (this.options.enableRegExp) {
-        isMatch = matcher.test(this.buffers[i].path);
-      } else if (this.options.ignoreCase) {
-        isMatch = this.buffers[i].path.toLowerCase().includes(this.query.toLowerCase());
-      } else {
-        isMatch = this.buffers[i].path.includes(this.query);
+      const itemType = this.buffers[i].itemType;
+      if (isSimilarFile(itemType) || isSimilarDirectory(itemType)) {
+        if (this.options.enableRegExp) {
+          isMatch = matcher.test(this.buffers[i].path);
+        } else if (this.options.ignoreCase) {
+          isMatch = this.buffers[i].path.toLowerCase().includes(this.query.toLowerCase());
+        } else {
+          isMatch = this.buffers[i].path.includes(this.query);
+        }
       }
 
       this.dispatchUpdateProgress({
