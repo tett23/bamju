@@ -84,7 +84,7 @@ export function cancel(queryID: string, meta: Meta = {}) {
   };
 }
 
-export function destroy(queryID, string, meta: Meta = {}) {
+export function destroy(queryID: string, meta: Meta = {}) {
   return {
     type: DESTROY,
     payload: {

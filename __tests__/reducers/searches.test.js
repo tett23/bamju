@@ -11,6 +11,8 @@ import {
 } from '../../app/common/search';
 import {
   search,
+  cancel,
+  destroy,
   updateQuery,
   updateOptions,
   updateProgress,
@@ -45,6 +47,44 @@ describe('searches reducer', () => {
       expect(store.getState().length).toBe(0);
       store.dispatch(search('', null));
       expect(store.getState()[0].completed).toBe(false);
+    });
+  });
+
+  describe('cancel', () => {
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().length).toBe(0);
+      const searchAction = search('foo', null);
+      store.dispatch(searchAction);
+      expect(store.getState()[0].completed).toBe(false);
+      const queryID = searchAction.payload.queryID;
+      store.dispatch(cancel(queryID));
+      expect(store.getState()[0].completed).toBe(true);
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState();
+      store.dispatch(cancel('foo'));
+      expect(store.getState()).toBe(state);
+    });
+  });
+
+  describe('destroy', () => {
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().length).toBe(0);
+      const searchAction = search('foo', null);
+      store.dispatch(searchAction);
+      expect(store.getState().length).toBe(1);
+      const queryID = searchAction.payload.queryID;
+      store.dispatch(destroy(queryID));
+      expect(store.getState().length).toBe(0);
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState();
+      store.dispatch(destroy('foo'));
+      expect(store.getState()).toBe(state);
     });
   });
 
@@ -178,7 +218,6 @@ describe('searches reducer', () => {
       expect(store.getState().length).toBe(0);
       const searchAction = search('', null);
       store.dispatch(searchAction);
-      console.log(store.getState());
       expect(store.getState()[0].results.length).toBe(0);
       const queryID = searchAction.payload.queryID;
       store.dispatch(updateResult(queryID, result));
