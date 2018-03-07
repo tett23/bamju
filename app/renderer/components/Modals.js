@@ -24,22 +24,14 @@ function modals(props: Props) {
     switch (item.type) {
     case ModalInputDialog: {
       return (
-        <div
-          role="none"
-          key={item.id}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <InputDialog
-            id={item.id}
-            label={item.label}
-            formValue={item.formValue}
-            placeholder={item.placeholder}
-            onEnter={item.onEnter}
-            onClose={item.onClose}
-          />
-        </div>
+        <InputDialog
+          id={item.id}
+          label={item.label}
+          formValue={item.formValue}
+          placeholder={item.placeholder}
+          onEnter={item.onEnter}
+          onClose={item.onClose}
+        />
       );
     }
     case ModalSearchDialog: {
@@ -50,21 +42,24 @@ function modals(props: Props) {
         return null;
       }
 
-      return (
-        <div
-          role="none"
-          key={item.id}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Search {...search} />
-        </div>
-      );
+      return (<Search {...search} />);
     }
     default: return null;
     }
-  }).filter(Boolean);
+  }).filter(Boolean).map((item) => {
+    return (
+      <div
+        role="none"
+        key={item.id}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        className={styles.dialog}
+      >
+        {item}
+      </div>
+    );
+  });
 
   const visibility = (items.length >= 1) ? 'block' : 'none';
   const dispatchClose = props.closeAllDialog;
