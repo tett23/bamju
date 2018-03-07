@@ -182,18 +182,16 @@ async function _start(queryID: string, dispatch: Dispatch<Actions>, getState: ()
   }
 
   const s = new Search(
-    search.queryID,
-    search.query,
-    search.options,
-    targetBuffers(state.options.repositoryName, state.options.targetID, getState().global.buffers),
-    dispatch
+    state.queryID,
+    state.query,
+    state.options,
+    targetBuffers(state.options.repositoryName, state.options.targetID, getState().global.buffers)
   );
   dispatch(updateProgress(queryID, {
     current: 0,
     total: s.buffers.length
   }));
-  const gen = s.start();
-  for (const item of gen) { // eslint-disable-line no-restricted-syntax
+  for (const item of s.start()) { // eslint-disable-line no-restricted-syntax
     const [result, messages] = item;
     messages.forEach((mes) => {
       dispatch(addMessage(mes));

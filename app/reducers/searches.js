@@ -20,7 +20,6 @@ import {
   type Buffer,
 } from '../common/buffer';
 import {
-  Search,
   type SearchOptions,
   type SearchProgress,
   type SearchResult,
