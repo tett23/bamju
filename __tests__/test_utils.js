@@ -5,7 +5,6 @@ import fs from 'fs';
 import mock from 'mock-fs';
 import 'raf/polyfill';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
 
 import path from '../app/common/path';
 
@@ -171,8 +170,6 @@ export function dummy(items: dummyType): Buffer[] {
     return r.concat(ret[key]);
   }, []);
 }
-
-Enzyme.configure({ adapter: new Adapter() });
 
 export function mountWithStore(component: React.Component, store: Store) {
   const context = {

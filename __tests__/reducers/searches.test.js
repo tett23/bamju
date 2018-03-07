@@ -72,20 +72,27 @@ describe('searches reducer', () => {
   });
 
   describe('updateResult', () => {
-    let buffer;
+    let result;
     beforeEach(() => {
-      buffer = {
-        id: 'foo',
-        name: 'foo',
-        path: '/foo',
-        repositoryName: 'bar',
-        repositoryPath: '/tmp/test/bar',
-        absolutePath: '/tmp/test/foo/bar',
-        itemType: 'directory',
-        parentID: null,
-        childrenIDs: [],
-        isLoaded: true,
-        body: ''
+      result = {
+        buffer: {
+          id: 'foo',
+          name: 'foo',
+          path: '/foo',
+          repositoryName: 'bar',
+          repositoryPath: '/tmp/test/bar',
+          absolutePath: '/tmp/test/foo/bar',
+          itemType: 'directory',
+          parentID: null,
+          childrenIDs: [],
+          isLoaded: true,
+          body: ''
+        },
+        position: {
+          size: 0,
+          offset: 0
+        },
+        detail: null
       };
     });
 
@@ -95,15 +102,15 @@ describe('searches reducer', () => {
       store.dispatch(searchAction);
       expect(store.getState()[0].result.length).toBe(0);
       const queryID = searchAction.payload.queryID;
-      store.dispatch(updateResult(queryID, { buffer }));
+      store.dispatch(updateResult(queryID, result));
       expect(store.getState()[0].result.length).toBe(1);
-      expect(store.getState()[0].result[0]).toMatchObject({ buffer });
+      expect(store.getState()[0].result[0]).toMatchObject(result);
     });
 
     it('queryID存在しない場合、何もしない', () => {
       store.dispatch(search('', null));
       const state = store.getState();
-      store.dispatch(updateResult('foo', { buffer }));
+      store.dispatch(updateResult('foo', result));
       expect(store.getState()).toBe(state);
     });
   });
