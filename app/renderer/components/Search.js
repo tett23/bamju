@@ -4,12 +4,21 @@ import React from 'react';
 import {
   type SearchState,
 } from '../../reducers/searches';
+import {
+  start
+} from '../../actions/searches';
+import {
+  type Buffer,
+} from '../../common/buffer';
+import SearchProgress from './SearchProgress';
+import SearchResult from './SearchResult';
 import styles from './Search.css';
 
 type Props = SearchState;
 
 class _search extends React.Component<Props> {
   inputElement: ?HTMLInputElement;
+  selectedIndex: ?number;
 
   // constructor(props: Props) {
   //   super(props);
@@ -29,37 +38,61 @@ class _search extends React.Component<Props> {
     const formValue = this.state ? this.state.query : this.props.query;
 
     const dispatch = this.dispatch;
+    const selectedIndex = this.state ? this.state.selectedIndex : null;
 
     return (
       <div>
-        <input
-          type="text"
-          className={styles.input}
-          ref={(input) => { if (input) { input.focus(); } this.inputElement = input; }}
-          value={formValue}
-          onClick={(e) => { e.stopPropagation(); }}
-          onKeyUp={e => {
-            return checkEnter(e, dispatch);
-          }}
-          onChange={this.handleChange}
-          placeholder="query"
+        <div>
+          <input
+            type="text"
+            className={styles.input}
+            ref={(input) => { if (input) { input.focus(); } this.inputElement = input; }}
+            value={formValue}
+            onClick={(e) => { e.stopPropagation(); }}
+            onKeyUp={e => {
+              return checkKeys(e, formValue, dispatch, this.state || {}, this.setState);
+            }}
+            onChange={this.handleChange}
+            placeholder="query"
+          />
+        </div>
+        <SearchProgress
+          progress={this.props.progress}
+          completed={this.props.completed}
+        />
+        <SearchResult
+          results={this.props.results}
+          selectedIndex={selectedIndex}
+          onSelected={searchResultOnSelected}
         />
       </div>
     );
   }
 }
 
-function checkEnter(e: SyntheticInputEvent<HTMLInputElement>, query, dispatch) {
+function checkKeys(e: SyntheticInputEvent<HTMLInputElement>, query, dispatch, state, setState) {
   e.stopPropagation();
 
+  // CmdOrCtrl + Enterで開くのかな
+
   if (e.key === 'Enter') {
-    dispatch.query(e.target.value);
+    dispatch(start('', e.target.value));
     return false;
-  } else if (e.key === 'Escape') {
-    return false;
+  } else if (e.key === 'Up') {
+    setState(Object.assign({}, state, {
+      selectedIndex: (state.selectedIndex || 0) - 1
+    }));
+  } else if (e.key === 'Down') {
+    setState({
+      selectedIndex: (state.selectedIndex || 0) + 1
+    });
   }
 
   return true;
+}
+
+function searchResultOnSelected(buffer: Buffer): void {
+
 }
 
 // function mapStateToProps(state: State) {

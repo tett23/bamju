@@ -7,9 +7,15 @@ import {
   searches,
 } from '../../app/reducers/searches';
 import {
+  defaultOptions,
+} from '../../app/common/search';
+import {
   search,
+  updateQuery,
+  updateOptions,
   updateProgress,
   updateResult,
+  incrementProgress,
   complete,
 } from '../../app/actions/searches';
 
@@ -42,6 +48,52 @@ describe('searches reducer', () => {
     });
   });
 
+  describe('updateQuery', () => {
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().length).toBe(0);
+      const searchAction = search('foo', null);
+      store.dispatch(searchAction);
+      expect(store.getState()[0].query).toBe('foo');
+      const queryID = searchAction.payload.queryID;
+      store.dispatch(updateQuery(queryID, 'bar'));
+      expect(store.getState()[0].query).toBe('bar');
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState();
+      store.dispatch(updateQuery('foo', ''));
+      expect(store.getState()).toBe(state);
+    });
+  });
+
+  describe('updateOptions', () => {
+    let options;
+    beforeEach(() => {
+      options = defaultOptions;
+    });
+
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().length).toBe(0);
+      const searchAction = search('foo', null);
+      store.dispatch(searchAction);
+      expect(store.getState()[0].query).toBe('foo');
+      const queryID = searchAction.payload.queryID;
+      const newOptions = Object.assign({}, options, {
+        queryType: 'fullText',
+      });
+      store.dispatch(updateOptions(queryID, newOptions));
+      expect(store.getState()[0].options.queryType).toBe('fullText');
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState();
+      store.dispatch(updateOptions('foo', options));
+      expect(store.getState()).toBe(state);
+    });
+  });
+
   describe('updateProgress', () => {
     it('queryIDのもので更新ができる', () => {
       expect(store.getState().length).toBe(0);
@@ -67,6 +119,32 @@ describe('searches reducer', () => {
         current: 1,
         total: 1,
       }));
+      expect(store.getState()).toBe(state);
+    });
+  });
+
+  describe('incrementProgress', () => {
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().length).toBe(0);
+      const searchAction = search('', null);
+      store.dispatch(searchAction);
+      const queryID = searchAction.payload.queryID;
+      const progress = {
+        current: 0,
+        total: 100,
+      };
+      store.dispatch(updateProgress(queryID, progress));
+      store.dispatch(incrementProgress(queryID));
+      expect(store.getState()[0].progress).toMatchObject({
+        current: 1,
+        total: 100,
+      });
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState();
+      store.dispatch(incrementProgress('foo'));
       expect(store.getState()).toBe(state);
     });
   });
@@ -100,11 +178,12 @@ describe('searches reducer', () => {
       expect(store.getState().length).toBe(0);
       const searchAction = search('', null);
       store.dispatch(searchAction);
-      expect(store.getState()[0].result.length).toBe(0);
+      console.log(store.getState());
+      expect(store.getState()[0].results.length).toBe(0);
       const queryID = searchAction.payload.queryID;
       store.dispatch(updateResult(queryID, result));
-      expect(store.getState()[0].result.length).toBe(1);
-      expect(store.getState()[0].result[0]).toMatchObject(result);
+      expect(store.getState()[0].results.length).toBe(1);
+      expect(store.getState()[0].results[0]).toMatchObject(result);
     });
 
     it('queryID存在しない場合、何もしない', () => {

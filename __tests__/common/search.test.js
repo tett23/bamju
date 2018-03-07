@@ -1,4 +1,5 @@
 // @flow
+/* eslint no-restricted-syntax: 0 */
 
 import {
   RepositoryManager,
@@ -35,6 +36,19 @@ beforeEach(() => {
   }]);
 });
 
+function map(search) {
+  const result = [];
+  let messages = [];
+  for (const [r, m] of search.start()) {
+    if (r != null) {
+      result.push(r);
+    }
+    messages = messages.concat(m);
+  }
+
+  return [result, messages];
+}
+
 describe('Search', () => {
   describe('fileName', () => {
     let search;
@@ -49,7 +63,7 @@ describe('Search', () => {
         queryType: QueryTypeFileName,
       }, manager.toBuffers());
 
-      const [result, messages] = await search.fileName();
+      const [result, messages] = map(search);
       messages.forEach((mes) => {
         expect(Message.isSimilarError(mes)).toBe(false);
       });
@@ -61,7 +75,7 @@ describe('Search', () => {
         queryType: QueryTypeFileName,
       }, manager.toBuffers());
 
-      const [result, messages] = await search.fileName();
+      const [result, messages] = map(search);
       messages.forEach((mes) => {
         expect(Message.isSimilarError(mes)).toBe(false);
       });
@@ -73,7 +87,7 @@ describe('Search', () => {
         queryType: QueryTypeFileName,
       }, manager.toBuffers());
 
-      const [result, messages] = await search.fileName();
+      const [result, messages] = map(search);
       messages.forEach((mes) => {
         expect(Message.isSimilarError(mes)).toBe(false);
       });
@@ -87,7 +101,7 @@ describe('Search', () => {
           enableRegExp: false,
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });
@@ -101,7 +115,7 @@ describe('Search', () => {
           ignoreCase: true
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });
@@ -115,7 +129,7 @@ describe('Search', () => {
           ignoreCase: false,
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });
@@ -130,7 +144,7 @@ describe('Search', () => {
           enableRegExp: true,
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });
@@ -144,7 +158,7 @@ describe('Search', () => {
           ignoreCase: true
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });
@@ -158,7 +172,7 @@ describe('Search', () => {
           ignoreCase: false,
         }, manager.toBuffers());
 
-        const [result, messages] = await search.fileName();
+        const [result, messages] = map(search);
         messages.forEach((mes) => {
           expect(Message.isSimilarError(mes)).toBe(false);
         });

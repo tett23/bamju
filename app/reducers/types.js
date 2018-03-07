@@ -22,6 +22,8 @@ import {
 } from '../actions/repositories_tree_view';
 import {
   search,
+  start,
+  cancel,
   updateResult,
   updateProgress,
   complete,
@@ -73,6 +75,8 @@ export type Actions = (
 | $ReturnType<typeof openBuffer>
 | $ReturnType<typeof closeBuffer>
 | $ReturnType<typeof search>
+| $ReturnType<typeof start>
+| $ReturnType<typeof cancel>
 | $ReturnType<typeof updateProgress>
 | $ReturnType<typeof updateResult>
 | $ReturnType<typeof complete>
