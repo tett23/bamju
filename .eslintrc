@@ -39,6 +39,7 @@
     }, {
       "enforceForRenamedProperties": false
     }],
+    "no-continue": "off",
     "import/no-named-as-default-member": "off",
     "import/no-named-as-default": "off",
     "flowtype-errors/show-errors": "error",
