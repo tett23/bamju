@@ -26,6 +26,7 @@ function modals(props: Props) {
       return (
         <InputDialog
           id={item.id}
+          parentKey={item.id}
           label={item.label}
           formValue={item.formValue}
           placeholder={item.placeholder}
@@ -42,7 +43,7 @@ function modals(props: Props) {
         return null;
       }
 
-      return (<Search {...search} />);
+      return (<Search parentKey={item.queryID} {...search} />);
     }
     default: return null;
     }
@@ -50,7 +51,7 @@ function modals(props: Props) {
     return (
       <div
         role="none"
-        key={item.id}
+        key={item.props.parentKey}
         onClick={(e) => {
           e.stopPropagation();
         }}

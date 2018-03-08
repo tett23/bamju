@@ -39,6 +39,7 @@ function tabView(props: Props) {
 
     return (
       <li
+        key={item.id}
         className={itemClass}
         role="none"
         onClick={() => { props.dispatch(activeTab(item.id)); }}
