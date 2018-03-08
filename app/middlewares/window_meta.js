@@ -24,7 +24,7 @@ export const filterWindowIDMiddleware = (_: Store<WindowState, Actions>) => (nex
 };
 
 export const broadcastMainMiddleware = (store: Store<WindowState, Actions>) => (next: Dispatch<Actions>) => (action: Actions) => {
-  if (action.meta.broadcastFrom === 'main') {
+  if ((action.meta || { broadcastFrom: 'main' }).broadcastFrom === 'main') {
     return next(action);
   }
 

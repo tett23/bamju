@@ -86,7 +86,8 @@ export class Search {
       return;
     }
 
-    for (const item of iterable()) { // eslint-disable-line no-restricted-syntax
+    let item;
+    for (item of iterable()) { // eslint-disable-line no-restricted-syntax
       yield item;
     }
   }

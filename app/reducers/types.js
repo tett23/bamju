@@ -24,6 +24,8 @@ import {
   search,
   start,
   cancel,
+  destroy,
+  clear,
   updateResult,
   updateProgress,
   complete,
@@ -77,6 +79,8 @@ export type Actions = (
 | $ReturnType<typeof search>
 | $ReturnType<typeof start>
 | $ReturnType<typeof cancel>
+| $ReturnType<typeof destroy>
+| $ReturnType<typeof clear>
 | $ReturnType<typeof updateProgress>
 | $ReturnType<typeof updateResult>
 | $ReturnType<typeof complete>

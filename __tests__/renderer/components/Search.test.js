@@ -1,9 +1,15 @@
 // @flow
 
 import * as React from 'react';
-import Enzyme from 'enzyme';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
 
+import {
+  appReducer,
+  initialState,
+} from '../../../app/reducers/app_window';
 import '../../global_config.test';
+import { mountWithStore } from '../../test_utils';
 
 import {
   search
@@ -12,7 +18,12 @@ import {
   Search,
 } from '../../../app/renderer/components/Search';
 
-describe('<Messages />', () => {
+let store;
+beforeEach(() => {
+  store = createStore(appReducer, initialState(), applyMiddleware(thunk));
+});
+
+describe('<Search />', () => {
   let props;
   beforeEach(() => {
     props = search('foo', null).payload;
@@ -45,10 +56,20 @@ describe('<Messages />', () => {
   });
 
   it('messagesが空のときはMessageは作られない', () => {
-    const component = Enzyme.mount(<Search {...props} />);
+    const component = mountWithStore(<Search {...props} />, store);
 
     component.find('.input').simulate('keyUp', {
       key: 'Enter'
     });
+  });
+
+  it('keyUp', () => {
+    const component = mountWithStore(<Search {...props} />, store);
+
+    expect(component.state('selectedIndex')).not.toBe(expect.anything());
+    component.find('.input').simulate('keyUp', {
+      key: 'Up'
+    });
+    expect(component.state('selectedIndex')).toBe(-1);
   });
 });

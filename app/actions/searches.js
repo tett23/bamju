@@ -31,6 +31,7 @@ export const SEARCH = 'SEARCH:SEARCH';
 export const START = 'SEARCH:START';
 export const CANCEL = 'SEARCH:CANCEL';
 export const DESTROY = 'SEARCH:DESTROY';
+export const CLEAR = 'SEARCH:CLEAR';
 export const UPDATE_QUERY = 'SEARCH:UPDATE_QUERY';
 export const UPDATE_OPTIONS = 'SEARCH:UPDATE_OPTIONS';
 export const UPDATE_RESULT = 'SEARCH:UPDATE_RESULT';
@@ -66,7 +67,7 @@ export function start(queryID: string, meta: Meta = {}) {
 
   return async (dispatch: Dispatch<Actions>, getState: () => State) => {
     dispatch(addMessage(Message.info('search start'), newMeta));
-    await _start(queryID, dispatch, getState);
+    _start(queryID, dispatch, getState, newMeta);
     dispatch(addMessage(Message.info('search end'), newMeta));
     return dispatch(complete(queryID, newMeta));
   };
@@ -87,6 +88,18 @@ export function cancel(queryID: string, meta: Meta = {}) {
 export function destroy(queryID: string, meta: Meta = {}) {
   return {
     type: DESTROY,
+    payload: {
+      queryID,
+    },
+    meta: Object.assign(meta, {
+      scope: 'local'
+    })
+  };
+}
+
+export function clear(queryID: string, meta: Meta = {}) {
+  return {
+    type: CLEAR,
     payload: {
       queryID,
     },
@@ -172,12 +185,18 @@ export function complete(queryID: string, meta: Meta = {}) {
   };
 }
 
-async function _start(queryID: string, dispatch: Dispatch<Actions>, getState: () => State) {
+let _inRunning = false;
+async function _start(queryID: string, dispatch: Dispatch<Actions>, getState: () => State, meta: Meta) {
+  if (_inRunning) {
+    return;
+  }
+  _inRunning = true;
+
   const state = getState().searches.find((item) => {
     return queryID === item.queryID;
   });
   if (state == null) {
-    dispatch(addMessage(Message.info(`search state not found. queryID=${queryID}`)));
+    dispatch(addMessage(Message.info(`search state not found. queryID=${queryID}`), meta));
     return;
   }
 
@@ -190,19 +209,23 @@ async function _start(queryID: string, dispatch: Dispatch<Actions>, getState: ()
   dispatch(updateProgress(queryID, {
     current: 0,
     total: s.buffers.length
-  }));
-  for (const item of s.start()) { // eslint-disable-line no-restricted-syntax
+  }, meta));
+  dispatch(clear(queryID));
+  let item;
+  for (item of s.start()) { // eslint-disable-line no-restricted-syntax
     const [result, messages] = item;
     messages.forEach((mes) => {
-      dispatch(addMessage(mes));
+      dispatch(addMessage(mes, meta));
     });
-    dispatch(incrementProgress(queryID));
+    dispatch(incrementProgress(queryID, meta));
     if (result == null) {
       continue;
     }
 
-    dispatch(updateResult(queryID, result));
+    dispatch(updateResult(queryID, result, meta));
   }
+
+  _inRunning = false;
 }
 
 function targetBuffers(repositoryName: ?string, targetID: ?MetaDataID, buffers: Buffer[]): Buffer[] {

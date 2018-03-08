@@ -8,6 +8,7 @@ import {
   SEARCH,
   CANCEL,
   DESTROY,
+  CLEAR,
   UPDATE_QUERY,
   UPDATE_OPTIONS,
   UPDATE_RESULT,
@@ -73,6 +74,16 @@ export function searches(
     }
     const newState = state.slice();
     newState.splice(idx, 1);
+
+    return newState;
+  }
+  case CLEAR: {
+    const idx = findIndex(action.payload.queryID, state);
+    if (idx === -1) {
+      return state;
+    }
+    const newState = state.slice();
+    newState[idx].results = [];
 
     return newState;
   }

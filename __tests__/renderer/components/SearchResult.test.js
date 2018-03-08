@@ -143,7 +143,6 @@ describe('<SearchResult />', () => {
     const text = component.find('.item .detail span').reduce((r, s) => {
       return r + s.text();
     }, '');
-    console.log(text);
     expect(text.length).toBe(50);
   });
 });
