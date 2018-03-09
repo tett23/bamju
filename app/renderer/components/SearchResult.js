@@ -37,7 +37,7 @@ export function SearchResult(props: Props) {
         onClick={() => onSelected(buffer)}
       >
         <div className={styles.filename}>
-          <FileIcon itemType={buffer.itemType} />
+          <FileIcon className={styles.fileIcon} itemType={buffer.itemType} />
           {highlight(buffer.name, item.position)}
         </div>
         <div className={styles.internalPath}>

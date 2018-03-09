@@ -53,21 +53,22 @@ class _search extends React.Component<Props> {
     const selectedIndex = this.state ? this.state.selectedIndex : null;
 
     return (
-      <div>
-        <div>
-          <input
-            type="text"
-            className={styles.input}
-            ref={(input) => { if (input) { input.focus(); } this.inputElement = input; }}
-            value={formValue}
-            onClick={(e) => { e.stopPropagation(); }}
-            onKeyUp={e => {
-              return checkKeys(e, this.props.queryID, this.selectedIndex, this.props, this.state, this.setState.bind(this));
-            }}
-            onChange={this.handleChange}
-            placeholder="query"
-          />
-        </div>
+      <div className={styles.search}>
+        <label className={styles.label}>
+          Search
+        </label>
+        <input
+          type="text"
+          className={styles.input}
+          ref={(input) => { if (input) { input.focus(); } this.inputElement = input; }}
+          value={formValue}
+          onClick={(e) => { e.stopPropagation(); }}
+          onKeyUp={e => {
+            return checkKeys(e, this.props.queryID, this.selectedIndex, this.props, this.state, this.setState.bind(this));
+          }}
+          onChange={this.handleChange}
+          placeholder="query"
+        />
         <SearchProgress
           progress={this.props.progress}
           completed={this.props.completed}
@@ -86,6 +87,7 @@ function checkKeys(e: SyntheticInputEvent<HTMLInputElement>, queryID: string, se
   e.stopPropagation();
 
   // CmdOrCtrl + Enterで開くのかな
+  console.log(selectedIndex, state);
 
   if (e.key === 'Enter') {
     dispatch.start(queryID);
@@ -114,7 +116,7 @@ function mapDispatchToProps(dispatch) {
     },
     updateQuery: (queryID: string, query: string) => {
       return dispatch(updateQuery(queryID, query));
-    }
+    },
   };
 }
 

@@ -9,7 +9,7 @@
 
 .label {
   font-weight: normal;
-  font-size: .9rem;
+  font-size: var(--font-size-small);
   padding-left: .5rem;
 }
 
