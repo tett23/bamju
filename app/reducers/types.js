@@ -11,6 +11,7 @@ import {
 import {
   addTab,
   closeTab,
+  closeAllTabs,
   updateTab,
   updateCurrentTab,
   activeTab,
@@ -73,6 +74,7 @@ export type Meta = {
 export type Actions = (
   $ReturnType<typeof addTab>
 | $ReturnType<typeof closeTab>
+| $ReturnType<typeof closeAllTabs>
 | $ReturnType<typeof updateTab>
 | $ReturnType<typeof updateCurrentTab>
 | $ReturnType<typeof activeTab>
