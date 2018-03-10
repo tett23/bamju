@@ -15,6 +15,11 @@
   height: 3rem;
   margin: auto 0;
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: var(--background-color-light);
 }
 
 .selected {
