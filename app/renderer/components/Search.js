@@ -11,6 +11,9 @@ import {
   updateSelectedIndex,
 } from '../../actions/searches';
 import {
+  addOrActiveTab,
+} from '../../actions/browser';
+import {
   type Buffer,
 } from '../../common/buffer';
 import SearchProgress from './SearchProgress';
@@ -28,7 +31,6 @@ type Props = SearchState & {
 
 class _search extends React.Component<Props> {
   inputElement: ?HTMLInputElement;
-  selectedIndex: ?number;
   handleChange: (SyntheticInputEvent<*>) => void;
 
   constructor(props: Props) {
@@ -75,7 +77,7 @@ class _search extends React.Component<Props> {
         <SearchResult
           results={this.props.results}
           selectedIndex={selectedIndex}
-          onSelected={searchResultOnSelected}
+          onSelected={() => { searchResultOnSelected(this.props); }}
         />
       </div>
     );
@@ -86,36 +88,38 @@ function checkKeys(e: SyntheticInputEvent<HTMLInputElement>, props: Props) {
   e.stopPropagation();
 
   const selectedIndex = props.selectedIndex || 0;
-  // CmdOrCtrl + Enterで開くのかな
-  console.log(e);
-  console.log(e.key, selectedIndex);
 
-  if (e.key === 'Enter') {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    const result = props.results[selectedIndex];
+    if (result == null) {
+      return false;
+    }
+    searchResultOnSelected(props)(result.buffer);
+  } else if (e.key === 'Enter') {
     props.start(props.queryID);
-    return false;
   } else if (e.key === 'ArrowUp') {
-    console.log('ArrowUp');
     e.preventDefault();
     props.updateSelectedIndex(props.queryID, selectedIndex - 1);
-    return false;
   } else if (e.key === 'ArrowDown') {
-    console.log('ArrowDown');
     e.preventDefault();
     props.updateSelectedIndex(props.queryID, selectedIndex + 1);
-    return false;
   }
-
-  return true;
 }
 
-function searchResultOnSelected(buffer: Buffer): void {
-
+function searchResultOnSelected(props: Props): (Buffer)=>void {
+  return (buffer: Buffer) => {
+    props.addOrActiveTab(props.queryID, buffer);
+  };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
     start: (queryID: string) => {
       return dispatch(start(queryID));
+    },
+    addOrActiveTab: (queryID: string, buffer: Buffer) => {
+      dispatch(addOrActiveTab(buffer.id));
+      return dispatch(close(queryID));
     },
     updateQuery: (queryID: string, query: string) => {
       return dispatch(updateQuery(queryID, query));

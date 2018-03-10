@@ -138,14 +138,17 @@ export function searches(
     if (idx === -1) {
       return state;
     }
+    if (state[idx].selectedIndex === action.payload.selectedIndex) {
+      return state;
+    }
 
     const newState = state.slice();
     newState[idx].selectedIndex = action.payload.selectedIndex;
-    if (newState[idx].results.length - 1 < newState[idx].selectedIndex) {
+    if (newState[idx].selectedIndex > newState[idx].results.length - 1) {
       newState[idx].selectedIndex = 0;
     }
     if (newState[idx].selectedIndex < 0) {
-      newState[idx].selectedIndex = newState[idx].results.length - newState[idx].selectedIndex;
+      newState[idx].selectedIndex = newState[idx].results.length - 1;
     }
 
     return newState;

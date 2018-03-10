@@ -280,14 +280,44 @@ describe('searches reducer', () => {
   });
 
   describe('updateSelectedIndex', () => {
-    it('queryIDのもので更新ができる', () => {
-      expect(store.getState().searches.length).toBe(0);
-      const searchAction = search('', null);
+    let searchAction;
+    let queryID;
+    beforeEach(async () => {
+      const options = {
+        queryType: 'fileName',
+      };
+      const result = {
+        buffer: {
+          id: 'foo',
+          name: 'foo',
+          path: '/foo',
+          repositoryName: 'bar',
+          repositoryPath: '/tmp/test/bar',
+          absolutePath: '/tmp/test/foo/bar',
+          itemType: 'directory',
+          parentID: null,
+          childrenIDs: [],
+          isLoaded: true,
+          body: ''
+        },
+        position: {
+          size: 0,
+          offset: 0
+        },
+        detail: null
+      };
+
+      searchAction = search('foo', null, options);
+      queryID = searchAction.payload.queryID;
       store.dispatch(searchAction);
-      expect(store.getState().searches[0].completed).toBe(false);
-      const queryID = searchAction.payload.queryID;
-      store.dispatch(complete(queryID));
-      expect(store.getState().searches[0].completed).toBe(true);
+      store.dispatch(updateResult(queryID, result));
+      store.dispatch(updateResult(queryID, result));
+    });
+
+    it('queryIDのもので更新ができる', async () => {
+      expect(store.getState().searches[0].selectedIndex).toBe(null);
+      store.dispatch(updateSelectedIndex(queryID, 1));
+      expect(store.getState().searches[0].selectedIndex).toBe(1);
     });
 
     it('queryID存在しない場合、何もしない', () => {
@@ -297,22 +327,26 @@ describe('searches reducer', () => {
       expect(store.getState().searches).toBe(state);
     });
 
+    it('selectedIndexが負数の場合、results.length-1が設定される', () => {
+      store.dispatch(updateSelectedIndex(queryID, -1));
+      expect(store.getState().searches[0].selectedIndex).toBe(store.getState().searches[0].results.length - 1);
+    });
+
+    it('selectedIndexがresults.lengthを越える場合、0が設定される', () => {
+      store.dispatch(updateSelectedIndex(queryID, store.getState().searches[0].results.length));
+      expect(store.getState().searches[0].selectedIndex).toBe(0);
+    });
+  });
+
   describe('complete', () => {
     it('queryIDのもので更新ができる', () => {
       expect(store.getState().searches.length).toBe(0);
       const searchAction = search('', null);
       store.dispatch(searchAction);
-      expect(store.getState().searches[0].selectedIndex).toBe(null);
+      expect(store.getState().searches[0].completed).toBe(false);
       const queryID = searchAction.payload.queryID;
-      store.dispatch(updateSelectedIndex(queryID, 1));
-      expect(store.getState().searches[0].selectedIndex).toBe(1);
-    });
-
-    it('queryID存在しない場合、何もしない', () => {
-      store.dispatch(search('', null));
-      const state = store.getState().searches;
-      store.dispatch(updateSelectedIndex('foo'));
-      expect(store.getState().searches).toBe(state);
+      store.dispatch(complete(queryID));
+      expect(store.getState().searches[0].completed).toBe(true);
     });
   });
 });
