@@ -23,6 +23,7 @@ import {
   updateOptions,
   updateProgress,
   updateResult,
+  updateSelectedIndex,
   incrementProgress,
   complete,
 } from '../../app/actions/searches';
@@ -278,7 +279,7 @@ describe('searches reducer', () => {
     });
   });
 
-  describe('complete', () => {
+  describe('updateSelectedIndex', () => {
     it('queryIDのもので更新ができる', () => {
       expect(store.getState().searches.length).toBe(0);
       const searchAction = search('', null);
@@ -293,6 +294,24 @@ describe('searches reducer', () => {
       store.dispatch(search('', null));
       const state = store.getState().searches;
       store.dispatch(complete('foo'));
+      expect(store.getState().searches).toBe(state);
+    });
+
+  describe('complete', () => {
+    it('queryIDのもので更新ができる', () => {
+      expect(store.getState().searches.length).toBe(0);
+      const searchAction = search('', null);
+      store.dispatch(searchAction);
+      expect(store.getState().searches[0].selectedIndex).toBe(null);
+      const queryID = searchAction.payload.queryID;
+      store.dispatch(updateSelectedIndex(queryID, 1));
+      expect(store.getState().searches[0].selectedIndex).toBe(1);
+    });
+
+    it('queryID存在しない場合、何もしない', () => {
+      store.dispatch(search('', null));
+      const state = store.getState().searches;
+      store.dispatch(updateSelectedIndex('foo'));
       expect(store.getState().searches).toBe(state);
     });
   });

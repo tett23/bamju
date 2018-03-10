@@ -13,6 +13,7 @@ import {
   UPDATE_OPTIONS,
   UPDATE_RESULT,
   UPDATE_PROGRESS,
+  UPDATE_SELECTED_INDEX,
   INNCREMENT_PROGRESS,
   COMPLETE,
 } from '../actions/searches';
@@ -33,6 +34,7 @@ export type SearchState = {
   options: SearchOptions,
   progress: SearchProgress,
   results: SearchResult[],
+  selectedIndex: ?number,
   completed: boolean
 };
 
@@ -128,6 +130,23 @@ export function searches(
 
     const newState = state.slice();
     newState[idx].results.push(action.payload.result);
+
+    return newState;
+  }
+  case UPDATE_SELECTED_INDEX: {
+    const idx = findIndex(action.payload.queryID, state);
+    if (idx === -1) {
+      return state;
+    }
+
+    const newState = state.slice();
+    newState[idx].selectedIndex = action.payload.selectedIndex;
+    if (newState[idx].results.length - 1 < newState[idx].selectedIndex) {
+      newState[idx].selectedIndex = 0;
+    }
+    if (newState[idx].selectedIndex < 0) {
+      newState[idx].selectedIndex = newState[idx].results.length - newState[idx].selectedIndex;
+    }
 
     return newState;
   }

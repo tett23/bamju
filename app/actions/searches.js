@@ -36,6 +36,7 @@ export const UPDATE_QUERY = 'SEARCH:UPDATE_QUERY';
 export const UPDATE_OPTIONS = 'SEARCH:UPDATE_OPTIONS';
 export const UPDATE_RESULT = 'SEARCH:UPDATE_RESULT';
 export const UPDATE_PROGRESS = 'SEARCH:UPDATE_PROGRESS';
+export const UPDATE_SELECTED_INDEX = 'SEARCH:UPDATE_SELECTED_INDEX';
 export const INNCREMENT_PROGRESS = 'SEARCH:INNCREMENT_PROGRESS';
 export const COMPLETE = 'SEARCH:COMPLETE';
 
@@ -52,6 +53,7 @@ export function search(query: string, buffer: ?Buffer, options?: SearchOptions =
         total: 0,
       },
       results: [],
+      selectedIndex: null,
       completed: false,
     },
     meta: Object.assign(meta, {
@@ -154,6 +156,19 @@ export function updateResult(queryID: string, result: SearchResult, meta: Meta =
     payload: {
       queryID,
       result,
+    },
+    meta: Object.assign(meta, {
+      scope: 'local'
+    })
+  };
+}
+
+export function updateSelectedIndex(queryID: string, selectedIndex: ?number, meta: Meta = {}) {
+  return {
+    type: UPDATE_SELECTED_INDEX,
+    payload: {
+      queryID,
+      selectedIndex,
     },
     meta: Object.assign(meta, {
       scope: 'local'

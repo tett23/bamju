@@ -28,6 +28,9 @@ import {
   clear,
   updateResult,
   updateProgress,
+  updateOptions,
+  updateQuery,
+  updateSelectedIndex,
   complete,
 } from '../actions/searches';
 import {
@@ -83,6 +86,9 @@ export type Actions = (
 | $ReturnType<typeof clear>
 | $ReturnType<typeof updateProgress>
 | $ReturnType<typeof updateResult>
+| $ReturnType<typeof updateQuery>
+| $ReturnType<typeof updateOptions>
+| $ReturnType<typeof updateSelectedIndex>
 | $ReturnType<typeof complete>
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
