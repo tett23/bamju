@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { connect } from 'react-redux';
+import FontAwesome from 'react-fontawesome';
 import {
   type Message as _Message,
   type MessageType,
@@ -17,7 +18,6 @@ import {
   closeMessage,
   closeAllMessages,
 } from '../../actions/messages';
-import { Button } from './Button';
 import styles from './Message.css';
 
 type Props = {
@@ -38,10 +38,9 @@ function message(props: Props) {
 
   return (
     <div role="alert" className={messageClass}>
-      <Button
+      <FontAwesome
         className={styles.closeButton}
-        text="close"
-        tabIndex={-1}
+        name="times"
         onClick={() => { props.closeMessage(props.id); }}
         onKeyUp={e => {
           return checkKey(e, () => {
