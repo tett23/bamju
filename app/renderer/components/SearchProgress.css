@@ -1,0 +1,14 @@
+.searchProgress {
+  display: flex;
+  flex-direction: row;
+}
+
+.progressBar {
+  margin: auto 0;
+  width: 100%;
+}
+
+.count {
+  margin: auto 0;
+  margin-left: 1rem;
+}
