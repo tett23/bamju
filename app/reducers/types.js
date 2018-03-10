@@ -38,6 +38,7 @@ import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
+  closeSearchDialog,
 } from '../actions/modals';
 import {
   addMessage,
@@ -95,6 +96,7 @@ export type Actions = (
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof closeAllDialog>
+| $ReturnType<typeof closeSearchDialog>
 | $ReturnType<typeof addMessage>
 | $ReturnType<typeof closeMessage>
 | $ReturnType<typeof closeAllMessages>

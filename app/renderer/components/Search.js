@@ -14,6 +14,9 @@ import {
   addOrActiveTab,
 } from '../../actions/browser';
 import {
+  closeSearchDialog,
+} from '../../actions/modals';
+import {
   type Buffer,
 } from '../../common/buffer';
 import SearchProgress from './SearchProgress';
@@ -25,8 +28,10 @@ import styles from './Search.css';
 
 type Props = SearchState & {
   start: (string) => $ReturnType<start>,
+  addOrActiveTab: (string, Buffer)=>$ReturnType<addOrActiveTab>,
   updateQuery: (string, string) => $ReturnType<updateQuery>,
-  updateSelectedIndex: (string, ?number)=>$ReturnType<updateSelectedIndex>
+  updateSelectedIndex: (string, ?number)=>$ReturnType<updateSelectedIndex>,
+  closeSearchDialog: (string)=>$ReturnType<closeSearchDialog>
 };
 
 class _search extends React.Component<Props> {
@@ -103,6 +108,8 @@ function checkKeys(e: SyntheticInputEvent<HTMLInputElement>, props: Props) {
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
     props.updateSelectedIndex(props.queryID, selectedIndex + 1);
+  } else if (e.key === 'Escape') {
+    props.closeSearchDialog(props.queryID);
   }
 }
 
@@ -118,14 +125,17 @@ function mapDispatchToProps(dispatch) {
       return dispatch(start(queryID));
     },
     addOrActiveTab: (queryID: string, buffer: Buffer) => {
-      dispatch(addOrActiveTab(buffer.id));
-      return dispatch(close(queryID));
+      dispatch(closeSearchDialog(queryID));
+      return dispatch(addOrActiveTab(buffer.id));
     },
     updateQuery: (queryID: string, query: string) => {
       return dispatch(updateQuery(queryID, query));
     },
     updateSelectedIndex: (queryID: string, selectedIndex: ?number) => {
       return dispatch(updateSelectedIndex(queryID, selectedIndex));
+    },
+    closeSearchDialog: (queryID: string) => {
+      return dispatch(closeSearchDialog(queryID));
     }
   };
 }

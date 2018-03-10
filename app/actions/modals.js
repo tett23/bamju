@@ -39,6 +39,7 @@ export const OPEN_INPUT_DIALOG = 'OPEN_INPUT_DIALOG';
 export const OPEN_SEARCH_DIALOG = 'OPEN_SEARCH_DIALOG';
 export const CLOSE_DIALOG = 'CLOSE_DIALOG';
 export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
+export const CLOSE_SEARCH_DIALOG = 'CLOSE_SEARCH_DIALOG';
 
 export function openInputDialog(argument: InputDialogValues, meta: Meta = {}) {
   return {
@@ -80,6 +81,16 @@ export function closeAllDialog(meta: Meta = {}) {
   return {
     type: CLOSE_ALL_DIALOG,
     payload: {},
+    meta
+  };
+}
+
+export function closeSearchDialog(queryID: string, meta: Meta = {}) {
+  return {
+    type: CLOSE_SEARCH_DIALOG,
+    payload: {
+      queryID,
+    },
     meta
   };
 }

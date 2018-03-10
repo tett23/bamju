@@ -11,6 +11,7 @@ import {
   openSearchDialog,
   closeDialog,
   closeAllDialog,
+  closeSearchDialog,
 } from '../../app/actions/modals';
 import {
   search
@@ -44,7 +45,7 @@ describe('modal reducer', () => {
     it('Dialogを追加できる', () => {
       const searchAction = search('', null);
       store.dispatch(searchAction);
-      store.dispatch(openSearchDialog('foo'));
+      store.dispatch(openSearchDialog(searchAction.payload.queryID));
 
       const newState = store.getState();
 
@@ -95,6 +96,53 @@ describe('modal reducer', () => {
       store.dispatch(closeAllDialog());
 
       expect(store.getState().length).toBe(0);
+    });
+  });
+
+  describe('CLOSE_SEARCH_DIALOG', () => {
+    it('queryIDを指定して閉じられる', () => {
+      const searchAction = search('', null);
+      store.dispatch(searchAction);
+      store.dispatch(openSearchDialog(searchAction.payload.queryID));
+      expect(store.getState().length).toBe(1);
+
+      store.dispatch(closeSearchDialog(searchAction.payload.queryID));
+
+      expect(store.getState().length).toBe(0);
+    });
+
+    it('queryIDを指定して閉じられる', () => {
+      let searchAction = search('', null);
+      store.dispatch(searchAction);
+      const dialog = store.dispatch(openSearchDialog(searchAction.payload.queryID));
+      searchAction = search('', null);
+      store.dispatch(searchAction);
+      store.dispatch(openSearchDialog(searchAction.payload.queryID));
+
+      expect(store.getState().length).toBe(2);
+
+      store.dispatch(closeSearchDialog(searchAction.payload.queryID));
+
+      expect(store.getState().length).toBe(1);
+      expect(store.getState()[0].id).toBe(dialog.payload.modalID);
+    });
+
+    it('searchDialogでないものは閉じられない', () => {
+      const inputDialog = store.dispatch(openInputDialog({
+        label: 'new file',
+        formValue: '',
+        placeholder: '',
+        onEnter: (_) => { return true; },
+      }));
+      const searchAction = search('', null);
+      store.dispatch(searchAction);
+      store.dispatch(openSearchDialog(searchAction.payload.queryID));
+      expect(store.getState().length).toBe(2);
+
+      store.dispatch(closeSearchDialog(searchAction.payload.queryID));
+
+      expect(store.getState().length).toBe(1);
+      expect(store.getState()[0].id).toBe(inputDialog.payload.modalID);
     });
   });
 });

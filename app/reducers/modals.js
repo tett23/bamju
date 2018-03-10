@@ -8,6 +8,7 @@ import {
   OPEN_SEARCH_DIALOG,
   CLOSE_DIALOG,
   CLOSE_ALL_DIALOG,
+  CLOSE_SEARCH_DIALOG,
   type InputDialog,
   type SearchDialog,
   type UndefinedDialog,
@@ -64,6 +65,19 @@ export function modals(
   }
   case CLOSE_ALL_DIALOG: {
     return [];
+  }
+  case CLOSE_SEARCH_DIALOG: {
+    const idx = state.findIndex((item) => {
+      return item.type === 'searchDialog' && item.queryID === action.payload.queryID;
+    });
+    if (idx === -1) {
+      return state;
+    }
+
+    const newState = state.slice();
+    newState.splice(idx, 1);
+
+    return newState;
   }
   default:
     return state;
