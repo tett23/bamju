@@ -82,7 +82,7 @@ class _search extends React.Component<Props> {
         <SearchResult
           results={this.props.results}
           selectedIndex={selectedIndex}
-          onSelected={() => { searchResultOnSelected(this.props); }}
+          onSelected={searchResultOnSelected(this.props)}
         />
       </div>
     );
