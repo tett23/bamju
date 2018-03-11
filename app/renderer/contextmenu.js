@@ -291,7 +291,7 @@ export class ContextMenu {
   static searchMenu(buffer: ?Buffer): ?MenuItem[] {
     return [
       {
-        label: 'Search',
+        label: 'Find Buffer',
         click: () => {
           const searchAction = search('', buffer);
           _store.dispatch(searchAction);

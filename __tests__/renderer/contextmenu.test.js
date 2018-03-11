@@ -220,7 +220,7 @@ describe('ContextMenu', () => {
     it('検索のメニューが開かれる', () => {
       const template = ContextMenu.searchMenu(buffer) || [];
       expect(template.length).toBe(1);
-      expect(template[0].label).toBe('Search');
+      expect(template[0].label).toBe('Find Buffer');
     });
 
     it('検索のダイアログが開かれる', () => {
