@@ -52,6 +52,18 @@ describe('modal reducer', () => {
       expect(newState.length).toBe(1);
       expect(newState[0].type).toBe('searchDialog');
     });
+
+    it('searchDialogは二つ以上存在しない', () => {
+      expect(store.getState().length).toBe(0);
+
+      for (let i = 0; i < 10; i += 1) {
+        const searchAction = search('', null);
+        store.dispatch(searchAction);
+        store.dispatch(openSearchDialog(searchAction.payload.queryID));
+
+        expect(store.getState().length).toBe(1);
+      }
+    });
   });
 
   describe('CLOSE_DIALOG', () => {
@@ -109,22 +121,6 @@ describe('modal reducer', () => {
       store.dispatch(closeSearchDialog(searchAction.payload.queryID));
 
       expect(store.getState().length).toBe(0);
-    });
-
-    it('queryIDを指定して閉じられる', () => {
-      let searchAction = search('', null);
-      store.dispatch(searchAction);
-      const dialog = store.dispatch(openSearchDialog(searchAction.payload.queryID));
-      searchAction = search('', null);
-      store.dispatch(searchAction);
-      store.dispatch(openSearchDialog(searchAction.payload.queryID));
-
-      expect(store.getState().length).toBe(2);
-
-      store.dispatch(closeSearchDialog(searchAction.payload.queryID));
-
-      expect(store.getState().length).toBe(1);
-      expect(store.getState()[0].id).toBe(dialog.payload.modalID);
     });
 
     it('searchDialogでないものは閉じられない', () => {

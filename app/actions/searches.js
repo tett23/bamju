@@ -56,9 +56,7 @@ export function search(query: string, buffer: ?Buffer, options?: SearchOptions =
       selectedIndex: null,
       completed: false,
     },
-    meta: Object.assign(meta, {
-      scope: 'local'
-    })
+    meta,
   };
 }
 

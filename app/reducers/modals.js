@@ -41,6 +41,12 @@ export function modals(
   }
   case OPEN_SEARCH_DIALOG: {
     const newState = state.slice();
+    newState.reverse().forEach((_, i) => {
+      if (newState[i].type === 'searchDialog') {
+        newState.splice(i, 1);
+      }
+    });
+
     newState.push({
       id: action.payload.modalID,
       type: 'searchDialog',
