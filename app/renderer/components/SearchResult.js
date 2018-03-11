@@ -49,10 +49,29 @@ export function SearchResult(props: Props) {
   });
 
   return (
-    <ul className={styles.searchResult}>
+    <ul
+      className={styles.searchResult}
+      ref={(item) => scrollItem(item, selectedIndex)}
+    >
       {items}
     </ul>
   );
+}
+
+function scrollItem(ul, selectedIndex) {
+  if (ul == null || selectedIndex == null) {
+    return;
+  }
+
+  const olItems = ul.querySelectorAll('ol');
+  const ol = olItems[selectedIndex];
+  if (ol == null) {
+    return;
+  }
+
+  ul.scrollTop = ol.offsetTop - ul.offsetTop; // eslint-disable-line no-param-reassign
+
+  console.log(ul);
 }
 
 function detail(result: Result) {
