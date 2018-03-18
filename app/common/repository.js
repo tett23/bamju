@@ -377,10 +377,10 @@ export class Repository {
       const json:string = fs.readFileSync(this.configPath(), 'utf8');
       repositoryMetaData = JSON.parse(json, (values) => {
         values.buffer.forEach((item) => {
-          item.note = item.note || emptyNote();
+          item.note = item.note || emptyNote(); // eslint-disable-line no-param-reassign
         });
 
-        return value;
+        return values;
       });
     } catch (e) {
       return Message.error(`Repository.loadMetaDataFile readFile error. name=${this.name}. ${e.message}`);
