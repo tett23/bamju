@@ -49,7 +49,10 @@ function repositoriesTreeView(props: Props) {
 
   return (
     <div className={styles.treeView}>
-      <ul className={styles.treeViewItems}>{items}</ul>
+      <div className={styles.listWrapper}>
+        <ul className={styles.treeViewItems}>{items}</ul>
+        <div className={styles.resizeHandle} />
+      </div>
       <div className={styles.menu}>
         <span className={styles.menuItem}>
           <FontAwesome name="plus" onClick={(e) => { addRepositoryHandler(e, props); }} />
