@@ -19,7 +19,7 @@ const fuseOptions = {
   matchAllTokens: true,
   includeScore: true,
   includeMatches: true,
-  threshold: 0.6,
+  threshold: 0.2,
   location: 0,
   distance: 100,
   maxPatternLength: 32,
@@ -111,30 +111,57 @@ export class Search {
     }
 
     let item;
-    for (item of iterable()) { // eslint-disable-line no-restricted-syntax
+    for (item of iterable(this.query)) { // eslint-disable-line no-restricted-syntax
       yield item;
     }
   }
 
   // eslint-disable-next-line
-  *fullText(): Iterable<[?SearchResult, Message.Message[]]> {
+  *fullText(query: string): Iterable<[?SearchResult, Message.Message[]]> {
     yield [null, []];
   }
 
-  *fileName(): Iterable<[?SearchResult, Message.Message[]]> {
+  *fileName(query: string): Iterable<[?SearchResult, Message.Message[]]> {
     const options = Object.assign({}, fuseOptions, {
       caseSensitive: !this.options.ignoreCase,
-      keys: [{
-        name: 'name',
-        weight: 0.3
-      }, {
-        name: 'path',
-        weight: 0.7
-      }]
+      keys: ['path']
     });
-    const fuse = new Fuse(this.buffers, options);
-    // $FlowFixMe
-    const results: FuseResult[] = fuse.search(this.query);
+    const init = this.buffers.map((item) => {
+      return {
+        item,
+        matches: [
+          {
+            indices: []
+          }
+        ]
+      };
+    });
+
+    const results: FuseResult[] = query.split('/').reduce((prevResult: FuseResult[], q: string) => {
+      console.log(prevResult);
+      const bufs = prevResult.map((item) => {
+        return item.item;
+      });
+      const fuse = new Fuse(bufs, options);
+
+      // $FlowFixMe
+      const tmp:FuseResult[] = fuse.search(q);
+      tmp.forEach((item) => {
+        const prev = prevResult.find((i) => {
+          return i.item.id === item.item.id;
+        });
+        if (prev == null) {
+          return;
+        }
+
+        console.log(item);
+        // eslint-disable-next-line no-param-reassign
+        item.matches[0].indices = item.matches[0].indices.concat(prev.matches[0].indices);
+      });
+      // $FlowFixMe
+      return tmp;
+      // $FlowFixMe
+    }, init);
 
     let item: FuseResult;
     for (item of results) { // eslint-disable-line no-restricted-syntax
