@@ -11,7 +11,8 @@ export type MessageType = 'info' | 'succeeded' | 'failed' | 'warning' | 'error' 
 export type Message = {
   type: MessageType,
   message: string,
-  stack?: string[]
+  stack?: string[],
+  longStack?: string
 };
 
 // eslint-disable-next-line flowtype/no-weak-types
@@ -33,70 +34,114 @@ export function isSimilarMessage(mes: Message | any): boolean {
 }
 
 export function wrap(mes: Message, text?: string, type?: MessageType): Message {
-  return {
+  const ret = {
     type: type || mes.type,
     message: [text, mes.message].filter(Boolean).join('. '),
-    stack: [stack()].concat(mes.stack || [])
+    stack: [stack()].concat(mes.stack || []),
+    longStack: mes.longStack || Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function create(type: MessageType, text: string): Message {
-  return {
+  const ret = {
     type,
     message: text,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function info(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeInfo,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function success(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeSucceeded,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function warning(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeWarning,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function error(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeError,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function fail(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeFailed,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
 export function debug(mes: string): Message {
-  return {
+  const ret = {
     type: MessageTypeDebug,
     message: mes,
-    stack: [stack()]
+    stack: [stack()],
+    longStack: Error.captureStackTrace({})
   };
+  output(ret);
+
+  return ret;
 }
 
-export function stack(): string {
+function output(mes: Message) {
+  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+    if (mes.type !== MessageTypeSucceeded) {
+      console.log(stringify(mes));
+    }
+  }
+}
+
+function stringify(mes: Message) {
+  return `Message(${mes.type}): ${mes.message}\n\t${(mes.stack || []).join('\n\t')}`;
+}
+
+function stack(): string {
   const a = {};
   Error.captureStackTrace(a);
 
