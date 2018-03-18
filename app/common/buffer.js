@@ -16,5 +16,17 @@ export type Buffer = {
   parentID: ?MetaDataID,
   childrenIDs: Array<MetaDataID>,
   isLoaded: boolean,
-  body: string
+  body: string,
+  note?: Note
+};
+
+export type Note = {
+  outline: string,
+  body: string,
+  tags: string[],
+  label: string,
+  status: string,
+  keywords: string[],
+  prev: MetaDataID[],
+  next: MetaDataID[]
 };
