@@ -19,7 +19,7 @@ const fuseOptions = {
   matchAllTokens: true,
   includeScore: true,
   includeMatches: true,
-  threshold: 0.2,
+  threshold: 0.4,
   location: 0,
   distance: 100,
   maxPatternLength: 32,
@@ -54,10 +54,10 @@ export type Position = {
 
 export type SearchResult = {
   buffer: Buffer,
-  position: Position,
+  positions: Position[],
   detail: null | {
     text: string,
-    position: Position
+    positions: Position[]
   }
 };
 
@@ -138,7 +138,6 @@ export class Search {
     });
 
     const results: FuseResult[] = query.split('/').reduce((prevResult: FuseResult[], q: string) => {
-      console.log(prevResult);
       const bufs = prevResult.map((item) => {
         return item.item;
       });
@@ -154,7 +153,6 @@ export class Search {
           return;
         }
 
-        console.log(item);
         // eslint-disable-next-line no-param-reassign
         item.matches[0].indices = item.matches[0].indices.concat(prev.matches[0].indices);
       });
@@ -165,12 +163,22 @@ export class Search {
 
     let item: FuseResult;
     for (item of results) { // eslint-disable-line no-restricted-syntax
+      const positions = item.matches[0].indices.sort((a, b) => {
+        if (a[0] === b[0]) {
+          return 0;
+        }
+
+        return a[0] < b[0] ? -1 : 1;
+      }).map((index) => {
+        return {
+          size: (index[1] - index[0]) + 1,
+          offset: index[0],
+        };
+      });
+
       const result = {
         buffer: item.item,
-        position: {
-          size: 0,
-          offset: 0,
-        },
+        positions,
         detail: null,
       };
       yield [result, []];

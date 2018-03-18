@@ -38,10 +38,10 @@ export function SearchResult(props: Props) {
       >
         <div className={styles.filename}>
           <FileIcon className={styles.fileIcon} itemType={buffer.itemType} />
-          {highlight(buffer.name, item.position)}
+          {buffer.name}
         </div>
         <div className={styles.internalPath}>
-          {internalPath(buffer.repositoryName, buffer.path)}
+          {highlight(internalPath(buffer.repositoryName, buffer.path), item.positions, buffer.repositoryName.length + 1)}
         </div>
         {detail(item)}
       </ol>
@@ -63,14 +63,14 @@ function scrollItem(ul, selectedIndex) {
     return;
   }
   if (selectedIndex == null) {
-    ul.scrollTop = 0;
+    ul.scrollTop = 0; // eslint-disable-line no-param-reassign
     return;
   }
 
   const olItems = ul.querySelectorAll('ol');
   const ol = olItems[selectedIndex];
   if (ol == null) {
-    ul.scrollTop = 0;
+    ul.scrollTop = 0; // eslint-disable-line no-param-reassign
     return;
   }
 
@@ -84,34 +84,58 @@ function detail(result: Result) {
 
   return (
     <div className={styles.detail}>
-      {highlight(result.detail.text, result.detail.position)}
+      {detailHighlight(result.detail.text, result.detail.positions)}
     </div>
   );
 }
 
-const detailTextLength = 50;
+type HighlightChunk = {
+  character: string,
+  highlighted: boolean
+};
 
-function highlight(text: string, position: Position) {
-  let front = text.substr(0, position.offset);
-  const highlightText = text.substr(position.offset, position.size);
-  let rear = text.substr(position.offset + position.size);
-  if (highlightText.length >= detailTextLength) {
-    front = '';
-    rear = '';
-  }
-  const total = front.length + highlightText.length + rear.length;
-  if (total >= detailTextLength) {
-    const sub = detailTextLength - highlightText.length;
-    front = front.substr(-sub / 2);
-    rear = rear.substr(0, detailTextLength - front.length - highlightText.length);
-  }
+function highlight(text: string, positions: Position[], offset?: number = 0) {
+  console.log('highlight', text, positions);
+  const chunks = text.split('').map((c): HighlightChunk => {
+    return {
+      character: c,
+      highlighted: false
+    };
+  });
+
+  positions.forEach((pos) => {
+    for (let i = 0; i < pos.size; i += 1) {
+      const idx = i + pos.offset + offset;
+      chunks[idx].highlighted = true;
+    }
+  });
+
+  return renderHighlight(chunks);
+}
+
+function detailHighlight(text: string, positions: Position[]) {
+  const items = positions.map((pos) => {
+    return highlight(text, [pos]);
+  }).map((item) => {
+    return <li>{item}</li>;
+  });
+
+  return <ul>{items}</ul>;
+}
+
+function renderHighlight(chunks: HighlightChunk[]) {
+  const spans = chunks.map((chunk) => {
+    const cls = chunk.highlighted ? styles.highlight : '';
+
+    return (
+      <span className={cls}>
+        {chunk.character}
+      </span>
+    );
+  });
 
   return (
-    <p>
-      <span>{front}</span>
-      <span className={styles.highlight}>{highlightText}</span>
-      <span>{rear}</span>
-    </p>
+    <p>{spans}</p>
   );
 }
 
