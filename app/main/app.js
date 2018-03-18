@@ -51,7 +51,7 @@ app.on('ready', async () => {
   config = new BamjuConfig(configPath);
   const conf = config.getConfig();
 
-  const repositoryManager = new RepositoryManager(conf.buffers, conf.repositories);
+  const repositoryManager = new RepositoryManager([], conf.repositories);
   await repositoryManager.loadRepositories();
   dispatch(initializeRepositories(conf.repositories));
 

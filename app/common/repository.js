@@ -22,7 +22,12 @@ export type RepositoryConfig = {
   absolutePath: string
 };
 
-export const a = '';
+const configFilename = '.bamju';
+
+type RepositoryMetaData = {
+  repository: RepositoryConfig,
+  buffers: Buffer[]
+};
 
 export class Repository {
   name: string;
@@ -69,6 +74,11 @@ export class Repository {
     });
     if (errorResult != null) {
       return errorResult;
+    }
+
+    const writeMessage = await this.writeMetaDataFile();
+    if (Message.isSimilarError(writeMessage)) {
+      return [null, writeMessage];
     }
 
     return [this, Message.success('')];
@@ -270,6 +280,11 @@ export class Repository {
 
     const [metaData, message] = await parentItem.addFile(itemName, content);
 
+    const writeMessage = await this.writeMetaDataFile();
+    if (Message.isSimilarError(writeMessage)) {
+      return [null, writeMessage];
+    }
+
     return [metaData, message];
   }
 
@@ -289,6 +304,11 @@ export class Repository {
     }
 
     const ret = createdItems[createdItems.length - 1];
+
+    const writeMessage = await this.writeMetaDataFile();
+    if (Message.isSimilarError(writeMessage)) {
+      return [null, writeMessage];
+    }
 
     return [ret, Message.wrap(message)];
   }
@@ -332,6 +352,55 @@ export class Repository {
       absolutePath: this.absolutePath,
       repositoryName: this.name,
     };
+  }
+
+  async writeMetaDataFile(): Promise<Message.Message> {
+    const conf: RepositoryMetaData = {
+      repository: this.toConfig(),
+      buffers: this.toBuffers(),
+    };
+    const json = JSON.stringify(conf, null, 2);
+
+    try {
+      fs.writeFileSync(this.configPath(), json);
+    } catch (e) {
+      return Message.error(`Repository.writeConfig error. name=${this.name}. ${e.message}`);
+    }
+
+    return Message.success(`Repository.writeConfig ${this.name}`);
+  }
+
+  async loadMetaDataFile(): Promise<Message.Message> {
+    let repositoryMetaData:RepositoryMetaData;
+    try {
+      const json:string = fs.readFileSync(this.configPath(), 'utf8');
+      repositoryMetaData = JSON.parse(json);
+    } catch (e) {
+      return Message.error(`Repository.loadMetaDataFile readFile error. name=${this.name}. ${e.message}`);
+    }
+
+    if (this.name !== repositoryMetaData.repository.repositoryName) {
+      return Message.error(`Repository.loadMetaDataFile name error. name=${this.name} repositoryMetaData.repository.repositoryName=${repositoryMetaData.repository.repositoryName}`); // eslint-disable-line max-len
+    }
+
+    if (this.absolutePath !== repositoryMetaData.repository.absolutePath) {
+      return Message.error(`Repository.loadMetaDataFile absolutePath error. name=${this.absolutePath} repositoryMetaData.repository.absolutePath=${repositoryMetaData.repository.absolutePath}`); // eslint-disable-line max-len
+    }
+
+    this.items = repositoryMetaData.buffers.map((item) => {
+      try {
+        return new MetaData(item);
+      } catch (e) {
+        Message.error(`Repository.loadMetaDataFile new MetaData error. id=${item.id} path={item.path}. ${e}`);
+        return null;
+      }
+    }).filter(Boolean);
+
+    return Message.success(`Repository.loadConfig ${this.name}`);
+  }
+
+  configPath(): string {
+    return path.join(this.absolutePath, configFilename);
   }
 }
 
@@ -395,3 +464,5 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
 //     return new MetaData(buf, null);
 //   });
 // }
+
+export default Repository;

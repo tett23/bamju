@@ -14,9 +14,6 @@ import {
   createWindowID,
 } from './window';
 import {
-  type Buffer,
-} from './buffer';
-import {
   type WindowsState,
 } from '../reducers/windows';
 import {
@@ -33,8 +30,7 @@ export type Config = {
   config: {
     followChange: boolean,
     mkdirP: boolean
-  },
-  buffers: Buffer[]
+  }
 };
 
 export function defaultConfig() {
@@ -53,7 +49,6 @@ export function defaultConfig() {
       browser: initialBrowserState(),
       repositoriesTreeView: {}
     }],
-    buffers: globalInit.buffers,
     config: {
       followChange: true,
       mkdirP: true
@@ -113,7 +108,6 @@ export class BamjuConfig {
 
   async quit() {
     try {
-      this._config.buffers = getRepositoryManagerInstance().toBuffers();
       this._config.repositories = getRepositoryManagerInstance().getRepositories().map((repo) => {
         return repo.toConfig();
       });

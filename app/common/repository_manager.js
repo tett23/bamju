@@ -35,6 +35,7 @@ export class RepositoryManager {
 
   async loadRepositories(): Promise<Repository[]> {
     const promiseAll = this._repositories.map(async (repo) => {
+      await repo.loadMetaDataFile();
       await repo.load();
 
       return repo;
