@@ -15,6 +15,8 @@ import {
 } from './repository';
 import {
   type Buffer,
+  type Note,
+  emptyNote,
 } from './buffer';
 import {
   Markdown,
@@ -58,6 +60,7 @@ export class MetaData {
   childrenIDs: Array<MetaDataID>;
   isLoaded: boolean;
   body: string;
+  note: Note;
 
   constructor(buffer: Buffer) {
     this.id = buffer.id;
@@ -74,6 +77,7 @@ export class MetaData {
     this.childrenIDs = buffer.childrenIDs;
     this.isLoaded = buffer.isLoaded;
     this.body = buffer.body;
+    this.note = buffer.note;
   }
 
   async load(): Promise<[?MetaData, MessageType]> {
@@ -411,6 +415,7 @@ export class MetaData {
       childrenIDs: this.childrenIDs,
       isLoaded: this.isLoaded,
       body: this.body,
+      note: this.note,
     };
   }
 
@@ -435,6 +440,7 @@ export class MetaData {
       childrenIDs: [],
       isLoaded: false,
       body: '',
+      note: emptyNote(),
     });
     this.childrenIDs.push(ret.id);
     this.repository().addMetaData(ret);

@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from './path';
 import {
   type Buffer,
+  emptyNote,
 } from './buffer';
 import {
   MetaData,
@@ -374,7 +375,13 @@ export class Repository {
     let repositoryMetaData:RepositoryMetaData;
     try {
       const json:string = fs.readFileSync(this.configPath(), 'utf8');
-      repositoryMetaData = JSON.parse(json);
+      repositoryMetaData = JSON.parse(json, (values) => {
+        values.buffer.forEach((item) => {
+          item.note = item.note || emptyNote();
+        });
+
+        return value;
+      });
     } catch (e) {
       return Message.error(`Repository.loadMetaDataFile readFile error. name=${this.name}. ${e.message}`);
     }
@@ -456,6 +463,7 @@ function createRootBuffer(repositoryName: string, absolutePath: string): Buffer 
     parentID: null,
     childrenIDs: [],
     body: '',
+    note: emptyNote(),
   };
 }
 //

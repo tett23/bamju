@@ -4,11 +4,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import type { State } from '../../reducers/app_window';
 import {
-  type Buffer
+  dummyBuffer,
 } from '../../common/buffer';
 import {
   internalPath,
-  ItemTypeUndefined,
 } from '../../common/metadata';
 import {
   type $ReturnType,
@@ -36,22 +35,6 @@ export function metaDataView(props: Props) {
       </dl>
     </div>
   );
-}
-
-function dummyBuffer(): Buffer {
-  return {
-    id: '',
-    name: 'undefined',
-    path: '',
-    repositoryName: '',
-    repositoryPath: '',
-    absolutePath: '',
-    itemType: ItemTypeUndefined,
-    parentID: null,
-    childrenIDs: [],
-    isLoaded: false,
-    body: ''
-  };
 }
 
 function mapStateToProps(state: State) {

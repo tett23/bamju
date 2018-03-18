@@ -12,6 +12,8 @@ import './global_config.test';
 
 import {
   type Buffer,
+  type Note,
+  emptyNote,
 } from '../app/common/buffer';
 import {
   type ItemType,
@@ -34,7 +36,8 @@ export type DummyBuffer = {
   isLoaded?: boolean,
   childrenIDs?: MetaDataID[],
   parentID?: ?MetaDataID,
-  body?: string
+  body?: string,
+  note?: Note,
 };
 
 export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
@@ -49,7 +52,8 @@ export function dummyBuffer(obj: DummyBuffer = {}): Buffer {
     isLoaded: true,
     parentID: null,
     childrenIDs: [],
-    body: ''
+    body: '',
+    note: emptyNote(),
   }, obj);
 }
 
