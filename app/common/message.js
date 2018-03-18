@@ -96,7 +96,7 @@ export function debug(mes: string): Message {
   };
 }
 
-export function stack(): string {
+function stack(): string {
   const a = {};
   Error.captureStackTrace(a);
 
