@@ -18,7 +18,9 @@ import styles from './MetaDataView.css';
 type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatchToProps>;
 
 export function metaDataView(props: Props) {
-  const { name, repositoryName, path } = (props.buffer || dummyBuffer());
+  const {
+    id, name, repositoryName, path
+  } = (props.buffer || dummyBuffer());
 
   return (
     <div className={styles.metaDataView}>
@@ -26,11 +28,12 @@ export function metaDataView(props: Props) {
       <div className={styles.fileName}>
         {name}
       </div>
-      <div className={styles.generalMetaData}>
-        <div className={styles.internalPath}>
-          {internalPath(repositoryName, path)}
-        </div>
-      </div>
+      <dl className={styles.generalMetaData}>
+        <dt>metaDataID</dt>
+        <dd>{id}</dd>
+        <dt>internalPath</dt>
+        <dd>{internalPath(repositoryName, path)}</dd>
+      </dl>
     </div>
   );
 }
