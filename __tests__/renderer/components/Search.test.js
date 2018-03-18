@@ -48,16 +48,16 @@ describe('<Search />', () => {
           isLoaded: true,
           body: ''
         },
-        position: {
+        positions: [{
           size: 0,
           offset: 0
-        },
+        }],
         detail: {
           text: 'foo',
-          position: {
+          positions: [{
             size: 0,
             offset: 0
-          }
+          }]
         }
       },
       {
@@ -74,16 +74,16 @@ describe('<Search />', () => {
           isLoaded: true,
           body: ''
         },
-        position: {
+        positions: [{
           size: 0,
           offset: 0
-        },
+        }],
         detail: {
           text: 'foo',
-          position: {
+          positions: [{
             size: 0,
             offset: 0
-          }
+          }]
         }
       },
     ];

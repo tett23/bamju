@@ -29,16 +29,16 @@ describe('<SearchResult />', () => {
         isLoaded: true,
         body: ''
       },
-      position: {
+      positions: [{
         size: 0,
         offset: 0
-      },
+      }],
       detail: {
         text: 'foo',
-        position: {
+        positions: [{
           size: 0,
           offset: 0
-        }
+        }]
       }
     }];
     props = {
@@ -84,10 +84,10 @@ describe('<SearchResult />', () => {
   it('detailがnullでないときは.detailが作成される', () => {
     props.results[0].detail = {
       text: 'foo',
-      position: {
+      positions: [{
         size: 0,
         offset: 0
-      }
+      }]
     };
     const component = Enzyme.mount(<SearchResult {...props} />);
 
@@ -105,38 +105,42 @@ describe('<SearchResult />', () => {
   });
 
   it('positionに該当する文字列に.highlightが設定される', () => {
-    props.results[0].buffer.name = 'hoge';
-    props.results[0].position = {
+    props.results[0].buffer.path = 'hoge';
+    props.results[0].positions = [{
       size: 2,
       offset: 1
-    };
+    }];
     const component = Enzyme.mount(<SearchResult {...props} />);
 
-    const highlight = component.find('.searchResult .filename .highlight');
-    expect(highlight.text()).toBe('og');
+    const highlight = component.find('.item .internalPath .highlight').reduce((r, s) => {
+      return r + s.text();
+    }, '');
+    expect(highlight).toBe('og');
   });
 
   it('detailのpositionに該当する文字列に.highlightが設定される', () => {
     props.results[0].detail = {
       text: 'hoge',
-      position: {
+      positions: [{
         size: 2,
         offset: 1
-      }
+      }]
     };
     const component = Enzyme.mount(<SearchResult {...props} />);
 
-    const highlight = component.find('.searchResult .detail .highlight');
-    expect(highlight.text()).toBe('og');
+    const highlight = component.find('.searchResult .detail .highlight').reduce((r, s) => {
+      return r + s.text();
+    }, '');
+    expect(highlight).toBe('og');
   });
 
   it('highlightの文字列が長すぎる場合、truncateされる', () => {
     props.results[0].detail = {
       text: '1234567890123456789012345678901234567890123456789012345678901234567890',
-      position: {
+      positions: [{
         size: 2,
         offset: 1
-      }
+      }]
     };
     const component = Enzyme.mount(<SearchResult {...props} />);
 

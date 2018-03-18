@@ -38,7 +38,7 @@ export function SearchResult(props: Props) {
       >
         <div className={styles.filename}>
           <FileIcon className={styles.fileIcon} itemType={buffer.itemType} />
-          {buffer.name}
+          <span>{buffer.name}</span>
         </div>
         <div className={styles.internalPath}>
           {highlight(internalPath(buffer.repositoryName, buffer.path), item.positions, buffer.repositoryName.length + 1)}
@@ -95,7 +95,6 @@ type HighlightChunk = {
 };
 
 function highlight(text: string, positions: Position[], offset?: number = 0) {
-  console.log('highlight', text, positions);
   const chunks = text.split('').map((c): HighlightChunk => {
     return {
       character: c,
@@ -117,18 +116,20 @@ function detailHighlight(text: string, positions: Position[]) {
   const items = positions.map((pos) => {
     return highlight(text, [pos]);
   }).map((item) => {
-    return <li>{item}</li>;
+    const key = `${Math.random()}`;
+    return <li key={key}>{item}</li>;
   });
 
   return <ul>{items}</ul>;
 }
 
 function renderHighlight(chunks: HighlightChunk[]) {
-  const spans = chunks.map((chunk) => {
+  const spans = truncateChunks(chunks).map((chunk) => {
     const cls = chunk.highlighted ? styles.highlight : '';
+    const key = `${Math.random()}`;
 
     return (
-      <span className={cls}>
+      <span className={cls} key={key}>
         {chunk.character}
       </span>
     );
@@ -137,6 +138,34 @@ function renderHighlight(chunks: HighlightChunk[]) {
   return (
     <p>{spans}</p>
   );
+}
+
+const detailTextLength = 50;
+
+function truncateChunks(chunks: HighlightChunk[]): HighlightChunk[] {
+  const total = chunks.length;
+  if (total < detailTextLength) {
+    return chunks;
+  }
+
+  const highlightStartAt = chunks.findIndex((c) => {
+    return c.highlighted;
+  });
+  const highlightEndAt = chunks.slice().reverse().findIndex((c) => {
+    return c.highlighted;
+  });
+  const highlightLength = highlightEndAt - highlightStartAt;
+
+  if (highlightLength >= detailTextLength) {
+    return chunks.slice(highlightStartAt, highlightStartAt + detailTextLength);
+  }
+
+  let startAt = highlightStartAt - 10;
+  if (startAt < 0) {
+    startAt = 0;
+  }
+
+  return chunks.slice(startAt, detailTextLength);
 }
 
 export default SearchResult;
