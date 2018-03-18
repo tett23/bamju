@@ -18,14 +18,38 @@ type Props = $ReturnType<typeof mapStateToProps> & $ReturnType<typeof mapDispatc
 
 export function metaDataView(props: Props) {
   const {
-    id, name, repositoryName, path
+    id, name, repositoryName, path, note
   } = (props.buffer || dummyBuffer());
+
+  const tagItems = note.tags.map((item) => {
+    return (
+      <span
+        className={styles.tagItem}
+        key={id + item}
+      >
+        {item}
+      </span>
+    );
+  });
+  const keywordItems = note.keywords.map((item) => {
+    return (
+      <span
+        className={styles.keywordItems}
+        key={id + item}
+      >
+        {item}
+      </span>
+    );
+  });
 
   return (
     <div className={styles.metaDataView}>
       <div className={styles.menu} />
       <div className={styles.fileName}>
-        {name}
+        <p>{name}</p>
+      </div>
+      <div className={styles.outline}>
+        <textarea>{note.outline}</textarea>
       </div>
       <dl className={styles.generalMetaData}>
         <dt>metaDataID</dt>
@@ -33,6 +57,20 @@ export function metaDataView(props: Props) {
         <dt>internalPath</dt>
         <dd>{internalPath(repositoryName, path)}</dd>
       </dl>
+      <dl className={styles.notePanel}>
+        <dt>tags</dt>
+        <dd>{tagItems}</dd>
+        <dt>keywords</dt>
+        <dd>{keywordItems}</dd>
+        <dt>status</dt>
+        <dd>{note.status}</dd>
+        <dt>label</dt>
+        <dd>{note.label}</dd>
+      </dl>
+      <div className={styles.note}>
+        <p>Note</p>
+        <textarea>{note.note}</textarea>
+      </div>
     </div>
   );
 }
