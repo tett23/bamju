@@ -86,6 +86,7 @@ export function searches(
     }
     const newState = state.slice();
     newState[idx].results = [];
+    newState[idx].selectedIndex = null;
 
     return newState;
   }

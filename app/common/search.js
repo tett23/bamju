@@ -1,5 +1,6 @@
 // @flow
 
+import Fuse from 'fuse.js';
 import * as Message from './message';
 import { type Buffer } from './buffer';
 import {
@@ -11,6 +12,27 @@ import {
 export const QueryTypeFileName = 'fileName';
 export const QueryTypeFullText = 'fullText';
 export type QueryType = 'fileName' | 'fullText';
+
+const fuseOptions = {
+  shouldSort: true,
+  tokenize: true,
+  matchAllTokens: true,
+  includeScore: true,
+  includeMatches: true,
+  threshold: 0.6,
+  location: 0,
+  distance: 100,
+  maxPatternLength: 32,
+  minMatchCharLength: 1,
+};
+
+type FuseResult = {
+  item: Buffer,
+  matches: {
+    indices: Array<[number, number]>
+  },
+  score: number
+};
 
 export type SearchOptions = {
   queryType: QueryType,
@@ -62,7 +84,9 @@ export class Search {
     this.queryID = queryID;
     this.query = query;
     this.options = Object.assign({}, defaultOptions, options);
-    this.buffers = buffers;
+    this.buffers = buffers.filter((item) => {
+      return isSimilarFile(item.itemType) || isSimilarDirectory(item.itemType);
+    });
   }
 
   *start(): Iterable<[?SearchResult, Message.Message[]]> {
@@ -98,35 +122,31 @@ export class Search {
   }
 
   *fileName(): Iterable<[?SearchResult, Message.Message[]]> {
-    const total = this.buffers.length;
-    const flags = this.options.ignoreCase ? 'i' : '';
-    const matcher = new RegExp(this.query, flags);
-    for (let i = 0; i < total; i += 1) {
-      let isMatch = false;
-      const itemType = this.buffers[i].itemType;
-      if (isSimilarFile(itemType) || isSimilarDirectory(itemType)) {
-        if (this.options.enableRegExp) {
-          isMatch = matcher.test(this.buffers[i].path);
-        } else if (this.options.ignoreCase) {
-          isMatch = this.buffers[i].path.toLowerCase().includes(this.query.toLowerCase());
-        } else {
-          isMatch = this.buffers[i].path.includes(this.query);
-        }
-      }
+    const options = Object.assign({}, fuseOptions, {
+      caseSensitive: !this.options.ignoreCase,
+      keys: [{
+        name: 'name',
+        weight: 0.3
+      }, {
+        name: 'path',
+        weight: 0.7
+      }]
+    });
+    const fuse = new Fuse(this.buffers, options);
+    // $FlowFixMe
+    const results: FuseResult[] = fuse.search(this.query);
 
-      if (!isMatch) {
-        yield [null, []];
-      } else {
-        const result = {
-          buffer: this.buffers[i],
-          position: {
-            size: 0,
-            offset: 0,
-          },
-          detail: null,
-        };
-        yield [result, []];
-      }
+    let item: FuseResult;
+    for (item of results) { // eslint-disable-line no-restricted-syntax
+      const result = {
+        buffer: item.item,
+        position: {
+          size: 0,
+          offset: 0,
+        },
+        detail: null,
+      };
+      yield [result, []];
     }
   }
 }

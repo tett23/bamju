@@ -59,19 +59,22 @@ export function SearchResult(props: Props) {
 }
 
 function scrollItem(ul, selectedIndex) {
-  if (ul == null || selectedIndex == null) {
+  if (ul == null) {
+    return;
+  }
+  if (selectedIndex == null) {
+    ul.scrollTop = 0;
     return;
   }
 
   const olItems = ul.querySelectorAll('ol');
   const ol = olItems[selectedIndex];
   if (ol == null) {
+    ul.scrollTop = 0;
     return;
   }
 
   ul.scrollTop = ol.offsetTop - ul.offsetTop; // eslint-disable-line no-param-reassign
-
-  console.log(ul);
 }
 
 function detail(result: Result) {
