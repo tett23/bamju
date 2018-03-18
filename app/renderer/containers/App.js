@@ -4,6 +4,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { RepositoriesTreeView } from '../components/RepositoriesTreeView';
 import Browser from '../components/Browser';
+import MetaDataView from '../components/MetaDataView';
 import { Modals } from '../components/Modals';
 import { Messages } from '../components/Messages';
 import styles from './App.css';
@@ -21,6 +22,7 @@ const app = (props: Props) => {
     <div className={styles.app} data-tid="app">
       <RepositoriesTreeView buffers={props.global.buffers} />
       <Browser tabs={[props.browser.tabs]} />
+      <MetaDataView />
       <Modals />
       <Messages />
     </div>

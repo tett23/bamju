@@ -1,0 +1,33 @@
+@import "../../variables.css";
+
+:root {
+  --padding: .75rem .5rem;
+}
+
+.metaDataView {
+  background-color: var(--background-color);
+  height: 100vh;
+  width: 12rem;
+  min-width: 12rem;
+  border-left: var(--border);
+}
+
+.fileMenu {
+  padding: var(--padding);
+  background-color: var(--background-color);
+  font-size: var(--font-size);
+}
+
+.fileName {
+  padding: var(--padding);
+  background-color: var(--background-color);
+  font-size: var(--font-size);
+  color: var(--color-light);
+}
+
+.generalMetaData {
+  padding: var(--padding);
+  background-color: var(--background-color-light);
+  font-size: var(--font-small);
+  color: var(--color-light);
+}

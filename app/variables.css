@@ -2,6 +2,7 @@
   --background-color: rgb(33, 37, 43);
   --background-color-dark: #1b1d23;
   --background-color-light: #282828;
+  --background-color-ultra-light: #141414;
   --color: #9da5b4;
   --color-dark: rgba(157, 165, 180, 0.6);
   --color-light: #abc;
@@ -12,6 +13,6 @@
   --font-size-ultra-big: 1.5rem;
   --font-size-small: 0.9rem;
   --font-size-ultra-small: 0.75rem;
-  --border: 1px solid var(--border-color);
+  --border: 2px solid var(--border-color);
   --border-color: rgba(0, 0, 0, 0.2);
 }
