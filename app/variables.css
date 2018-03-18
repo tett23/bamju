@@ -6,8 +6,12 @@
   --color-dark: rgba(157, 165, 180, 0.6);
   --color-light: #abc;
   --color-active: #568af2;
+  --color-highlight: #568af2;
   --font-size: 1rem;
+  --font-size-big: 1.2rem;
+  --font-size-ultra-big: 1.5rem;
   --font-size-small: 0.9rem;
   --font-size-ultra-small: 0.75rem;
+  --border: 1px solid var(--border-color);
   --border-color: rgba(0, 0, 0, 0.2);
 }

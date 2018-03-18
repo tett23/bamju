@@ -7,6 +7,7 @@ import {
   INITIALIZE_BROWSER,
   ADD_TAB,
   CLOSE_TAB,
+  CLOSE_ALL_TABS,
   UPDATE_TAB,
   UPDATE_CURRENT_TAB,
   ACTIVE_TAB,
@@ -79,6 +80,15 @@ export function browser(state: BrowserState = initialBrowserState(), action: Act
       const newIdx = tabIdx === 0 ? 0 : tabIdx - 1;
       newState.currentTabID = newState.tabs[newIdx].id;
     }
+
+    return newState;
+  }
+  case CLOSE_ALL_TABS: {
+    const tab = addTab(null, '');
+    const newState = {
+      currentTabID: tab.payload.id,
+      tabs: [tab.payload],
+    };
 
     return newState;
   }

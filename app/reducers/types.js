@@ -11,6 +11,7 @@ import {
 import {
   addTab,
   closeTab,
+  closeAllTabs,
   updateTab,
   updateCurrentTab,
   activeTab,
@@ -21,9 +22,23 @@ import {
   closeBuffer,
 } from '../actions/repositories_tree_view';
 import {
+  search,
+  start,
+  cancel,
+  destroy,
+  clear,
+  updateResult,
+  updateProgress,
+  updateOptions,
+  updateQuery,
+  updateSelectedIndex,
+  complete,
+} from '../actions/searches';
+import {
   openInputDialog,
   closeDialog,
   closeAllDialog,
+  closeSearchDialog,
 } from '../actions/modals';
 import {
   addMessage,
@@ -60,15 +75,28 @@ export type Meta = {
 export type Actions = (
   $ReturnType<typeof addTab>
 | $ReturnType<typeof closeTab>
+| $ReturnType<typeof closeAllTabs>
 | $ReturnType<typeof updateTab>
 | $ReturnType<typeof updateCurrentTab>
 | $ReturnType<typeof activeTab>
 | $ReturnType<typeof initializeRepositoriesTreeView>
 | $ReturnType<typeof openBuffer>
 | $ReturnType<typeof closeBuffer>
+| $ReturnType<typeof search>
+| $ReturnType<typeof start>
+| $ReturnType<typeof cancel>
+| $ReturnType<typeof destroy>
+| $ReturnType<typeof clear>
+| $ReturnType<typeof updateProgress>
+| $ReturnType<typeof updateResult>
+| $ReturnType<typeof updateQuery>
+| $ReturnType<typeof updateOptions>
+| $ReturnType<typeof updateSelectedIndex>
+| $ReturnType<typeof complete>
 | $ReturnType<typeof openInputDialog>
 | $ReturnType<typeof closeDialog>
 | $ReturnType<typeof closeAllDialog>
+| $ReturnType<typeof closeSearchDialog>
 | $ReturnType<typeof addMessage>
 | $ReturnType<typeof closeMessage>
 | $ReturnType<typeof closeAllMessages>

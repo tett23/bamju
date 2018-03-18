@@ -733,7 +733,7 @@ async function parse(metaData: MetaData, content: string): Promise<[?ParseResult
     break;
   }
   case ItemTypeText: {
-    parseResult.content = content;
+    parseResult.content = `<p>${content.split('\n').join('<br />')}</p>`;
     break;
   }
   case ItemTypeHTML: {

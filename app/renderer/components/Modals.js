@@ -3,13 +3,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import {
-  type ModalsState,
-} from '../../reducers/modals';
+  type State,
+} from '../../reducers/app_window';
 import {
   ModalInputDialog,
+  ModalSearchDialog,
   closeAllDialog,
 } from '../../actions/modals';
 import { InputDialog } from './InputDialog';
+import { Search } from './Search';
 import {
   type $ReturnType,
 } from '../../common/util';
@@ -22,26 +24,42 @@ function modals(props: Props) {
     switch (item.type) {
     case ModalInputDialog: {
       return (
-        <div
-          role="none"
-          key={item.id}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <InputDialog
-            id={item.id}
-            label={item.label}
-            formValue={item.formValue}
-            placeholder={item.placeholder}
-            onEnter={item.onEnter}
-            onClose={item.onClose}
-          />
-        </div>
+        <InputDialog
+          id={item.id}
+          parentKey={item.id}
+          label={item.label}
+          formValue={item.formValue}
+          placeholder={item.placeholder}
+          onEnter={item.onEnter}
+          onClose={item.onClose}
+        />
       );
+    }
+    case ModalSearchDialog: {
+      const search = props.searches.find((s) => {
+        return item.queryID === s.queryID;
+      });
+      if (search == null) {
+        return null;
+      }
+
+      return (<Search parentKey={item.queryID} {...search} />);
     }
     default: return null;
     }
+  }).filter(Boolean).map((item) => {
+    return (
+      <div
+        role="none"
+        key={item.props.parentKey}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        className={styles.dialog}
+      >
+        {item}
+      </div>
+    );
   });
 
   const visibility = (items.length >= 1) ? 'block' : 'none';
@@ -79,9 +97,10 @@ function checkEscape(e, close) {
   }
 }
 
-function mapStateToProps(state: {modals: ModalsState}): {modals: ModalsState} {
+function mapStateToProps(state: State) {
   return {
-    modals: state.modals
+    modals: state.modals,
+    searches: state.searches,
   };
 }
 

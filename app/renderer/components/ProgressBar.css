@@ -1,0 +1,15 @@
+@import "../../variables.css";
+
+.progressBar {
+  width: 100%;
+  height: .5rem;
+  background-color: var(--background-color-dark);
+  border-radius: 1rem;
+  border: var(--border);
+}
+
+.progress {
+  background-color: var(--color-highlight);
+  height: .5rem;
+  border-radius: 1rem;
+}

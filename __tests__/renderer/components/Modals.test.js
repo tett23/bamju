@@ -12,7 +12,11 @@ import {
 } from '../../../app/reducers/app_window';
 import {
   openInputDialog,
+  openSearchDialog,
 } from '../../../app/actions/modals';
+import {
+  search,
+} from '../../../app/actions/searches';
 
 import {
   Modals,
@@ -29,9 +33,27 @@ describe('<Modals />', () => {
       label: 'hogehoge',
       onEnter: () => {}
     }));
-    const component = mountWithStore(<Modals modals={store.getState().modals} />, store);
+    const component = mountWithStore(<Modals />, store);
 
-    expect(component.find('.dialogs').length).toBe(1);
+    expect(component.find('inputDialog').length).toBe(1);
+  });
+
+  it('openSearchDialogでSearchが作られる', () => {
+    const searchAction = search('', null);
+    store.dispatch(searchAction);
+    store.dispatch(openSearchDialog(searchAction.payload.queryID));
+
+    const component = mountWithStore(<Modals />, store);
+
+    expect(component.find('_search').length).toBe(1);
+  });
+
+  it('queryIDが存在しないときはSearchは作られない', () => {
+    store.dispatch(openSearchDialog('foo'));
+
+    const component = mountWithStore(<Modals />, store);
+
+    expect(component.find('_search').length).toBe(0);
   });
 
   it('modalsが空のときは何も表示されない', () => {

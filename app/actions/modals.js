@@ -3,9 +3,10 @@
 import { type Meta } from '../reducers/types';
 
 export const ModalInputDialog = 'inputDialog';
+export const ModalSearchDialog = 'searchDialog';
 export const ModalUndefined = 'undefined';
 
-export type ModalType = 'inputDialog' | 'undefined';
+export type ModalType = 'inputDialog' | 'searchDialog' | 'undefined';
 
 export type InputDialogValues = {
   label: string,
@@ -15,10 +16,19 @@ export type InputDialogValues = {
   onClose?: () => void | any // eslint-disable-line
 };
 
+export type SearchDialogValues = {
+  queryID: string
+};
+
 export type InputDialog = {
   id: string,
   type: 'inputDialog'
 } & InputDialogValues;
+
+export type SearchDialog = {
+  id: string,
+  type: 'searchDialog'
+} & SearchDialogValues;
 
 export type UndefinedDialog = {
   id: string,
@@ -26,8 +36,10 @@ export type UndefinedDialog = {
 };
 
 export const OPEN_INPUT_DIALOG = 'OPEN_INPUT_DIALOG';
+export const OPEN_SEARCH_DIALOG = 'OPEN_SEARCH_DIALOG';
 export const CLOSE_DIALOG = 'CLOSE_DIALOG';
 export const CLOSE_ALL_DIALOG = 'CLOSE_ALL_DIALOG';
+export const CLOSE_SEARCH_DIALOG = 'CLOSE_SEARCH_DIALOG';
 
 export function openInputDialog(argument: InputDialogValues, meta: Meta = {}) {
   return {
@@ -40,6 +52,18 @@ export function openInputDialog(argument: InputDialogValues, meta: Meta = {}) {
     meta: Object.assign({}, meta, {
       scope: 'local' // これがないとelectron-reduxがonEnterを消す
     })
+  };
+}
+
+export function openSearchDialog(queryID: string, meta: Meta = {}) {
+  return {
+    type: OPEN_SEARCH_DIALOG,
+    payload: {
+      modalType: ModalSearchDialog,
+      modalID: `${Math.random()}`,
+      queryID
+    },
+    meta,
   };
 }
 
@@ -57,6 +81,16 @@ export function closeAllDialog(meta: Meta = {}) {
   return {
     type: CLOSE_ALL_DIALOG,
     payload: {},
+    meta
+  };
+}
+
+export function closeSearchDialog(queryID: string, meta: Meta = {}) {
+  return {
+    type: CLOSE_SEARCH_DIALOG,
+    payload: {
+      queryID,
+    },
     meta
   };
 }

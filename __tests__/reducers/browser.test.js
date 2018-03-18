@@ -1,6 +1,11 @@
 // @flow
 
-import { createStore } from 'redux';
+import {
+  createStore,
+  applyMiddleware,
+  combineReducers,
+} from 'redux';
+import thunk from 'redux-thunk';
 
 import {
   initialBrowserState,
@@ -9,17 +14,23 @@ import {
 import {
   addTab,
   closeTab,
+  closeAllTabs,
   updateTab,
   updateCurrentTab,
   activeTab,
+  addOrActiveTab,
 } from '../../app/actions/browser';
 import {
   bufferContentUpdated,
 } from '../../app/actions/buffers';
+import {
+  appReducer,
+  initialState,
+} from '../../app/reducers/app_window';
 
 let store;
 beforeEach(() => {
-  store = createStore(browser, initialBrowserState());
+  store = createStore(appReducer, initialState(), applyMiddleware(thunk));
 });
 
 describe('browser reducer', () => {
@@ -34,13 +45,13 @@ describe('browser reducer', () => {
 
   describe('ADD_TAB', () => {
     it('Tabの追加ができる', () => {
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
       const tab = store.dispatch(addTab('foo', ''));
 
       const newState = store.getState();
 
-      expect(newState.tabs.length).toBe(2);
-      expect(newState.tabs[1]).toMatchObject({
+      expect(newState.browser.tabs.length).toBe(2);
+      expect(newState.browser.tabs[1]).toMatchObject({
         id: tab.payload.id
       });
     });
@@ -48,84 +59,93 @@ describe('browser reducer', () => {
 
   describe('CLOSE_TAB', () => {
     it('Tabの削除ができる', () => {
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
 
       const tab = store.dispatch(addTab('foo', ''));
 
-      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().browser.tabs.length).toBe(2);
 
       store.dispatch(closeTab(tab.payload.id));
 
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
     });
 
     it('idが存在しない場合は何も起きない', () => {
       store.dispatch(addTab('foo', ''));
 
-      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().browser.tabs.length).toBe(2);
 
       store.dispatch(closeTab('hogehoge'));
 
-      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().browser.tabs.length).toBe(2);
     });
 
     it('tabs.length === 0にはならない', () => {
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
 
-      store.dispatch(closeTab(store.getState().tabs[0].id));
+      store.dispatch(closeTab(store.getState().browser.tabs[0].id));
 
-      expect(store.getState().tabs.length).toBe(1);
-      expect(store.getState().tabs[0]).toMatchObject({
+      expect(store.getState().browser.tabs.length).toBe(1);
+      expect(store.getState().browser.tabs[0]).toMatchObject({
         metaDataID: null,
       });
     });
 
-    it('activeのタブが閉じられると隣のtabがactiveになる', () => {
-      expect(store.getState().tabs.length).toBe(1);
+    describe('CLOSE_ALL_TABS', () => {
+      it('全てのタブが閉じられ、空のタブだけになる', () => {
+        const state = store.getState().browser;
+        store.dispatch(closeAllTabs());
+        expect(store.getState().browser).not.toBe(state);
+        expect(store.getState().browser.tabs.length).toBe(1);
+      });
+    });
 
-      const nextTabID = store.getState().tabs[0].id;
+    it('activeのタブが閉じられると隣のtabがactiveになる', () => {
+      expect(store.getState().browser.tabs.length).toBe(1);
+
+      const nextTabID = store.getState().browser.tabs[0].id;
       const tab = addTab('foo', 'bar');
       store.dispatch(tab);
-      expect(store.getState().tabs.length).toBe(2);
-      expect(store.getState().currentTabID).toBe(tab.payload.id);
+      expect(store.getState().browser.tabs.length).toBe(2);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
 
       store.dispatch(closeTab(tab.payload.id));
 
-      expect(store.getState().currentTabID).toBe(nextTabID);
+      expect(store.getState().browser.currentTabID).toBe(nextTabID);
     });
 
     it('activeでないタブが閉じられたときはactiveを変更しない', () => {
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
 
       const tab = addTab('foo', 'bar');
       store.dispatch(tab);
-      expect(store.getState().tabs.length).toBe(2);
-      expect(store.getState().currentTabID).toBe(tab.payload.id);
+      expect(store.getState().browser.tabs.length).toBe(2);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
 
-      store.dispatch(closeTab(store.getState().tabs[0].id));
+      store.dispatch(closeTab(store.getState().browser.tabs[0].id));
 
-      expect(store.getState().currentTabID).toBe(tab.payload.id);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
     });
 
     it('0番目のタブが閉じられたときは1番目のタブがactiveになる', () => {
-      expect(store.getState().tabs.length).toBe(1);
+      expect(store.getState().browser.tabs.length).toBe(1);
 
       const tab = addTab('foo', 'bar');
       store.dispatch(tab);
-      expect(store.getState().tabs.length).toBe(2);
-      store.dispatch(activeTab(store.getState().tabs[0].id));
-      store.dispatch(closeTab(store.getState().tabs[0].id));
+      expect(store.getState().browser.tabs.length).toBe(2);
+      store.dispatch(activeTab(store.getState().browser.tabs[0].id));
+      store.dispatch(closeTab(store.getState().browser.tabs[0].id));
 
-      expect(store.getState().currentTabID).toBe(tab.payload.id);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
     });
 
     it('全てのタブが閉じられたら新しい0番目のタブがactiveになる', () => {
-      expect(store.getState().tabs.length).toBe(1);
-      const tab = store.getState().tabs[0];
+      expect(store.getState().browser.tabs.length).toBe(1);
+      const tab = store.getState().browser.tabs[0];
       store.dispatch(closeTab(tab.id));
 
-      expect(store.getState().currentTabID).not.toBe(tab.id);
-      expect(store.getState().currentTabID).toBe(store.getState().tabs[0].id);
+      expect(store.getState().browser.currentTabID).not.toBe(tab.id);
+      expect(store.getState().browser.currentTabID).toBe(store.getState().browser.tabs[0].id);
     });
   });
 
@@ -136,8 +156,8 @@ describe('browser reducer', () => {
 
       const newState = store.getState();
 
-      expect(newState.tabs.length).toBe(2);
-      expect(newState.tabs[1].metaDataID).toBe('hoge');
+      expect(newState.browser.tabs.length).toBe(2);
+      expect(newState.browser.tabs[1].metaDataID).toBe('hoge');
     });
 
     it('contentの変更ができる', () => {
@@ -146,22 +166,22 @@ describe('browser reducer', () => {
 
       const newState = store.getState();
 
-      expect(newState.tabs.length).toBe(2);
-      expect(newState.tabs[1].content).toBe('fuga');
+      expect(newState.browser.tabs.length).toBe(2);
+      expect(newState.browser.tabs[1].content).toBe('fuga');
     });
 
     it('idが存在しない場合何も起きない', () => {
       store.dispatch(addTab('foo', 'bar'));
 
-      expect(store.getState().tabs.length).toBe(2);
+      expect(store.getState().browser.tabs.length).toBe(2);
 
       store.dispatch(updateTab('a', 'b', 'c'));
 
       const newState = store.getState();
 
-      expect(newState.tabs.length).toBe(2);
-      expect(newState.tabs[1].metaDataID).toBe('foo');
-      expect(newState.tabs[1].content).toBe('bar');
+      expect(newState.browser.tabs.length).toBe(2);
+      expect(newState.browser.tabs[1].metaDataID).toBe('foo');
+      expect(newState.browser.tabs[1].content).toBe('bar');
     });
   });
 
@@ -172,8 +192,8 @@ describe('browser reducer', () => {
 
       const newState = store.getState();
 
-      expect(newState.tabs.length).toBe(2);
-      expect(newState.tabs[1].metaDataID).toBe('hoge');
+      expect(newState.browser.tabs.length).toBe(2);
+      expect(newState.browser.tabs[1].metaDataID).toBe('hoge');
     });
   });
 
@@ -181,25 +201,25 @@ describe('browser reducer', () => {
     it('contentの変更ができる', () => {
       store.dispatch(addTab('foo', 'bar'));
 
-      expect(store.getState().tabs[1].content).toBe('bar');
+      expect(store.getState().browser.tabs[1].content).toBe('bar');
 
       store.dispatch(bufferContentUpdated('foo', 'hoge'));
 
       const newState = store.getState();
 
-      expect(newState.tabs[1].content).toBe('hoge');
+      expect(newState.browser.tabs[1].content).toBe('hoge');
     });
 
     it('metaDataIDが一致しないタブは更新されない', () => {
       store.dispatch(addTab('foo', 'bar'));
 
-      expect(store.getState().tabs[1].content).toBe('bar');
+      expect(store.getState().browser.tabs[1].content).toBe('bar');
 
       store.dispatch(bufferContentUpdated('hogehoge', ''));
 
       const newState = store.getState();
 
-      expect(newState.tabs[1].content).toBe('bar');
+      expect(newState.browser.tabs[1].content).toBe('bar');
     });
   });
 
@@ -208,23 +228,52 @@ describe('browser reducer', () => {
       const tab = addTab('foo', 'bar');
       store.dispatch(tab);
 
-      expect(store.getState().tabs.length).toBe(2);
-      const tabID = store.getState().tabs[0].id;
-      expect(store.getState().currentTabID).not.toBe(tabID);
+      expect(store.getState().browser.tabs.length).toBe(2);
+      const tabID = store.getState().browser.tabs[0].id;
+      expect(store.getState().browser.currentTabID).not.toBe(tabID);
 
       store.dispatch(activeTab(tabID));
 
-      expect(store.getState().currentTabID).toBe(tabID);
+      expect(store.getState().browser.currentTabID).toBe(tabID);
     });
 
     it('idが存在しない場合は何もしない', () => {
       store.dispatch(addTab('foo', 'bar'));
 
-      const state = store.getState();
+      const state = store.getState().browser;
 
       store.dispatch(activeTab('bar'));
 
-      expect(store.getState()).toBe(state);
+      expect(store.getState().browser).toBe(state);
+    });
+  });
+
+  describe('addOrActiveTab', () => {
+    beforeEach(() => {
+      store.dispatch(closeAllTabs());
+      expect(store.getState().browser.tabs.length).toBe(1);
+    });
+
+    it('metaDataIDのTabが存在しない場合、Tabが追加される', () => {
+      const tab = store.dispatch(addOrActiveTab('foo'));
+
+      expect(store.getState().browser.tabs.length).toBe(2);
+      expect(store.getState().browser.tabs[1]).toMatchObject(tab.payload);
+    });
+
+    it('Tabが追加された場合、currentTabIDも変更される', () => {
+      const tab = store.dispatch(addOrActiveTab('foo'));
+
+      expect(store.getState().browser.tabs.length).toBe(2);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
+    });
+
+    it('metaDataIDのTabが存在する場合、currentTabIDが存在するTabのidになる', () => {
+      const tab = store.dispatch(addTab('foo', ''));
+      store.dispatch(addOrActiveTab('foo'));
+
+      expect(store.getState().browser.tabs.length).toBe(2);
+      expect(store.getState().browser.currentTabID).toBe(tab.payload.id);
     });
   });
 });

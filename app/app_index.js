@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { createStore, applyMiddleware, compose } from 'redux';
+import thunk from 'redux-thunk';
 import { replayActionRenderer } from 'electron-redux';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
@@ -48,6 +49,7 @@ const store = createStore(
   init,
   // $FlowFixMe
   compose(applyMiddleware(
+    thunk,
     filterWindowIDMiddleware,
     broadcastMainMiddleware,
   ))

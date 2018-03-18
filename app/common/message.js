@@ -48,9 +48,25 @@ export function create(type: MessageType, text: string): Message {
   };
 }
 
+export function info(mes: string): Message {
+  return {
+    type: MessageTypeInfo,
+    message: mes,
+    stack: [stack()]
+  };
+}
+
 export function success(mes: string): Message {
   return {
     type: MessageTypeSucceeded,
+    message: mes,
+    stack: [stack()]
+  };
+}
+
+export function warning(mes: string): Message {
+  return {
+    type: MessageTypeWarning,
     message: mes,
     stack: [stack()]
   };
@@ -67,6 +83,14 @@ export function error(mes: string): Message {
 export function fail(mes: string): Message {
   return {
     type: MessageTypeFailed,
+    message: mes,
+    stack: [stack()]
+  };
+}
+
+export function debug(mes: string): Message {
+  return {
+    type: MessageTypeDebug,
     message: mes,
     stack: [stack()]
   };

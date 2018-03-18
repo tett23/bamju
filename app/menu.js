@@ -12,6 +12,18 @@ import {
 import {
   getInstance as getWindowManagerInstance
 } from './common/window_manager';
+import {
+  QueryTypeFileName,
+} from './common/search';
+import {
+  dispatch,
+} from './main/event_dispatcher';
+import {
+  search,
+} from './actions/searches';
+import {
+  openSearchDialog,
+} from './actions/modals';
 
 export const MenuTypeInit = 'init';
 export const MenuTypeApp = 'app';
@@ -133,6 +145,18 @@ function subMenuFile(window: Window): MenuItem {
         }
       },
       { label: 'Close All', accelerator: 'CmdOrCtrl+Shift+W', selector: 'performClose:' },
+      { type: 'separator' },
+      {
+        label: 'Find Buffer',
+        accelerator: 'Ctrl+P',
+        click: () => {
+          const searchAction = search('', null, {
+            queryType: QueryTypeFileName,
+          });
+          dispatch(searchAction);
+          dispatch(openSearchDialog(searchAction.payload.queryID));
+        }
+      },
     ]
   };
 

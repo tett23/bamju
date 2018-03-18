@@ -5,13 +5,16 @@ import {
 } from './types';
 import {
   OPEN_INPUT_DIALOG,
+  OPEN_SEARCH_DIALOG,
   CLOSE_DIALOG,
   CLOSE_ALL_DIALOG,
+  CLOSE_SEARCH_DIALOG,
   type InputDialog,
+  type SearchDialog,
   type UndefinedDialog,
 } from '../actions/modals';
 
-export type ModalsState = Array<InputDialog | UndefinedDialog>;
+export type ModalsState = Array<InputDialog | SearchDialog | UndefinedDialog>;
 
 export function initialModalsState() {
   return [];
@@ -36,6 +39,22 @@ export function modals(
 
     return newState;
   }
+  case OPEN_SEARCH_DIALOG: {
+    const newState = state.slice();
+    newState.reverse().forEach((_, i) => {
+      if (newState[i].type === 'searchDialog') {
+        newState.splice(i, 1);
+      }
+    });
+
+    newState.push({
+      id: action.payload.modalID,
+      type: 'searchDialog',
+      queryID: action.payload.queryID,
+    });
+
+    return newState;
+  }
   case CLOSE_DIALOG: {
     const { modalID } = action.payload;
     const idx = state.findIndex((item) => {
@@ -52,6 +71,19 @@ export function modals(
   }
   case CLOSE_ALL_DIALOG: {
     return [];
+  }
+  case CLOSE_SEARCH_DIALOG: {
+    const idx = state.findIndex((item) => {
+      return item.type === 'searchDialog' && item.queryID === action.payload.queryID;
+    });
+    if (idx === -1) {
+      return state;
+    }
+
+    const newState = state.slice();
+    newState.splice(idx, 1);
+
+    return newState;
   }
   default:
     return state;

@@ -1,0 +1,30 @@
+@import "../../variables.css";
+
+.search {
+  color: var(--color);
+  font-size: var(--font-size-ultra-small);
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: normal;
+  font-size: var(--font-size-small);
+  margin-bottom: .75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.label>p {
+  margin-bottom: .75rem;
+}
+
+.input {
+  padding: .75rem;
+  font-size: var(--font-size-small);
+  color: var(--color);
+  border: var(--border-color);
+  border-radius: .3rem;
+  background-color: var(--background-color-dark);
+  font-weight: normal;
+}

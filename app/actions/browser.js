@@ -1,12 +1,24 @@
 // @flow
 
-import { type Meta } from '../reducers/types';
+import {
+  type Dispatch,
+} from 'redux';
+import {
+  type State,
+} from '../reducers/app_window';
+import {
+  type Meta,
+  type Actions,
+} from '../reducers/types';
 import {
   type MetaDataID
 } from '../common/metadata';
 import {
   type BrowserState,
 } from '../reducers/browser';
+import {
+  parseMetaData,
+} from '../actions/parser';
 
 export type Tab = {
   id: string,
@@ -17,6 +29,8 @@ export type Tab = {
 export const INITIALIZE_BROWSER = 'INITIALIZE_BROWSER';
 export const ADD_TAB = 'ADD_TAB';
 export const CLOSE_TAB = 'CLOSE_TAB';
+export const CLOSE_ALL_TABS = 'CLOSE_ALL_TABS';
+export const ADD_OR_FOCUS_TAB = 'ADD_OR_FOCUS_TAB';
 export const UPDATE_TAB = 'UPDATE_TAB';
 export const UPDATE_CURRENT_TAB = 'UPDATE_CURRENT_TAB';
 export const ACTIVE_TAB = 'ACTIVE_TAB';
@@ -50,6 +64,31 @@ export function closeTab(id: string, meta: Meta = {}) {
       id,
     },
     meta,
+  };
+}
+
+export function closeAllTabs(meta: Meta = {}) {
+  return {
+    type: CLOSE_ALL_TABS,
+    payload: {},
+    meta,
+  };
+}
+
+export function addOrActiveTab(metaDataID: MetaDataID, meta: Meta = {}) {
+  return (dispatch: Dispatch<Actions>, getState: () => State) => {
+    const state = getState();
+    const idx = state.browser.tabs.findIndex((item) => {
+      return item.metaDataID === metaDataID;
+    });
+    if (idx === -1) {
+      const tab = addTab(metaDataID, '');
+      dispatch(tab);
+      dispatch(parseMetaData(tab.payload.id, metaDataID));
+      return tab;
+    }
+    dispatch(activeTab(state.browser.tabs[idx].id, meta));
+    return state.browser.tabs[idx];
   };
 }
 
